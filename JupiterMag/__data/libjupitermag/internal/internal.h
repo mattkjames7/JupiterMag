@@ -2,6 +2,8 @@
 #define __INTERNAL_H__
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+#include <string.h>
 
 #endif
 using namespace std;
@@ -24,10 +26,8 @@ class Internal {
 		~Internal();
 	
 		/*these two functions will calculate the field in Cartesian RH 
-		 * system III coordinates for a scalar or an array, 
-		 * respectively.*/
-		void Fields(double,double,double,int,double*,double*,double*);
-		void Fielda(int,double*,double*,double*,int,double*,double*,double*);
+		 * system III coordinates.*/
+		void Field(int,double*,double*,double*,double*,double*,double*,bool,bool);
 		
 		
 	private:
@@ -42,10 +42,19 @@ class Internal {
 		double **h_;
 		
 		/* functions for initializing the object */
-		void _LoadSchmidt(const char*);
+		void _LoadSchmidt(unsigned char*);
 		void _Schmidt();
 		void _CoeffGrids();
 
+		/* This function will calculate the Legendre polynomials */
+		void _Legendre(int,double*,double*,double***,double***);
 		
+		/* this function will calculate the magnetic field components in
+		 * spherical polar coordinates */
+		void _SphHarm(int,double*,double*,double*,double*,double*,double*);
+		
+		/* coordinate/field vector rotation */
+		void _Cart2Pol(int,double*,double*,double*,double*,double*,double*);
+		void _BPol2BCart(int,double*,double*,double*,double*,double*,double*,double*,double*);
 	
 };
