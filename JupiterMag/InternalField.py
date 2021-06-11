@@ -1,5 +1,5 @@
 import numpy as np
-from ._CFunctions import _CInternalField
+from ._CFunctions import _CInternalField,c_char_p
 
 def InternalField(p0,p1,p2,PolIn=False,PolOut=False,Model='JRM09'):
 	'''
@@ -54,7 +54,7 @@ def InternalField(p0,p1,p2,PolIn=False,PolOut=False,Model='JRM09'):
 	_l = np.int32(np.size(_p0))
 	_PolIn = np.bool8(PolIn)
 	_PolOut = np.bool8(PolOut)
-	_Model = str(Model)
+	_Model = c_char_p(str.encode(Model))
 	_B0 = np.zeros(_l,dtype='float64')
 	_B1 = np.zeros(_l,dtype='float64')
 	_B2 = np.zeros(_l,dtype='float64')

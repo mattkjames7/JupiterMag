@@ -169,6 +169,7 @@ void Internal::_CoeffGrids() {
 		for (m=0;m<=n;m++) {
 			g_[n][m] = 0.0;
 			h_[n][m] = 0.0;
+			
 		}
 	}	
 	
@@ -199,7 +200,7 @@ void Internal::_Legendre(int l, double *costheta, double *sintheta,
 	/* now recurse through the rest of them */
 	double n21,onenm,nm1;
 	for (n=2;n<=nmax_;n++) {
-		n21 = 2.0*n + 1.0;
+		n21 = 2.0*n - 1.0;
 		for (m=0;m<=n;m++) {
 			if (m < n-1) {
 				/* this case is the more complicated one, where we need
@@ -215,7 +216,9 @@ void Internal::_Legendre(int l, double *costheta, double *sintheta,
 				for (i=0;i<l;i++) {
 					Pnm[n][m][i] = n21*sintheta[i]*Pnm[n-1][m-1][i];
 					dPnm[n][m][i] = n21*(costheta[i]*Pnm[n-1][m-1][i] + sintheta[i]*dPnm[n-1][m-1][i]);
-				}				
+				}
+				
+				
 			}
 		}
 	}
