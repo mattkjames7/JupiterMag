@@ -6,6 +6,7 @@
 #include <string.h>
 
 #endif
+using namespace std;
 
 /* we want to initialize the model objects witht heir parameters */
 Internal vip4("VIP4");
