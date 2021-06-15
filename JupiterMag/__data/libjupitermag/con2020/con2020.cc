@@ -24,12 +24,22 @@ void Con2020::_SysIII2Mag(int n, double *x0, double *y0, double *z0,
 	
 	
 	/* some temporary variables which get used more than once */
-	double sint, cost, costcs, sintcs, theta, phi;
+	double sindt, cosdt, cosds, sinds, xt;
+	sinds = sin(dipshift_);
+	cosds = cos(dipshift_);
+	sindt = sin(diptilt_);
+	cosdt = cos(diptilt_);
+	
 	
 	int i;
 	for (i=0;i<n;i++) {
-		/* set up temp vars */
-		sint = sin(
+		/*intermediate value for x */
+		xt = x0[i]*cosds + y0[i]*sinds[i];
+		
+		/*newly rotated coords */
+		x1[i] = xt*cosdt + z[i]sindt;
+		y1[i] = y[i]*cosds - x[i]*sinds;
+		z1[i] = z[i]*cosdt - xt*sindt;
 	}
 	
 					
