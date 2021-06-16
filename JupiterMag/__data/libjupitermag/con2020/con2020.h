@@ -40,4 +40,7 @@ class Con2020 {
 		
 		/* coordinate conversion for magnetic field vector */
 		
+		/* Azimuthal field */
+		_AzimuthalField(int,double*,double*);
+		
 };
