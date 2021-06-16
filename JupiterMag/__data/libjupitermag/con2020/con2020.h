@@ -34,8 +34,8 @@ class Con2020 {
 		
 		
 		/* coordinate conversions for positions */
-		void _SysIII2Mag(int,double*,double*,double*,double*,double*,double*);
-		void _PolSysIII2Mag(int,double*,double*,double*,double*,double*,double*);
+		void _SysIII2Mag(int,double*,double*,double*,double*,double*,double*,double*);
+		void _PolSysIII2Mag(int,double*,double*,double*,double*,double*,double*,double*);
 		
 		
 		/* coordinate conversion for magnetic field vector */

@@ -20,11 +20,12 @@ Con2020::Con2020() {
 }
 
 void Con2020::_SysIII2Mag(int n, double *x0, double *y0, double *z0,
-						double *x1, double *y1, double *z1) {
+						double *x1, double *y1, double *z1, double *rho,
+						double *sint, double *cost, double *sinp, double *cosp) {
 	
 	
 	/* some temporary variables which get used more than once */
-	double sindt, cosdt, cosds, sinds, xt;
+	double sindt, cosdt, cosds, sinds, xt, theta, phi;
 	sinds = sin(dipshift_);
 	cosds = cos(dipshift_);
 	sindt = sin(diptilt_);
@@ -40,13 +41,25 @@ void Con2020::_SysIII2Mag(int n, double *x0, double *y0, double *z0,
 		x1[i] = xt*cosdt + z[i]sindt;
 		y1[i] = y[i]*cosds - x[i]*sinds;
 		z1[i] = z[i]*cosdt - xt*sindt;
+		
+		rho[i] = sqrt(x1[i]*x1[i] + y1[i]*y1[i]);
+		
+		r = sqrt(x0[i]*x1[i] + y0[i]*y0[i] + z0[i]*z0[i]);
+		theta = acos(z0[i]/r);
+		phi = fmod((atan2(y0[i],x0[i]) + 2*M_PI),2*M_PI);
+		
+		sint[i] = sin(theta);
+		cost[i] = cos(theta);
+		sinp[i] = sin(phi);
+		cosp[i] = cos(phi);
 	}
 	
 					
 }
 
 void Con2020::_PolSysIII2Mag(int n, double *r, double *t, double *p,
-						double *x1, double *y1, double *z1) {
+						double *x1, double *y1, double *z1, double *rho,
+						double *sint, double *cost, double *sinp, double *cosp) {
 	
 	
 	/* some temporary variables which get used more than once */
@@ -59,8 +72,12 @@ void Con2020::_PolSysIII2Mag(int n, double *r, double *t, double *p,
 	int i;
 	for (i=0;i<n;i++) {
 		/* temporary variables */
-		rsint = r[i]*sin(t[i]);
-		rcost = r[i]*cos(t[i]);
+		sint[i] = sin(t[i]);
+		cost[i] = cos(t[i]);
+		sinp[i] = sin(p[i]);
+		cosp[i] = cos(p[i]);
+		rsint = r[i]*sint[i];
+		rcost = r[i]*cost[i];
 		sinp = sin(p[i] - dipshift_);
 		cosp = cos(p[i] - dipshift_);		
 		
@@ -68,9 +85,84 @@ void Con2020::_PolSysIII2Mag(int n, double *r, double *t, double *p,
 		x1[i] = rsint*cosp*cosdt + rcost*sindt;
 		y1[i] = rsint*sinp;
 		z1[i] = rcost*rcosdt - rsint*cosp*sindt;
+		
+		rho[i] = sqrt(x1[i]*x1[i] + y1[i]*y1[i]);
+		
 	}
 	
 					
+}
+
+void Con2020::_BMag2SysIII(int n, double *x, double *y, double *rho,
+				double *Brho, double *Bphi, double *Bz,
+				double *Bxo, double *Byo, double *Bzo) {
+
+	double sindt, cosdt, sinds, cosds, cospl, sinpl;
+	double Bx1, By1, Bx2;
+
+	sindt = sin(diptilt_);
+	cosdt = cos(diptilt_);
+	sinds = sin(dipshift_);
+	cosds = cos(dipshift_);
+	
+	int i;
+	for (i=0;i<n;i++) {
+		
+		/* rotating longitude */
+		cospl = x[i]/rho[i];
+		sinpl = y[i]/rho[i];
+		Bx1 = Brho[i]*cospl - Bphi[i]*sinpl;
+		By1 = Brho[i]*sinpl + Bphi[i]*cospl;
+		
+		/* rotate back by dipole tilt */
+		Bx2 = Bx1*cosdt - Bz[i]*sindt;
+		Bzo[i] = Bx1*sindt + Bz[i]*cosdt;
+		
+		/* shift to System III */
+		Bxo[i] = Bx2*cosds - By1*sinds;
+		Byo[i] = By1*cosds + Bx2*sinds;
+		
+	}
+	
+}
+
+void Con2020::_BMag2PolSysIII(int n, double *x, double *y, double *rho,
+				double *sint, double *cost, double *sinp, double *cosp,
+				double *Brho, double *Bphi, double *Bz,
+				double *Br, double *Bt, double *Bp) {
+
+	double sindt, cosdt, sinds, cosds, cospl, sinpl;
+	double Bx1, By1, Bx2, Bz2, Bx3, By3;
+
+	sindt = sin(diptilt_);
+	cosdt = cos(diptilt_);
+	sinds = sin(dipshift_);
+	cosds = cos(dipshift_);
+	
+	int i;
+	for (i=0;i<n;i++) {
+		
+		/* rotating longitude */
+		cospl = x[i]/rho[i];
+		sinpl = y[i]/rho[i];
+		Bx1 = Brho[i]*cospl - Bphi[i]*sinpl;
+		By1 = Brho[i]*sinpl + Bphi[i]*cospl;
+		
+		/* rotate back by dipole tilt */
+		Bx2 = Bx1*cosdt - Bz[i]*sindt;
+		Bz2 = Bx1*sindt + Bz[i]*cosdt;
+		
+		/* shift to System III */
+		Bx3 = Bx2*cosds - By1*sinds;
+		By3 = By1*cosds + Bx2*sinds;
+		
+		/* convert to polar */
+		Br[i] = Bx3*sint[i]*cosp[i] + By3*sint[i]*sinp[i] + Bz2*cost[i];
+		Bt[i] = Bx3*cost[i]*cosp[i] + By3*cost[i]*sint[i] + Bz2*sint[i];
+		Bp[i] = -Bx3*sinp[i] + By3*cosp[i];
+		
+	}
+	
 }
 
 void Con2020::AzimuthalField(int n, double *rho, double *z, double *zabs, double *Bphi) {
@@ -100,21 +192,27 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 	double *x = new double[n];
 	double *y = new double[n];
 	double *z = new double[n];
+	double *sint = new double[n];
+	double *sinp = new double[n];
+	double *cost = new double[n];
+	double *cosp = new double[n];
+	double *rho = new double[n];
 	double *Brho = new double[n];
 	double *Bphi = new double[n];
 	double *Bz = new double[n];
+	double *Brhoo = new double[n];
+	double *Bzo = new double[n];
 
 	/* convert input coordinates to the coordinate system used by the model */
 	if (PolIn) {
 		/* this will convert spherical polar to the Cartesian model coordinates */
-		_PolSysIII2Mag(n,p0,p1,p2,x,y,z);
+		_PolSysIII2Mag(n,p0,p1,p2,x,y,z,rho,sint,cost,sinp,cosp);
 	} else { 
 		/* this will convert Cartesian System III coordinates to the model coords */
-		_SysIII2Mag(n,p0,p1,p2,x,y,z);
+		_SysIII2Mag(n,p0,p1,p2,x,y,z,rho,sint,cost,sinp,cosp);
 	}
 	
 	/* calculate rho */
-	double *rho = new double[n];
 	for (i=0;i<n;i++) {
 		rho[i] = sqrt(x[i]*x[i] + y[i]*y[i] + z[i]*z[i]);
 	}
@@ -141,7 +239,7 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 	} else {
 		/* the hybrid approach */
 		for (i=0;i<n;i++) {
-			if ((fabs(z[i]) <= d15) || (fabs(rho[i]-r0) <= 2.0)) {
+			if ((fabs(z[i]) <= d15) || (fabs(rho[i]-r0_) <= 2.0)) {
 				indint[nint] = i;
 				nint++;
 			} else { 
@@ -221,8 +319,14 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 	}	
 	
 	/* calculate the outer edge of the current sheet */
-	_SolveAnalytic(n,x,y,z,Brho,Bz,r1_);	
-		
+	_SolveAnalytic(n,x,y,z,Brhoo,Bzo,r1_);	
+	
+	/* subtract outer contribution from inner one */
+	for (i=0;i<n;i++) {
+		Brho[i] = Brho[i] - Brhoo[i];
+		Bz[i] = Bz[i] - Bzo[i];
+	}
+	
 	/* calculate azimuthal field */	
 	_AzimuthalField(n,z,Bphi);
 		
@@ -232,7 +336,7 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 		 * Cartesian components of the field oriented such that there
 		 * is a radial component, phi component and theta component - as
 		 * opposed to a magnitude and two angles) */
-		 _BMag2Pol(n,x,y,z,rho,Brho,Bphi,Bz,B0,B1,B2);
+		 _BMag2PolSysIII(n,x,y,z,rho,sint,cost,sinp,cosp,Brho,Bphi,Bz,B0,B1,B2);
 	} else {
 		/* convert to System III Cartesian */
 		_BMag2SysIII(n,x,y,z,rho,Brho,Bphi,Bz,B0,B1,B2);
@@ -246,5 +350,22 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 	delete[] rho;
 	delete[] indint;
 	delete[] indana;
+	delete[] sint;
+	delete[] sinp;
+	delete[] cost;
+	delete[] cosp;
+	delete[] Brho;
+	delete[] Bphi;
+	delete[] Bz;
+	delete[] Brhoo;
+	delete[] Bzo;
+
 	
+}
+
+
+void Con2020::_SolveAnalytic(int n, double *x, double *y, double *z, 
+				double *Brho, double *Bz, double rx) {
+	
+				
 }
