@@ -542,7 +542,7 @@ void Con2020::_SolveIntegral(int n, double *rho, double *z,
 		if (absz[i] > d) {
 			/* in this case we want to use equations 14 and 15 outside
 			 * of the finite current sheet */
-			_IntegrateEq14(chind[i],rho[i],absz[i],&Brho[i]);
+			_IntegrateEq14(chind[i],rho[i],z[i],absz[i],&Brho[i]);
 			_IntegrateEq15(chind[i],rho[i],absz[i],&Bz[i]);
 			 
 		} else { 
@@ -553,9 +553,11 @@ void Con2020::_SolveIntegral(int n, double *rho, double *z,
 		}
 	}
 	
+	delete[] chind;
+	
 }	
 	
-void Con2020::_IntegrateEq14(int zcase, double rho, double absz, double *Brho) {
+void Con2020::_IntegrateEq14(int zcase, double rho, double z, double absz, double *Brho) {
 	
 	/* create an array to integrate over */
 	int n = rnbes_[zcase];
@@ -573,7 +575,10 @@ void Con2020::_IntegrateEq14(int zcase, double rho, double absz, double *Brho) {
 	}
 	
 	/* integrate it */
-	Brho[0] = trapc(n,dlambda_brho_,func);
+	Brho[0] = sgn(z)*2.0*mui_*trapc(n,dlambda_brho_,func);
+	
+	delete[] func;
+	delete[] j1lr;
 	
 }
 	
@@ -596,9 +601,65 @@ void Con2020::_IntegrateEq15(int zcase, double rho, double absz, double *Bz) {
 	}
 	
 	/* integrate it */
-	Bz[0] = trapc(n,dlambda_bz_,func);
+	Bz[0] = 2.0*mui_*trapc(n,dlambda_bz_,func);
+
+	delete[] func;
+	delete[] j1lr;
 	
 }
 	
 					
+	
+void Con2020::_IntegrateEq17(int zcase, double rho, double z, double *Brho) {
+	
+	/* create an array to integrate over */
+	int n = rnbes_[zcase];
+	double *func = new double[n];
+	double *j1lr = new double[n];
+	
+	/* calculate the other bessel function */
+	j1(n,&rlambda_[zcase][0],rho,j1lr);
+	
+	
+	/* calculate the function */
+	int i;
+	for (i=0;i<n;i++) {
+		func[i] = Eq17_[i]*j1lr[i]*sinh(rlambda_[zcase][i]*z);
+	}
+	
+	/* integrate it */
+	Brho[0] = 2.0*mui_*trapc(n,dlambda_brho_,func);
+
+	delete[] func;
+	delete[] j1lr;
+	
 }
+	
+					
+void Con2020::_IntegrateEq18(int zcase, double rho, double z, double *Bz) {
+	
+	/* create an array to integrate over */
+	int n = znbes_[zcase];
+	double *func = new double[n];
+	double *j0lr = new double[n];
+	
+	/* calculate the other bessel function */
+	j0(n,&zlambda_[zcase][0],rho,j1lr);
+	
+	
+	/* calculate the function */
+	int i;
+	for (i=0;i<n;i++) {
+		func[i] = Eq18_[i]*j0lr[i]*(1.0 - ExpLambdaD_[zcase][i][*cosh(zlambda_[zcase][i]*z));
+	}
+	
+	/* integrate it */
+	Bz[0] = 2.0*mui_*trapc(n,dlambda_bz_,func);
+
+	delete[] func;
+	delete[] j1lr;
+	
+}
+	
+					
+

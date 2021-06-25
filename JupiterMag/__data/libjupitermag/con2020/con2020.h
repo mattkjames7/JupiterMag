@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "bessel.h"
+#include "sgn.h"
 #define deg2rad = M_PI/180.0;
 #endif
 using namespace std;
