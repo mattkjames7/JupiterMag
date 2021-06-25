@@ -5,6 +5,7 @@
 #include <math.h>
 #include "bessel.h"
 #include "sgn.h"
+#include "clip.h"
 #define deg2rad = M_PI/180.0;
 #endif
 using namespace std;
@@ -67,13 +68,34 @@ class Con2020 {
 
 
 		/* coordinate conversions for positions */
-		void _SysIII2Mag(int,double*,double*,double*,double*,double*,double*,double*);
-		void _PolSysIII2Mag(int,double*,double*,double*,double*,double*,double*,double*);
+		void _SysIII2Mag(int,double*,double*,double*,double*,double*,double*,double*,double*,double*,double*,double*,double*);
+		void _PolSysIII2Mag(int,double*,double*,double*,double*,double*,double*,double*,double*,double*,double*,double*,double*);
 		
 		
 		/* coordinate conversion for magnetic field vector */
-		
+		void _BMag2SysIII(int,double*,double*,double*,double*,double*,
+							double*,double*,double*,double*);
+		void _BMag2PolSysIII(int,double*,double*,double*,double*,
+							double*,double*,double*,double*,double*,
+							double*,double*,double*,double*);				
+							
 		/* Azimuthal field */
-		_AzimuthalField(int,double*,double*);
+		void _AzimuthalField(int,double*,double*,double*,double*);
 		
+		/* analytic equations */
+		void _SolveAnalytic(int,double*,double*,double,double*,double*);
+		void _LargeRhoConnerney(double,double,double,double,double,double*,double*);
+		void _SmallRhoConnerney(double,double,double,double,double,double*,double*);
+		void _LargeRhoEdwards(double,double,double,double,double,double*,double*);
+		void _SmallRhoEdwards(double,double,double,double,double*,double*);
+		
+		/* integral-related functions */
+		void _InitIntegrals();
+		void _DeleteIntegrals();
+		void _IntegralChecks(int,double*,int*,int[]);
+		void _SolveIntegral(int,double*,double*,double*,double*,double*);
+		void _IntegrateEq14(int,double,double,double,double*);
+		void _IntegrateEq15(int,double,double,double*);
+		void _IntegrateEq17(int,double,double,double*);
+		void _IntegrateEq18(int,double,double,double*);
 };

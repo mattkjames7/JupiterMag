@@ -368,10 +368,142 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 }
 
 
-void Con2020::_SolveAnalytic(int n, double *x, double *y, double *z, 
-				double *Brho, double *Bz, double rx) {
+void Con2020::_SolveAnalytic(int n, double *rho, double *z, double a, 
+				double *Brho, double *Bz) {
 	
-				
+	int i;
+	double zpd, zmd, a2;
+	a2 = a*a;
+	if (Edwards_) {
+		/* solve the Edwards et al equations */
+		for (i=0;i<n;i++) {
+			zpd = z[i] + d_;
+			zmd = z[i] - d_;
+			if (rho[i] >= a) {
+				/* large rho approximation */
+				_LargeRhoEdwards(rho[i],z[i],zmd,zpd,a2,&Brho[i],&Bz[i]);
+			} else {
+				/* small rho approximation */
+				_SmallRhoEdwards(rho[i],zmd,zpd,a2,&Brho[i],&Bz[i]);
+			}
+		}
+	} else { 
+		/* Solve the Connerney et al equations */
+		for (i=0;i<n;i++) {
+			zpd = z[i] + d_;
+			zmd = z[i] - d_;
+			if (rho[i] >= a) {
+				/* large rho approximation */
+				_LargeRhoConnerney(rho[i],z[i],zmd,zpd,a2,&Brho[i],&Bz[i]);
+			} else {
+				/* small rho approximation */
+				_SmallRhoConnerney(rho[i],z[i],zmd,zpd,a2,&Brho[i],&Bz[i]);
+			}
+		}		
+	}
+}
+
+void Con2020::_LargeRhoConnerney(double rho, double z, double zmd, 
+					double zpd, double a2, double *Brho, double *Bz) {
+
+	
+	/* some common variables */
+	double zmd2 = zmd*zmd;
+	double zpd2 = zpd*zpd;
+	double rho2 = rho*rho;
+	double f1 = sqrt(zmd2 + rho2);
+	double f2 = sqrt(zpd2 + rho2);
+	double f1cubed = f1*f1*f1;
+	double f2cubed = f2*f2*f2;
+	
+	/* Equation A7 */
+	double termr0 = (1.0/rho)*(f1 -f2 + 2*clip(z,-d_,d_));
+	double termr1 = (a2*rho/4.0)*(1/f1cubed - 1/f2cubed);
+	Brho[0] = mui_*(termr0 - termr1);
+	
+	/* Equation A8 */
+	double termz0 = 2*d_/sqrt(z*z + rho*rho);
+	double termz1 = (a2/4.0)*(zmd/f1cubed - zpd/f2cubed);
+	Bz[0] = mui_*(termz0 - termz1);
+		
+}
+
+void Con2020::_SmallRhoConnerney(double rho, double z, double zmd, double zpd, 
+								double a2, double *Brho, double *Bz) {
+
+	
+	double zmd2 = zmd*zmd;
+	double zpd2 = zpd*zpd;
+	double f1 = sqrt(zmd2 + a2);
+	double f2 = sqrt(zpd2 + a2);
+	double f1cubed = f1*f1*f1;
+	double f2cubed = f2*f2*f2;
+
+	/* Equation A1 */
+	Brho[0] = mui_*(rho/2.0)*(1.0/f1 - 1.0/f2);
+	
+	/* Equation A2 */
+	Bz[0] = mui_*(2*d_*(1/np.sqrt(z*z + a2)) - ((rho*rho)/4)*((zmd/f1cubed) - (zpd/f2cubed)))	
+
+}
+
+
+void Con2020::_LargeRhoEdwards(double rho, double z, double zmd,
+					double zpd, double a2,double *Brho, double *Bz) {
+	
+	
+	/* some common variables */
+	double zmd2 = zmd*zmd;
+	double zpd2 = zpd*zpd;
+	double rho2 = rho*rho;
+	double f1 = sqrt(zmd2 + rho2);
+	double f2 = sqrt(zpd2 + rho2);
+	double f1cubed = f1*f1*f1;
+	double f2cubed = f2*f2*f2;
+	
+	/* equation 13a */
+	double terma0 = (1.0/rho)*(f1 - f2);
+	double terma1 = (rho*a2/4)*(1.0/f2cubed - 1.0/f1cubed);
+	double terma2 = (2.0/rho)*clip(z,-d_,d_);
+	Brho[0] = mui_*(terma0 + terma1 + terma2);
+	
+	/* equation 13b */
+	double termb0 = log((zpd + f2)/(zmd + f1));
+	double termb1 = (a2/4.0)*(zpd/f2cubed - zmd/f1cubed);
+	Bz[0] = mui_*(termb0 + termb1)		
+}
+
+
+void Con2020::_SmallRhoEdwards(double rho, double zmd, double zpd, 
+					double a2, double *Brho, double *Bz) { 
+	
+	double zmd2 = zmd*zmd;
+	double zpd2 = zpd*zpd;
+	double f1 = sqrt(zmd2 + a2);
+	double f2 = sqrt(zpd2 + a2);
+	double f1cubed = f1*f1*f1;
+	double f2cubed = f2*f2*f2;
+	
+	/* calculate some of the common terms from equations 9a and 9b */
+	double rhoov2 = rho/2.0;
+	double rho2ov4 = rhoov2*rhoov2;
+	double rho3ov16 = rho2ov4*rhoov2/2.0;
+	
+	/* equation 9a */
+	double f3a = f1*f1;
+	double f4a = f2*f2;
+	double f3 = (a2 - 2*zmd2)/(f3a*f3a*f1);
+	double f4 = (a2 - 2*zpd2)/(f4a*f4a*f2);
+	
+	double terma0 = rhoov2*(1.0/f1 - 1.0/f2);
+	double terma1 = rho3ov16*(f3 - f4);
+	
+	Brho[0] = mui_*(terma0 + terma1);
+	
+	/* equation 9b */
+	double termb0 = log((zpd + f2)/(zmd + f1));
+	double termb1 = rho2ov4*(zpd/f2cubed - zmd/f1cubed);
+	double Bz[0] = mui_*(termb0 + termb1);
 }
 
 
