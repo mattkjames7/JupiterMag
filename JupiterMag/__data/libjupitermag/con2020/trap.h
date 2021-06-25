@@ -7,3 +7,4 @@
 
 
 double trap(int n, double *x, double *y);
+double trapc(int n, double dx, double *y);
