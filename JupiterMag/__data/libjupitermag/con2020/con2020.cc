@@ -1,7 +1,8 @@
-#include "cn2020.h"
+#include "con2020.h"
 
 Con2020::Con2020() {
 	/* set all model parameters to their default values */
+	printf("Con2020 Init\n");
 	mui_ = 139.6;
 	irho_ = 16.7;
 	r0_ = 7.8;
@@ -21,6 +22,10 @@ Con2020::Con2020() {
 	
 	
 }
+Con2020::~Con2020() {
+	printf("Deleting Con2020\n");
+	_DeleteIntegrals();
+}
 
 void Con2020::_SysIII2Mag(int n, double *x0, double *y0, double *z0,
 						double *x1, double *y1, double *z1, double *rho, double *absz,
@@ -28,25 +33,25 @@ void Con2020::_SysIII2Mag(int n, double *x0, double *y0, double *z0,
 	
 	
 	/* some temporary variables which get used more than once */
-	double sincst, coscst, coscss, sincss, xt, theta, phi;
-	sincss = sin(csshift_);
-	coscss = cos(csshift_);
-	sincst = sin(cstilt_);
-	coscst = cos(cstilt_);
+	double sincst, coscst, coscss, sincss, xt, theta, phi, r;
+	sincss = sin(dipshift_);
+	coscss = cos(dipshift_);
+	sincst = sin(diptilt_);
+	coscst = cos(diptilt_);
 	
 	
 	int i;
 	for (i=0;i<n;i++) {
 		/*intermediate value for x */
-		xt = x0[i]*coscss + y0[i]*sincss[i];
+		xt = x0[i]*coscss + y0[i]*sincss;
 		
 		/*newly rotated coords */
-		x1[i] = xt*coscst + z0[i]sincst;
+		x1[i] = xt*coscst + z0[i]*sincst;
 		y1[i] = y0[i]*coscss - x0[i]*sincss;
 		z1[i] = z0[i]*coscst - xt*sincst;
 		
 		rho[i] = sqrt(x1[i]*x1[i] + y1[i]*y1[i]);
-		absz[i] = fabs(z[i]);
+		absz[i] = fabs(z1[i]);
 		
 		r = sqrt(x0[i]*x0[i] + y0[i]*y0[i] + z0[i]*z0[i]);
 		theta = acos(z0[i]/r);
@@ -67,7 +72,7 @@ void Con2020::_PolSysIII2Mag(int n, double *r, double *t, double *p,
 	
 	
 	/* some temporary variables which get used more than once */
-	double sindt, cosdt, cosp, sinp, rsint, rcost;
+	double sindt, cosdt, cospds, sinpds, rsint, rcost;
 
 	sindt = sin(diptilt_);
 	cosdt = cos(diptilt_);
@@ -82,16 +87,16 @@ void Con2020::_PolSysIII2Mag(int n, double *r, double *t, double *p,
 		cosp[i] = cos(p[i]);
 		rsint = r[i]*sint[i];
 		rcost = r[i]*cost[i];
-		sinp = sin(p[i] - dipshift_);
-		cosp = cos(p[i] - dipshift_);		
+		sinpds = sin(p[i] - dipshift_);
+		cospds = cos(p[i] - dipshift_);		
 		
 		/*newly rotated coords */
-		x1[i] = rsint*cosp*cosdt + rcost*sindt;
-		y1[i] = rsint*sinp;
-		z1[i] = rcost*rcosdt - rsint*cosp*sindt;
+		x1[i] = rsint*cospds*cosdt + rcost*sindt;
+		y1[i] = rsint*sinpds;
+		z1[i] = rcost*cosdt - rsint*cospds*sindt;
 		
 		rho[i] = sqrt(x1[i]*x1[i] + y1[i]*y1[i]);
-		absz[i] = fabs(z[i]);
+		absz[i] = fabs(z1[i]);
 		
 	}
 	
@@ -170,14 +175,14 @@ void Con2020::_BMag2PolSysIII(int n, double *x, double *y, double *rho,
 	
 }
 
-void Con2020::AzimuthalField(int n, double *rho, double *z, double *zabs, double *Bphi) {
+void Con2020::_AzimuthalField(int n, double *rho, double *z, double *absz, double *Bphi) {
 	
 	int i;
 	for (i=0;i<n;i++) {
 		Bphi[i] = 2.7975*irho_/rho[i];
 		
-		if (zabs[i] < d_) {
-			Bphi[i] = Bphi[i]*zabs[i]/d_;
+		if (absz[i] < d_) {
+			Bphi[i] = Bphi[i]*absz[i]/d_;
 		}
 		
 		if (z[i] > 0.0) {
@@ -254,26 +259,26 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 	}
 	
 	/* more temporary position arrays */
-	double *xi, *yi, *zi, *Brhoi, *Bzi;	
+	double *rhoi, *zi, *abszi, *Brhoi, *Bzi;	
 	
 	/* call integral function if needed */
 	if (nint > 0) {
 		/* allocate temporary variables */
-		xi = new double[nint];
-		yi = new double[nint];
+		rhoi = new double[nint];
 		zi = new double[nint];
+		abszi = new double[nint];
 		Brhoi = new double[nint];
 		Bzi = new double[nint];
 		
 		/* move positions into new array */
 		for (i=0;i<nint;i++) {
-			xi[i] = x[indint[i]];
-			yi[i] = y[indint[i]];
+			rhoi[i] = rho[indint[i]];
 			zi[i] = z[indint[i]];
+			abszi[i] = absz[indint[i]];
 		}
 		
 		/* call the integral model */
-		_SolveIntegral(nint,xi,yi,zi,Bxi,Byi,Bzi);
+		_SolveIntegral(nint,rhoi,zi,abszi,Brhoi,Bzi);
 		
 		/* move into the new array */
 		for (i=0;i<nint;i++) {
@@ -282,9 +287,9 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 		}
 		
 		/* deallocate temporary vars */
-		delete[] xi;
-		delete[] yi;
+		delete[] rhoi;
 		delete[] zi;
+		delete[] abszi;
 		delete[] Brhoi;
 		delete[] Bzi;
 	}
@@ -292,21 +297,19 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 	/* call analytical fucntion if needed */
 	if (nana > 0) {
 		/* allocate temporary variables */
-		xi = new double[nana];
-		yi = new double[nana];
+		rhoi = new double[nana];
 		zi = new double[nana];
 		Brhoi = new double[nana];
 		Bzi = new double[nana];
 		
 		/* move positions into the new array */
 		for (i=0;i<nana;i++) {
-			xi[i] = x[indana[i]];
-			yi[i] = y[indana[i]];
+			rhoi[i] = rho[indana[i]];
 			zi[i] = z[indana[i]];
 		}
 		
 		/* call the analytical model */
-		_SolveAnalytic(nana,xi,yi,zi,Brhoi,Bzi,r0_);
+		_SolveAnalytic(nana,rhoi,zi,r0_,Brhoi,Bzi);
 		
 		/* move into the new array */
 		for (i=0;i<nana;i++) {
@@ -315,15 +318,14 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 		}
 		
 		/* deallocate temporary vars */
-		delete[] xi;
-		delete[] yi;
+		delete[] rhoi;
 		delete[] zi;
 		delete[] Brhoi;
 		delete[] Bzi;
 	}	
 	
 	/* calculate the outer edge of the current sheet */
-	_SolveAnalytic(n,x,y,z,Brhoo,Bzo,r1_);	
+	_SolveAnalytic(n,rho,z,r1_,Brhoo,Bzo);	
 	
 	/* subtract outer contribution from inner one */
 	for (i=0;i<n;i++) {
@@ -332,7 +334,7 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 	}
 	
 	/* calculate azimuthal field */	
-	_AzimuthalField(n,z,Bphi);
+	_AzimuthalField(n,rho,z,absz,Bphi);
 		
 	/* convert B field back to appropriate coordinate system */
 	if (PolOut) {
@@ -340,10 +342,10 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 		 * Cartesian components of the field oriented such that there
 		 * is a radial component, phi component and theta component - as
 		 * opposed to a magnitude and two angles) */
-		 _BMag2PolSysIII(n,x,y,z,rho,sint,cost,sinp,cosp,Brho,Bphi,Bz,B0,B1,B2);
+		 _BMag2PolSysIII(n,x,y,rho,sint,cost,sinp,cosp,Brho,Bphi,Bz,B0,B1,B2);
 	} else {
 		/* convert to System III Cartesian */
-		_BMag2SysIII(n,x,y,z,rho,Brho,Bphi,Bz,B0,B1,B2);
+		_BMag2SysIII(n,x,y,rho,Brho,Bphi,Bz,B0,B1,B2);
 	}
 				
 				
@@ -351,6 +353,7 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 	delete[] x;
 	delete[] y;
 	delete[] z;
+	delete[] absz;
 	delete[] rho;
 	delete[] indint;
 	delete[] indana;
@@ -443,7 +446,7 @@ void Con2020::_SmallRhoConnerney(double rho, double z, double zmd, double zpd,
 	Brho[0] = mui_*(rho/2.0)*(1.0/f1 - 1.0/f2);
 	
 	/* Equation A2 */
-	Bz[0] = mui_*(2*d_*(1/np.sqrt(z*z + a2)) - ((rho*rho)/4)*((zmd/f1cubed) - (zpd/f2cubed)))	
+	Bz[0] = mui_*(2*d_*(1/sqrt(z*z + a2)) - ((rho*rho)/4)*((zmd/f1cubed) - (zpd/f2cubed)));
 
 }
 
@@ -470,7 +473,7 @@ void Con2020::_LargeRhoEdwards(double rho, double z, double zmd,
 	/* equation 13b */
 	double termb0 = log((zpd + f2)/(zmd + f1));
 	double termb1 = (a2/4.0)*(zpd/f2cubed - zmd/f1cubed);
-	Bz[0] = mui_*(termb0 + termb1)		
+	Bz[0] = mui_*(termb0 + termb1);
 }
 
 
@@ -503,7 +506,7 @@ void Con2020::_SmallRhoEdwards(double rho, double zmd, double zpd,
 	/* equation 9b */
 	double termb0 = log((zpd + f2)/(zmd + f1));
 	double termb1 = rho2ov4*(zpd/f2cubed - zmd/f1cubed);
-	double Bz[0] = mui_*(termb0 + termb1);
+	Bz[0] = mui_*(termb0 + termb1);
 }
 
 
@@ -531,7 +534,7 @@ void Con2020::_InitIntegrals() {
 	rlambda_ = new double*[6];
 	zlambda_ = new double*[6];
 	rj0_lambda_r0_ = new double*[6];
-	zj0_lambda_r0__ = new double*[6];
+	zj0_lambda_r0_ = new double*[6];
 	
 	/*These functions do change and will need reassigning
 	 * for each run of the integral function*/
@@ -548,12 +551,12 @@ void Con2020::_InitIntegrals() {
 	
 
 	/* initialize the second dimensions */
-	int zcase;
+	int zcase, i;
 	double ld;
 	for (zcase=0;zcase<6;zcase++) {
 		/* calculate the length of the arrays for each case */
-		rnbes_[zcase] = (int) (lmx_br_array_[zcase]/dlambda_brho_);
-		znbes_[zcase] = (int) (lmx_bz_array_[zcase]/dlambda_bz_);
+		rnbes_[zcase] = (int) (rlmx_array_[zcase]/dlambda_brho_);
+		znbes_[zcase] = (int) (zlmx_array_[zcase]/dlambda_bz_);
 		
 		/* allocate the second dimension */
 		rlambda_[zcase] = new double[rnbes_[zcase]];
@@ -566,7 +569,7 @@ void Con2020::_InitIntegrals() {
 		Eq15_[zcase] = new double[znbes_[zcase]];
 		Eq17_[zcase] = new double[rnbes_[zcase]];
 		Eq18_[zcase] = new double[znbes_[zcase]];
-		ExpLambdaD__[zcase] = new double[znbes_[zcase]];
+		ExpLambdaD_[zcase] = new double[znbes_[zcase]];
 		
 		/* initialize lambda for z and rho cases */
 		for (i=0;i<rnbes_[zcase];i++) {
@@ -577,19 +580,19 @@ void Con2020::_InitIntegrals() {
 		}
 	
 		/* calculate j0(r0*lambda) */
-		j0(rlambda_,r0_,rj0_lambda_r0_[zcase]);
-		j0(zlambda_,r0_,zj0_lambda_r0_[zcase]);
+		j0(rnbes_[zcase],&rlambda_[zcase][0],r0_,&rj0_lambda_r0_[zcase][0]);
+		j0(znbes_[zcase],&zlambda_[zcase][0],r0_,&zj0_lambda_r0_[zcase][0]);
 		
 		/* equations */
 		for (i=0;i<rnbes_[zcase];i++) {
-			ld = d_*rlambda_[i];
-			Eq14_[zcase][i] = rj0_lambda_r0_[i]*sinh(ld)/rlambda_[i];
-			Eq17_[zcase][i] = rj0_lambda_r0_[i]*exp(-ld);
+			ld = d_*rlambda_[zcase][i];
+			Eq14_[zcase][i] = rj0_lambda_r0_[zcase][i]*sinh(ld)/rlambda_[zcase][i];
+			Eq17_[zcase][i] = rj0_lambda_r0_[zcase][i]*exp(-ld);
 		}	
-		for (i=0;i<znbas_[zcase];i++) {
-			ld = d_*zlambda_[i];
-			Eq15_[zcase][i] = zj0_lambda_r0_[i]*sinh(ld)/zlambda_[i];
-			Eq18_[zcase][i] = zj0_lambda_r0_[i]/zlambda_[i];
+		for (i=0;i<znbes_[zcase];i++) {
+			ld = d_*zlambda_[zcase][i];
+			Eq15_[zcase][i] = zj0_lambda_r0_[zcase][i]*sinh(ld)/zlambda_[zcase][i];
+			Eq18_[zcase][i] = zj0_lambda_r0_[zcase][i]/zlambda_[zcase][i];
 			ExpLambdaD_[zcase][i] = exp(-ld);
 		}
 	}
@@ -625,7 +628,7 @@ void Con2020::_DeleteIntegrals() {
 	delete[] Eq15_;
 	delete[] Eq17_;
 	delete[] Eq18_;
-	delete[] ExpLambdaD_
+	delete[] ExpLambdaD_;
 	delete[] rnbes_;
 	delete[] znbes_;
 }
@@ -641,9 +644,9 @@ void Con2020::_IntegralChecks(int n, double *absz, int *chind, int ncase[]) {
 		ncase[i] = 0;
 	}
 	
-	for (i=0;i<n;i+=) {
+	for (i=0;i<n;i++) {
 		check1 = fabs(absz[i] - d_);
-		check2 = (absz[i] < d*1.1);
+		check2 = (absz[i] < d_*1.1);
 
 		if (check1 >= 0.7) {
 			chind[i] = 1;
@@ -671,7 +674,7 @@ void Con2020::_SolveIntegral(int n, double *rho, double *z,
 	/* loop through each position */
 	double br, bz;
 	for (i=0;i<n;i++) {
-		if (absz[i] > d) {
+		if (absz[i] > d_) {
 			/* in this case we want to use equations 14 and 15 outside
 			 * of the finite current sheet */
 			_IntegrateEq14(chind[i],rho[i],z[i],absz[i],&Brho[i]);
@@ -703,7 +706,7 @@ void Con2020::_IntegrateEq14(int zcase, double rho, double z, double absz, doubl
 	/* calculate the function */
 	int i;
 	for (i=0;i<n;i++) {
-		func[i] = Eq14_[i]*j1lr[i]*exp(-rlambda_[zcase][i]*absz);
+		func[i] = Eq14_[zcase][i]*j1lr[i]*exp(-rlambda_[zcase][i]*absz);
 	}
 	
 	/* integrate it */
@@ -723,20 +726,20 @@ void Con2020::_IntegrateEq15(int zcase, double rho, double absz, double *Bz) {
 	double *j0lr = new double[n];
 	
 	/* calculate the other bessel function */
-	j0(n,&zlambda_[zcase][0],rho,j1lr);
+	j0(n,&zlambda_[zcase][0],rho,j0lr);
 	
 	
 	/* calculate the function */
 	int i;
 	for (i=0;i<n;i++) {
-		func[i] = Eq15_[i]*j0lr[i]*exp(-zlambda_[zcase][i]*absz);
+		func[i] = Eq15_[zcase][i]*j0lr[i]*exp(-zlambda_[zcase][i]*absz);
 	}
 	
 	/* integrate it */
 	Bz[0] = 2.0*mui_*trapc(n,dlambda_bz_,func);
 
 	delete[] func;
-	delete[] j1lr;
+	delete[] j0lr;
 	
 }
 	
@@ -756,7 +759,7 @@ void Con2020::_IntegrateEq17(int zcase, double rho, double z, double *Brho) {
 	/* calculate the function */
 	int i;
 	for (i=0;i<n;i++) {
-		func[i] = Eq17_[i]*j1lr[i]*sinh(rlambda_[zcase][i]*z);
+		func[i] = Eq17_[zcase][i]*j1lr[i]*sinh(rlambda_[zcase][i]*z);
 	}
 	
 	/* integrate it */
@@ -776,20 +779,20 @@ void Con2020::_IntegrateEq18(int zcase, double rho, double z, double *Bz) {
 	double *j0lr = new double[n];
 	
 	/* calculate the other bessel function */
-	j0(n,&zlambda_[zcase][0],rho,j1lr);
+	j0(n,&zlambda_[zcase][0],rho,j0lr);
 	
 	
 	/* calculate the function */
 	int i;
 	for (i=0;i<n;i++) {
-		func[i] = Eq18_[i]*j0lr[i]*(1.0 - ExpLambdaD_[zcase][i][*cosh(zlambda_[zcase][i]*z));
+		func[i] = Eq18_[zcase][i]*j0lr[i]*(1.0 - ExpLambdaD_[zcase][i]*cosh(zlambda_[zcase][i]*z));
 	}
 	
 	/* integrate it */
 	Bz[0] = 2.0*mui_*trapc(n,dlambda_bz_,func);
 
 	delete[] func;
-	delete[] j1lr;
+	delete[] j0lr;
 	
 }
 	

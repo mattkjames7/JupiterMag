@@ -12,7 +12,7 @@ void j0(int n, double *x, double *j) {
 	double p2 = -0.06207747907;
 	double pt2 = 0.04253832927;
 	double l4 = lambda*lambda;
-	l4 = l4*l4
+	l4 = l4*l4;
 	
 	/* some temporary variables */
 	double x2, A, B, C, l4x2p1, rtl4x2p1, rtrtl4x2p1;
@@ -48,7 +48,7 @@ void j0(int n, double *x, double multx, double *j) {
 	double p2 = -0.06207747907;
 	double pt2 = 0.04253832927;
 	double l4 = lambda*lambda;
-	l4 = l4*l4
+	l4 = l4*l4;
 	
 	/* some temporary variables */
 	double mx, x2, A, B, C, l4x2p1, rtl4x2p1, rtrtl4x2p1;
@@ -83,12 +83,12 @@ void j1(int n, double *x, double *j) {
 	double p0 = 1.776322448;
 	double P1 = -0.03147133771;
 	double p1 = 0.2250803518;
-	double P2 = -(2*lambda**1.5)*q2/np.sqrt(np.pi);
-	double p2 = (2*np.sqrt(lambda))*q2/np.sqrt(np.pi);
+	double P2 = -(2*pow(lambda,1.5))*q2/sqrt(M_PI);
+	double p2 = (2*sqrt(lambda))*q2/sqrt(M_PI);
 	double l2 = lambda*lambda;
 	
 	/* temporary variables */
-	double x2, x4, A, B, X, ac, rtac, bc;
+	double x2, x4, A, B, C, ac, rtac, bc;
 	
 	/* loop through each value */
 	int i;
@@ -101,7 +101,7 @@ void j1(int n, double *x, double *j) {
 		bc = (1 + q1*x2 + q2*x4);
 		B = (p0 + p1*x2 + p2*x4)/bc;
 		C = (x[i]/ac)*(P0 + P1*x2 + P2*x4)/bc;
-		j[i] = A*(B*np.sin(x[i]) + C*np.cos(x[i]));
+		j[i] = A*(B*sin(x[i]) + C*cos(x[i]));
 	}
 
 }
@@ -116,12 +116,12 @@ void j1(int n, double *x, double multx, double *j) {
 	double p0 = 1.776322448;
 	double P1 = -0.03147133771;
 	double p1 = 0.2250803518;
-	double P2 = -(2*lambda**1.5)*q2/np.sqrt(np.pi);
-	double p2 = (2*np.sqrt(lambda))*q2/np.sqrt(np.pi);
+	double P2 = -(2*pow(lambda,1.5))*q2/sqrt(M_PI);
+	double p2 = (2*sqrt(lambda))*q2/sqrt(M_PI);
 	double l2 = lambda*lambda;
 	
 	/* temporary variables */
-	double mx, x2, x4, A, B, X, ac, rtac, bc;
+	double mx, x2, x4, A, B, C, ac, rtac, bc;
 	
 	/* loop through each value */
 	int i;
@@ -135,7 +135,7 @@ void j1(int n, double *x, double multx, double *j) {
 		bc = (1 + q1*x2 + q2*x4);
 		B = (p0 + p1*x2 + p2*x4)/bc;
 		C = (mx/ac)*(P0 + P1*x2 + P2*x4)/bc;
-		j[i] = A*(B*np.sin(mx) + C*np.cos(mx));
+		j[i] = A*(B*sin(mx) + C*cos(mx));
 	}
 
 }

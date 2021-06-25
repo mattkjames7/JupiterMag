@@ -18,7 +18,25 @@ except:
 	os.system(sudo+'make clean')
 	os.system(sudo+'make')
 	os.chdir(CWD)	
-	liblsmodel = ct.CDLL(os.path.dirname(__file__)+"/__data/libjupitermag/internal/libinternal.so")
+	libinternal = ct.CDLL(os.path.dirname(__file__)+"/__data/libjupitermag/internal/libinternal.so")
+
+# check that the con2020 field library exists
+try:
+	libinternal = ct.CDLL(os.path.dirname(__file__)+"/__data/libjupitermag/con2020/libcon2020.so")
+except:
+	print('importing libcon2020.so failed, attempting to recompile')
+	path = os.path.dirname(__file__)
+	if '/usr/local/' in path:
+		sudo = 'sudo '
+	else:
+		sudo = ''
+
+	CWD = os.getcwd()
+	os.chdir(os.path.dirname(__file__)+"/__data/libjupitermag/con2020/")
+	os.system(sudo+'make clean')
+	os.system(sudo+'make')
+	os.chdir(CWD)	
+	libcon2020 = ct.CDLL(os.path.dirname(__file__)+"/__data/libjupitermag/con2020/libcon2020.so")
 
 #define some dtypes
 c_char_p = ct.c_char_p
@@ -47,4 +65,15 @@ _CInternalField.argtypes = [	c_int,			#number of elements
 								c_char_p ]		#Model string
 
 
-
+#con2020 wrapper function
+_CCon2020Field = libcon2020.Con2020Field
+_CCon2020Field.restype = None
+_CCon2020Field.argtypes = [		c_int,			#number of input elements
+								c_double_ptr,	#x/r array
+								c_double_ptr,	#y/t array
+								c_double_ptr,	#z/p array
+								c_double_ptr,	#Bx/Br output array
+								c_double_ptr,	#Bx/Br output array
+								c_double_ptr,	#Bx/Br output array
+								c_bool,			#Polar coordinate input
+								c_bool,]			#Polar coordinate output

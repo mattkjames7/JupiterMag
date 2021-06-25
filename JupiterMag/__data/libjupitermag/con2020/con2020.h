@@ -2,11 +2,13 @@
 #define __CON2020_H__
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include "bessel.h"
 #include "sgn.h"
 #include "clip.h"
-#define deg2rad = M_PI/180.0;
+#include "trap.h"
+#define deg2rad M_PI/180.0;
 #endif
 using namespace std;
 
@@ -26,7 +28,7 @@ class Con2020 {
 		void SetEqType(const char*);
 		
 		/* This function will be used to call the model */
-		Field(int,double*,double*,double*,double*,double*,double*,bool,bool);
+		void Field(int,double*,double*,double*,double*,double*,double*,bool,bool);
 		
 	private:
 		/* model parameters */
@@ -58,9 +60,9 @@ class Con2020 {
 		
 
 		/* integration step sizes */
-		double dlambda_ = 1e-4;
-		double dlambda_brho_ = 1e-4;
-		double dlambda_bz_ = 5e-5;
+		static const double dlambda_ = 1e-4;
+		static const double dlambda_brho_ = 1e-4;
+		static const double dlambda_bz_ = 5e-5;
 		
 		/* Arrays containing maximum lambda values */
 		double rlmx_array_[6];
