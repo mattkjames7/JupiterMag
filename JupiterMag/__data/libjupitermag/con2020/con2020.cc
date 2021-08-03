@@ -16,7 +16,8 @@ Con2020::Con2020() {
 	/* some other values which will only need calculating once */
 	dipshift_ = xt_*deg2rad;
 	diptilt_ = xp_*deg2rad;
-	
+	printf("Current sheet longitude: %f\n",dipshift_);
+	printf("Current sheet tilt: %f\n",diptilt_);
 	/* initialize some things used for integration */
 	_InitIntegrals();
 	
@@ -43,13 +44,14 @@ void Con2020::_SysIII2Mag(int n, double *x0, double *y0, double *z0,
 	int i;
 	for (i=0;i<n;i++) {
 		/*intermediate value for x */
+		printf("x0,y0,z0,: %f %f %f \n",x0[i],y0[i],z0[i]);
 		xt = x0[i]*coscss + y0[i]*sincss;
 		
 		/*newly rotated coords */
 		x1[i] = xt*coscst + z0[i]*sincst;
 		y1[i] = y0[i]*coscss - x0[i]*sincss;
 		z1[i] = z0[i]*coscst - xt*sincst;
-		
+		printf("%f %f %f\n",xt,y1[i],z0[i]);
 		rho[i] = sqrt(x1[i]*x1[i] + y1[i]*y1[i]);
 		absz[i] = fabs(z1[i]);
 		
@@ -57,6 +59,8 @@ void Con2020::_SysIII2Mag(int n, double *x0, double *y0, double *z0,
 		theta = acos(z0[i]/r);
 		phi = fmod((atan2(y0[i],x0[i]) + 2*M_PI),2*M_PI);
 		
+		printf("rtp: %f %f %f\n",r,theta,phi);
+
 		sint[i] = sin(theta);
 		cost[i] = cos(theta);
 		sinp[i] = sin(phi);
@@ -223,7 +227,7 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 		_SysIII2Mag(n,p0,p1,p2,x,y,z,rho,absz,sint,cost,sinp,cosp);
 	}
 	
-	
+	printf("Pos: %f %f %f\n",x[0],y[0],z[0]);
 
 				
 	/* determine which method to use for each point in the inner edge calculation */

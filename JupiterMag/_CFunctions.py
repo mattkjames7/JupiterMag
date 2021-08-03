@@ -22,7 +22,7 @@ except:
 
 # check that the con2020 field library exists
 try:
-	libinternal = ct.CDLL(os.path.dirname(__file__)+"/__data/libjupitermag/con2020/libcon2020.so")
+	libcon2020 = ct.CDLL(os.path.dirname(__file__)+"/__data/libjupitermag/con2020/libcon2020.so")
 except:
 	print('importing libcon2020.so failed, attempting to recompile')
 	path = os.path.dirname(__file__)
