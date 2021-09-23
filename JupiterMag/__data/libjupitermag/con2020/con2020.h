@@ -32,7 +32,7 @@ class Con2020 {
 		
 	private:
 		/* model parameters */
-		double mui_,irho_,r0_,r1_,d_,xt_,xp_,dipshift_,diptilt_;
+		double mui_,irho_,r0_,r1_,d_,xt_,xp_,discshift_,disctilt_;
 		const char *eqtype_;
 		bool Edwards_;
 		
@@ -60,9 +60,9 @@ class Con2020 {
 		
 
 		/* integration step sizes */
-		static const double dlambda_ = 1e-4;
-		static const double dlambda_brho_ = 1e-4;
-		static const double dlambda_bz_ = 5e-5;
+		static constexpr double dlambda_ = 1e-4;
+		static constexpr double dlambda_brho_ = 1e-4;
+		static constexpr double dlambda_bz_ = 5e-5;
 		
 		/* Arrays containing maximum lambda values */
 		double rlmx_array_[6];

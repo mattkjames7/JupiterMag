@@ -2,7 +2,6 @@
 
 Con2020::Con2020() {
 	/* set all model parameters to their default values */
-	printf("Con2020 Init\n");
 	mui_ = 139.6;
 	irho_ = 16.7;
 	r0_ = 7.8;
@@ -14,17 +13,14 @@ Con2020::Con2020() {
 	Edwards_ = true;
 	
 	/* some other values which will only need calculating once */
-	dipshift_ = xt_*deg2rad;
-	diptilt_ = xp_*deg2rad;
-	printf("Current sheet longitude: %f\n",dipshift_);
-	printf("Current sheet tilt: %f\n",diptilt_);
+	discshift_ = xp_*deg2rad;
+	disctilt_ = xt_*deg2rad;
+
 	/* initialize some things used for integration */
 	_InitIntegrals();
-	
-	
+
 }
 Con2020::~Con2020() {
-	printf("Deleting Con2020\n");
 	_DeleteIntegrals();
 }
 
@@ -34,37 +30,37 @@ void Con2020::_SysIII2Mag(int n, double *x0, double *y0, double *z0,
 	
 	
 	/* some temporary variables which get used more than once */
-	double sincst, coscst, coscss, sincss, xt, theta, phi, r;
-	sincss = sin(dipshift_);
-	coscss = cos(dipshift_);
-	sincst = sin(diptilt_);
-	coscst = cos(diptilt_);
-	
+	double sincst, coscst, coscss, sincss, xt, theta, phi, r, rho0, rho0_sq;
+	sincss = sin(discshift_);
+	coscss = cos(discshift_);
+	sincst = sin(disctilt_);
+	coscst = cos(disctilt_);
+
 	
 	int i;
 	for (i=0;i<n;i++) {
-		/*intermediate value for x */
-		printf("x0,y0,z0,: %f %f %f \n",x0[i],y0[i],z0[i]);
-		xt = x0[i]*coscss + y0[i]*sincss;
+		/*calculate some angles and stuff*/
+		rho0_sq = x0[i]*x0[i] + y0[i]*y0[i];
+		rho0 = sqrt(rho0_sq);
+		r = sqrt(rho0_sq + z0[i]*z0[i]);
 		
-		/*newly rotated coords */
+		cost[i] = z0[i]/r;
+		sint[i] = rho0/r;
+		sinp[i] = y0[i]/rho0;
+		cosp[i] = x0[i]/rho0;
+		
+		/*rotate about z0 for the correct longitude */
+		xt = rho0*(cosp[i]*coscss + sinp[i]*sincss);
+		y1[i] = rho0*(sinp[i]*coscss - cosp[i]*sincss);
+
+		/*align with the current sheet */
 		x1[i] = xt*coscst + z0[i]*sincst;
-		y1[i] = y0[i]*coscss - x0[i]*sincss;
 		z1[i] = z0[i]*coscst - xt*sincst;
-		printf("%f %f %f\n",xt,y1[i],z0[i]);
+		
+		/* calculate rho and abs(z) */
 		rho[i] = sqrt(x1[i]*x1[i] + y1[i]*y1[i]);
 		absz[i] = fabs(z1[i]);
 		
-		r = sqrt(x0[i]*x0[i] + y0[i]*y0[i] + z0[i]*z0[i]);
-		theta = acos(z0[i]/r);
-		phi = fmod((atan2(y0[i],x0[i]) + 2*M_PI),2*M_PI);
-		
-		printf("rtp: %f %f %f\n",r,theta,phi);
-
-		sint[i] = sin(theta);
-		cost[i] = cos(theta);
-		sinp[i] = sin(phi);
-		cosp[i] = cos(phi);
 	}
 	
 					
@@ -78,8 +74,8 @@ void Con2020::_PolSysIII2Mag(int n, double *r, double *t, double *p,
 	/* some temporary variables which get used more than once */
 	double sindt, cosdt, cospds, sinpds, rsint, rcost;
 
-	sindt = sin(diptilt_);
-	cosdt = cos(diptilt_);
+	sindt = sin(disctilt_);
+	cosdt = cos(disctilt_);
 	
 	
 	int i;
@@ -91,8 +87,8 @@ void Con2020::_PolSysIII2Mag(int n, double *r, double *t, double *p,
 		cosp[i] = cos(p[i]);
 		rsint = r[i]*sint[i];
 		rcost = r[i]*cost[i];
-		sinpds = sin(p[i] - dipshift_);
-		cospds = cos(p[i] - dipshift_);		
+		sinpds = sin(p[i] - discshift_);
+		cospds = cos(p[i] - discshift_);		
 		
 		/*newly rotated coords */
 		x1[i] = rsint*cospds*cosdt + rcost*sindt;
@@ -114,10 +110,10 @@ void Con2020::_BMag2SysIII(int n, double *x, double *y, double *rho,
 	double sindt, cosdt, sinds, cosds, cospl, sinpl;
 	double Bx1, By1, Bx2;
 
-	sindt = sin(diptilt_);
-	cosdt = cos(diptilt_);
-	sinds = sin(dipshift_);
-	cosds = cos(dipshift_);
+	sindt = sin(disctilt_);
+	cosdt = cos(disctilt_);
+	sinds = sin(discshift_);
+	cosds = cos(discshift_);
 	
 	int i;
 	for (i=0;i<n;i++) {
@@ -148,10 +144,10 @@ void Con2020::_BMag2PolSysIII(int n, double *x, double *y, double *rho,
 	double sindt, cosdt, sinds, cosds, cospl, sinpl;
 	double Bx1, By1, Bx2, Bz2, Bx3, By3;
 
-	sindt = sin(diptilt_);
-	cosdt = cos(diptilt_);
-	sinds = sin(dipshift_);
-	cosds = cos(dipshift_);
+	sindt = sin(disctilt_);
+	cosdt = cos(disctilt_);
+	sinds = sin(discshift_);
+	cosds = cos(discshift_);
 	
 	int i;
 	for (i=0;i<n;i++) {
@@ -227,8 +223,6 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 		_SysIII2Mag(n,p0,p1,p2,x,y,z,rho,absz,sint,cost,sinp,cosp);
 	}
 	
-	printf("Pos: %f %f %f\n",x[0],y[0],z[0]);
-
 				
 	/* determine which method to use for each point in the inner edge calculation */
 	int nint, nana; 
@@ -252,7 +246,7 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 	} else {
 		/* the hybrid approach */
 		for (i=0;i<n;i++) {
-			if ((fabs(z[i]) <= d15) || (fabs(rho[i]-r0_) <= 2.0)) {
+			if ((fabs(z[i]) <= d15) && (fabs(rho[i]-r0_) <= 2.0)) {
 				indint[nint] = i;
 				nint++;
 			} else { 
@@ -327,7 +321,7 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 		delete[] Brhoi;
 		delete[] Bzi;
 	}	
-	
+
 	/* calculate the outer edge of the current sheet */
 	_SolveAnalytic(n,rho,z,r1_,Brhoo,Bzo);	
 	
@@ -339,6 +333,7 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 	
 	/* calculate azimuthal field */	
 	_AzimuthalField(n,rho,z,absz,Bphi);
+	
 		
 	/* convert B field back to appropriate coordinate system */
 	if (PolOut) {
