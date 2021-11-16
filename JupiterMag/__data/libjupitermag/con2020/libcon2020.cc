@@ -28,5 +28,5 @@ void SetModelParams(double mui, double irho, double r0, double r1,
 	con2020.SetErrCheck(ErrChk);
 	con2020.SetCartIn(CartIn);
 	con2020.SetCartOut(CartOut);
-	
+	con2020.SetEqType(eqtype);
 }
