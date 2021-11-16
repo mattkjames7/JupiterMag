@@ -1,11 +1,11 @@
 # CFLAGS for CC
-CFLAGS=-lm -fopenmp -fPIC
+CFLAGS=-lm -fopenmp -fPIC -std=c++11 -ggdb
 
 # Compiler
 CCo=g++ -c $(CFLAGS)
 CC=g++ $(CFLAGS)
 
-all: obj lib
+all: obj lib test
 
 obj:
 	$(CCo) con2020.cc -o con2020.o 
@@ -14,7 +14,10 @@ obj:
 
 lib:
 	$(CC) libcon2020.cc *o -shared -o libcon2020.so
+	
+test:
+	$(CC) test.cc *.o -o test
 
 clean:
 	rm -v *.o *.so *.bin
-	
+	rm test

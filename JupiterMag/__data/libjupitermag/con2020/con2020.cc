@@ -5,36 +5,128 @@ Con2020::Con2020() {
 	mui_ = 139.6;
 	irho_ = 16.7;
 	r0_ = 7.8;
+	r0sq_ = r0_*r0_;
+	r1sq_ = r1_*r1_;
 	r1_ = 51.4;
 	d_ = 3.6;
 	xt_ = 9.3;
-	xp_ = -24.2;
-	eqtype_ = "hybrid";
+	xp_ = 155.8;
+	eqtype_ = "integral";
 	Edwards_ = true;
+	ErrChk_ = true;
+	CartIn_ = true;
+	CartOut_ = true;
+	
 	
 	/* some other values which will only need calculating once */
-	discshift_ = xp_*deg2rad;
+	discshift_ = (xp_-180.0)*deg2rad;
+	disctilt_ = xt_*deg2rad;
+	cosxp_ = cos(discshift_);
+	sinxp_ = sin(discshift_);
+	cosxt_ = cos(disctilt_);
+	sinxt_ = sin(disctilt_);
+
+	/* initialize some things used for integration */
+	_InitIntegrals();
+
+	/* set appropriate coord conversion functions*/
+	_SetIOFunctions();
+	_SetModelFunctions();
+
+}
+
+Con2020::Con2020(double mui, double irho, double r0, double r1,
+				double d, double xt, double xp, const char *eqtype,
+				bool Edwards, bool ErrChk, bool CartIn, bool CartOut) {
+	/* set non-boolean model parameters to their default values */
+	mui_ = 139.6;
+	irho_ = 16.7;
+	r0_ = 7.8;
+	r0sq_ = r0_*r0_;
+	r1sq_ = r1_*r1_;
+	r1_ = 51.4;
+	d_ = 3.6;
+	xt_ = 9.3;
+	xp_ = 155.8;
+	eqtype_ = "hybrid";
+	Edwards_ = Edwards;
+	ErrChk_ = ErrChk;
+	CartIn_ = CartIn;
+	CartOut_ = CartOut;
+	
+	/* apply custom values if they are valid */
+	SetCurrentDensity(mui);
+	SetRadCurrentDensity(irho);
+	SetR0(r0);
+	SetR1(r1);
+	SetCSHalfThickness(d);
+	SetCSTilt(xt);
+	SetCSTiltAzimuth(xp);
+	
+	
+	/* some other values which will only need calculating once */
+	discshift_ = (xp_-180.0)*deg2rad;
 	disctilt_ = xt_*deg2rad;
 
 	/* initialize some things used for integration */
 	_InitIntegrals();
+	
+	/* set appropriate coord conversion functions*/
+	_SetIOFunctions();
+	_SetModelFunctions();
 
 }
 Con2020::~Con2020() {
 	_DeleteIntegrals();
 }
 
+
+void Con2020::_SetIOFunctions() {
+	
+	if (CartIn_) {
+		_ConvInput = &Con2020::_SysIII2Mag;
+	} else {
+		_ConvInput = &Con2020::_PolSysIII2Mag;
+	}
+	if (CartOut_) {
+		_ConvOutput = &Con2020::_BMag2SysIII;
+	} else {
+		_ConvOutput = &Con2020::_BMag2PolSysIII;
+	}	
+}
+
+void Con2020::_SetModelFunctions() {
+	
+	/* firstly set whether we are using the Edwards or Connerney 
+	 * analytical functions */
+	if (Edwards_) {
+		_LargeRho = &Con2020::_LargeRhoEdwards;
+		_SmallRho = &Con2020::_SmallRhoEdwards;
+	} else {
+		_LargeRho = &Con2020::_LargeRhoEdwards;
+		_SmallRho = &Con2020::_SmallRhoEdwards;
+	}
+	
+	/* now we need to set which model functions we will use
+	 * (analytic, intergral or hybrid) */
+	printf("%s\n",eqtype_);
+	if (strcmp(eqtype_,"analytic") == 0) {
+		_Model = &Con2020::_Analytic;
+	} else if (strcmp(eqtype_,"integral") == 0) {
+		_Model = &Con2020::_Integral;
+	} else if (strcmp(eqtype_,"hybrid") == 0) {
+		_Model = &Con2020::_Hybrid;
+	}
+	 
+}
+
 void Con2020::_SysIII2Mag(int n, double *x0, double *y0, double *z0,
 						double *x1, double *y1, double *z1, double *rho, double *absz,
-						double *sint, double *cost, double *sinp, double *cosp) {
+						double *cost, double *sint, double *cosp, double *sinp) {
 	
 	
 	/* some temporary variables which get used more than once */
-	double sincst, coscst, coscss, sincss, xt, theta, phi, r, rho0, rho0_sq;
-	sincss = sin(discshift_);
-	coscss = cos(discshift_);
-	sincst = sin(disctilt_);
-	coscst = cos(disctilt_);
+	double xt, theta, phi, r, rho0, rho0_sq;
 
 	
 	int i;
@@ -50,12 +142,12 @@ void Con2020::_SysIII2Mag(int n, double *x0, double *y0, double *z0,
 		cosp[i] = x0[i]/rho0;
 		
 		/*rotate about z0 for the correct longitude */
-		xt = rho0*(cosp[i]*coscss + sinp[i]*sincss);
-		y1[i] = rho0*(sinp[i]*coscss - cosp[i]*sincss);
+		xt = rho0*(cosp[i]*cosxp_ + sinp[i]*sinxp_);
+		y1[i] = rho0*(sinp[i]*cosxp_ - cosp[i]*sinxp_);
 
 		/*align with the current sheet */
-		x1[i] = xt*coscst + z0[i]*sincst;
-		z1[i] = z0[i]*coscst - xt*sincst;
+		x1[i] = xt*cosxt_ + z0[i]*sinxt_;
+		z1[i] = z0[i]*cosxt_ - xt*sinxt_;
 		
 		/* calculate rho and abs(z) */
 		rho[i] = sqrt(x1[i]*x1[i] + y1[i]*y1[i]);
@@ -68,15 +160,11 @@ void Con2020::_SysIII2Mag(int n, double *x0, double *y0, double *z0,
 
 void Con2020::_PolSysIII2Mag(int n, double *r, double *t, double *p,
 						double *x1, double *y1, double *z1, double *rho, double *absz,
-						double *sint, double *cost, double *sinp, double *cosp) {
+						double *cost, double *sint, double *cosp, double *sinp) {
 	
 	
 	/* some temporary variables which get used more than once */
-	double sindt, cosdt, cospds, sinpds, rsint, rcost;
-
-	sindt = sin(disctilt_);
-	cosdt = cos(disctilt_);
-	
+	double  x, z;
 	
 	int i;
 	for (i=0;i<n;i++) {
@@ -85,15 +173,15 @@ void Con2020::_PolSysIII2Mag(int n, double *r, double *t, double *p,
 		cost[i] = cos(t[i]);
 		sinp[i] = sin(p[i]);
 		cosp[i] = cos(p[i]);
-		rsint = r[i]*sint[i];
-		rcost = r[i]*cost[i];
-		sinpds = sin(p[i] - discshift_);
-		cospds = cos(p[i] - discshift_);		
+		
+		/*faster conversion code from con2020 */
+		x = r[i]*sint[i]*(cosp[i]*cosxp_ + sinp[i]*sinxp_);
+		y1[i] = r[i]*sint[i]*(sinp[i]*cosxp_ - cosp[i]*sinxp_);
+		z = r[i]*cost[i];
 		
 		/*newly rotated coords */
-		x1[i] = rsint*cospds*cosdt + rcost*sindt;
-		y1[i] = rsint*sinpds;
-		z1[i] = rcost*cosdt - rsint*cospds*sindt;
+		x1[i] = x*cosxt_ + z*sinxt_;
+		z1[i] = z*cosxt_ - x*sinxt_;
 		
 		rho[i] = sqrt(x1[i]*x1[i] + y1[i]*y1[i]);
 		absz[i] = fabs(z1[i]);
@@ -103,73 +191,62 @@ void Con2020::_PolSysIII2Mag(int n, double *r, double *t, double *p,
 					
 }
 
-void Con2020::_BMag2SysIII(int n, double *x, double *y, double *rho,
-				double *Brho, double *Bphi, double *Bz,
-				double *Bxo, double *Byo, double *Bzo) {
+void Con2020::_BMag2SysIII(int n, double *x1, double *y1, double *rho1,
+				double *cost, double *sint, double *cosp, double *sinp,
+				double *Brho1, double *Bphi1, double *Bz1,
+				double *Bx0, double *By0, double *Bz0) {
 
-	double sindt, cosdt, sinds, cosds, cospl, sinpl;
-	double Bx1, By1, Bx2;
-
-	sindt = sin(disctilt_);
-	cosdt = cos(disctilt_);
-	sinds = sin(discshift_);
-	cosds = cos(discshift_);
+	double cosp1, sinp1, Bx, Bx1, By1;
 	
 	int i;
 	for (i=0;i<n;i++) {
-		
 		/* rotating longitude */
-		cospl = x[i]/rho[i];
-		sinpl = y[i]/rho[i];
-		Bx1 = Brho[i]*cospl - Bphi[i]*sinpl;
-		By1 = Brho[i]*sinpl + Bphi[i]*cospl;
+		cosp1 = x1[i]/rho1[i];
+		sinp1 = y1[i]/rho1[i];
+		Bx1 = Brho1[i]*cosp1 - Bphi1[i]*sinp1;
+		By1 = Brho1[i]*sinp1 + Bphi1[i]*cosp1;
 		
 		/* rotate back by dipole tilt */
-		Bx2 = Bx1*cosdt - Bz[i]*sindt;
-		Bzo[i] = Bx1*sindt + Bz[i]*cosdt;
+		Bx = Bx1*cosxt_ - Bz1[i]*sinxt_;
+		Bz0[i] = Bx1*sinxt_ + Bz1[i]*cosxt_;
 		
 		/* shift to System III */
-		Bxo[i] = Bx2*cosds - By1*sinds;
-		Byo[i] = By1*cosds + Bx2*sinds;
+		Bx0[i] = Bx*cosxp_ - By1*sinxp_;
+		By0[i] = By1*cosxp_ + Bx*sinxp_;
 		
 	}
 	
 }
 
-void Con2020::_BMag2PolSysIII(int n, double *x, double *y, double *rho,
-				double *sint, double *cost, double *sinp, double *cosp,
-				double *Brho, double *Bphi, double *Bz,
-				double *Br, double *Bt, double *Bp) {
+void Con2020::_BMag2PolSysIII(int n, double *x1, double *y1, double *rho1,
+				double *cost, double *sint, double *cosp, double *sinp,
+				double *Brho1, double *Bphi1, double *Bz1,
+				double *Br0, double *Bt0, double *Bp0) {
 
-	double sindt, cosdt, sinds, cosds, cospl, sinpl;
-	double Bx1, By1, Bx2, Bz2, Bx3, By3;
+	double cosp1, sinp1, Bx, Bz, Bx1, By1, Bx2, By2;
 
-	sindt = sin(disctilt_);
-	cosdt = cos(disctilt_);
-	sinds = sin(discshift_);
-	cosds = cos(discshift_);
-	
+
 	int i;
 	for (i=0;i<n;i++) {
 		
 		/* rotating longitude */
-		cospl = x[i]/rho[i];
-		sinpl = y[i]/rho[i];
-		Bx1 = Brho[i]*cospl - Bphi[i]*sinpl;
-		By1 = Brho[i]*sinpl + Bphi[i]*cospl;
+		cosp1 = x1[i]/rho1[i];
+		sinp1 = y1[i]/rho1[i];
+		Bx1 = Brho1[i]*cosp1 - Bphi1[i]*sinp1;
+		By1 = Brho1[i]*sinp1 + Bphi1[i]*cosp1;
 		
 		/* rotate back by dipole tilt */
-		Bx2 = Bx1*cosdt - Bz[i]*sindt;
-		Bz2 = Bx1*sindt + Bz[i]*cosdt;
+		Bx = Bx1*cosxt_ - Bz1[i]*sinxt_;
+		Bz = Bx1*sinxt_ + Bz1[i]*cosxt_;
 		
 		/* shift to System III */
-		Bx3 = Bx2*cosds - By1*sinds;
-		By3 = By1*cosds + Bx2*sinds;
+		Bx2 = Bx*cosxp_ - By1*sinxp_;
+		By2 = By1*cosxp_ + Bx*sinxp_;
 		
 		/* convert to polar */
-		Br[i] = Bx3*sint[i]*cosp[i] + By3*sint[i]*sinp[i] + Bz2*cost[i];
-		Bt[i] = Bx3*cost[i]*cosp[i] + By3*cost[i]*sint[i] + Bz2*sint[i];
-		Bp[i] = -Bx3*sinp[i] + By3*cosp[i];
+		Br0[i] =  Bx2*sint[i]*cosp[i] + By2*sint[i]*sinp[i] + Bz*cost[i];
+		Bt0[i] =  Bx2*cost[i]*cosp[i] + By2*cost[i]*sinp[i] + Bz*sint[i];
+		Bp0[i] = -Bx2*sinp[i] + By2*cosp[i];
 		
 	}
 	
@@ -192,9 +269,41 @@ void Con2020::_AzimuthalField(int n, double *rho, double *z, double *absz, doubl
 	}
 }
 
+void Con2020::_AzimuthalField(double rho, double absz, double z, double *Bphi) {
+	
+	Bphi[0] = 2.7975*irho_/rho;
+		
+	if (absz < d_) {
+		Bphi[0] = Bphi[0]*absz/d_;
+	}
+		
+	if (z > 0.0) {
+		Bphi[0] = -Bphi[0];
+	}
+}
+
+
+void Con2020::Field(double p0, double p1, double p2,
+					double *B0, double *B1, double *B2) {
+						
+	/* create a bunch of empty variables */
+	double x, y, z, rho, absz;
+	double cost, sint, cosp, sinp;	
+	double Brho, Bphi, Bz;
+	
+	/* convert the input coordinates */
+	(this->*_ConvInput)(1,&p0,&p1,&p2,&x,&y,&z,&rho,&absz,&cost,&sint,&cosp,&sinp);
+	
+	/* calculate the mode field */
+	(this->*_Model)(rho,absz,z,&Brho,&Bphi,&Bz);
+	
+	/*convert the output field */
+	(this->*_ConvOutput)(1,&x,&y,&rho,&cost,&sint,&cosp,&sinp,&Brho,&Bphi,&Bz,B0,B1,B2);
+}
+
+
 void Con2020::Field(int n, double *p0, double *p1, double *p2, 
-			double *B0, double *B1, double *B2,
-			bool PolIn, bool PolOut) {
+			double *B0, double *B1, double *B2) {
 
 	int i;
 
@@ -211,142 +320,17 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 	double *Brho = new double[n];
 	double *Bphi = new double[n];
 	double *Bz = new double[n];
-	double *Brhoo = new double[n];
-	double *Bzo = new double[n];
 
 	/* convert input coordinates to the coordinate system used by the model */
-	if (PolIn) {
-		/* this will convert spherical polar to the Cartesian model coordinates */
-		_PolSysIII2Mag(n,p0,p1,p2,x,y,z,rho,absz,sint,cost,sinp,cosp);
-	} else { 
-		/* this will convert Cartesian System III coordinates to the model coords */
-		_SysIII2Mag(n,p0,p1,p2,x,y,z,rho,absz,sint,cost,sinp,cosp);
-	}
-	
-				
-	/* determine which method to use for each point in the inner edge calculation */
-	int nint, nana; 
-	int *indint = new int[n];
-	int *indana = new int[n];
-	double d15 = d_*1.5;
-	nint = 0;
-	nana = 0;
-	if (strcmp(eqtype_,"analytic") == 0) {
-		/* set all to analytic */
-		for (i=0;i<n;i++) {
-			indana[i] = i;
-			nana++;
-		}
-	} else if (strcmp(eqtype_,"integral") == 0) {
-		/* set all to analytic */
-		for (i=0;i<n;i++) {
-			indint[i] = i;
-			nint++;
-		}		
-	} else {
-		/* the hybrid approach */
-		for (i=0;i<n;i++) {
-			if ((fabs(z[i]) <= d15) && (fabs(rho[i]-r0_) <= 2.0)) {
-				indint[nint] = i;
-				nint++;
-			} else { 
-				indana[nana] = i;
-				nana++;
-			}
-		}
-	}
-	
-	/* more temporary position arrays */
-	double *rhoi, *zi, *abszi, *Brhoi, *Bzi;	
-	
-	/* call integral function if needed */
-	if (nint > 0) {
-		/* allocate temporary variables */
-		rhoi = new double[nint];
-		zi = new double[nint];
-		abszi = new double[nint];
-		Brhoi = new double[nint];
-		Bzi = new double[nint];
-		
-		/* move positions into new array */
-		for (i=0;i<nint;i++) {
-			rhoi[i] = rho[indint[i]];
-			zi[i] = z[indint[i]];
-			abszi[i] = absz[indint[i]];
-		}
-		
-		/* call the integral model */
-		_SolveIntegral(nint,rhoi,zi,abszi,Brhoi,Bzi);
-		
-		/* move into the new array */
-		for (i=0;i<nint;i++) {
-			Brho[indint[i]] = Brhoi[i];
-			Bz[indint[i]] = Bzi[i];
-		}
-		
-		/* deallocate temporary vars */
-		delete[] rhoi;
-		delete[] zi;
-		delete[] abszi;
-		delete[] Brhoi;
-		delete[] Bzi;
-	}
-	
-	/* call analytical fucntion if needed */
-	if (nana > 0) {
-		/* allocate temporary variables */
-		rhoi = new double[nana];
-		zi = new double[nana];
-		Brhoi = new double[nana];
-		Bzi = new double[nana];
-		
-		/* move positions into the new array */
-		for (i=0;i<nana;i++) {
-			rhoi[i] = rho[indana[i]];
-			zi[i] = z[indana[i]];
-		}
-		
-		/* call the analytical model */
-		_SolveAnalytic(nana,rhoi,zi,r0_,Brhoi,Bzi);
-		
-		/* move into the new array */
-		for (i=0;i<nana;i++) {
-			Brho[indana[i]] = Brhoi[i];
-			Bz[indana[i]] = Bzi[i];
-		}
-		
-		/* deallocate temporary vars */
-		delete[] rhoi;
-		delete[] zi;
-		delete[] Brhoi;
-		delete[] Bzi;
-	}	
+	(this->*_ConvInput)(n,p0,p1,p2,x,y,z,rho,absz,cost,sint,cosp,sinp);
 
-	/* calculate the outer edge of the current sheet */
-	_SolveAnalytic(n,rho,z,r1_,Brhoo,Bzo);	
-	
-	/* subtract outer contribution from inner one */
+	/* call the model */
 	for (i=0;i<n;i++) {
-		Brho[i] = Brho[i] - Brhoo[i];
-		Bz[i] = Bz[i] - Bzo[i];
+		(this->*_Model)(rho[i],absz[i],z[i],&Brho[i],&Bphi[i],&Bz[i]);
 	}
-	
-	/* calculate azimuthal field */	
-	_AzimuthalField(n,rho,z,absz,Bphi);
-	
-		
+
 	/* convert B field back to appropriate coordinate system */
-	if (PolOut) {
-		/* convert to the polar coordinate system (it's actually the
-		 * Cartesian components of the field oriented such that there
-		 * is a radial component, phi component and theta component - as
-		 * opposed to a magnitude and two angles) */
-		 _BMag2PolSysIII(n,x,y,rho,sint,cost,sinp,cosp,Brho,Bphi,Bz,B0,B1,B2);
-	} else {
-		/* convert to System III Cartesian */
-		_BMag2SysIII(n,x,y,rho,Brho,Bphi,Bz,B0,B1,B2);
-	}
-				
+	(this->*_ConvOutput)(n,x,y,rho,cost,sint,cosp,sinp,Brho,Bphi,Bz,B0,B1,B2);
 				
 	/* delete temporary variables */
 	delete[] x;
@@ -354,8 +338,6 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 	delete[] z;
 	delete[] absz;
 	delete[] rho;
-	delete[] indint;
-	delete[] indana;
 	delete[] sint;
 	delete[] sinp;
 	delete[] cost;
@@ -363,47 +345,57 @@ void Con2020::Field(int n, double *p0, double *p1, double *p2,
 	delete[] Brho;
 	delete[] Bphi;
 	delete[] Bz;
-	delete[] Brhoo;
-	delete[] Bzo;
 
+
+}
+
+void Con2020::_Analytic(double rho, double absz, double z, 
+						double *Brho, double *Bphi, double *Bz) {
+	
+	/* calculate the inner contribution to Brho and Bz */
+	_AnalyticInner(rho,z,Brho,Bz);
+	
+	/* also the azimuthal field */
+	_AzimuthalField(rho,absz,z,Bphi);
+	
+	/* we need to calculate the outer edge contribution */
+	double oBrho, oBz;
+	_AnalyticOuter(rho,z,&oBrho,&oBz);
+	
+	/*subtract it */
+	Brho[0] -= oBrho;
+	Bz[0] -= oBz;
 	
 }
 
-
-void Con2020::_SolveAnalytic(int n, double *rho, double *z, double a, 
-				double *Brho, double *Bz) {
+void Con2020::_AnalyticInner(	double rho, double z, 
+								double *Brho, double *Bz) {
 	
-	int i;
-	double zpd, zmd, a2;
-	a2 = a*a;
-	if (Edwards_) {
-		/* solve the Edwards et al equations */
-		for (i=0;i<n;i++) {
-			zpd = z[i] + d_;
-			zmd = z[i] - d_;
-			if (rho[i] >= a) {
-				/* large rho approximation */
-				_LargeRhoEdwards(rho[i],z[i],zmd,zpd,a2,&Brho[i],&Bz[i]);
-			} else {
-				/* small rho approximation */
-				_SmallRhoEdwards(rho[i],zmd,zpd,a2,&Brho[i],&Bz[i]);
-			}
-		}
-	} else { 
-		/* Solve the Connerney et al equations */
-		for (i=0;i<n;i++) {
-			zpd = z[i] + d_;
-			zmd = z[i] - d_;
-			if (rho[i] >= a) {
-				/* large rho approximation */
-				_LargeRhoConnerney(rho[i],z[i],zmd,zpd,a2,&Brho[i],&Bz[i]);
-			} else {
-				/* small rho approximation */
-				_SmallRhoConnerney(rho[i],z[i],zmd,zpd,a2,&Brho[i],&Bz[i]);
-			}
-		}		
+	/* define a few required variables */
+	double zpd, zmd;
+
+	if (rho >= r0_) {
+		(this->*_LargeRho)(rho,z,zmd,zpd,r0sq_,Brho,Bz);
+	} else {
+		(this->*_SmallRho)(rho,z,zmd,zpd,r0sq_,Brho,Bz);
 	}
+									
 }
+
+void Con2020::_AnalyticOuter(	double rho, double z, 
+								double *Brho, double *Bz) {
+	
+	/* define a few required variables */
+	double zpd, zmd;
+
+	if (rho >= r1_) {
+		(this->*_LargeRho)(rho,z,zmd,zpd,r1sq_,Brho,Bz);
+	} else {
+		(this->*_SmallRho)(rho,z,zmd,zpd,r1sq_,Brho,Bz);
+	}
+									
+}
+
 
 void Con2020::_LargeRhoConnerney(double rho, double z, double zmd, 
 					double zpd, double a2, double *Brho, double *Bz) {
@@ -468,7 +460,7 @@ void Con2020::_LargeRhoEdwards(double rho, double z, double zmd,
 	double terma1 = (rho*a2/4)*(1.0/f2cubed - 1.0/f1cubed);
 	double terma2 = (2.0/rho)*clip(z,-d_,d_);
 	Brho[0] = mui_*(terma0 + terma1 + terma2);
-	
+	printf("%f %f %f %f\n",mui_,terma0,terma1,terma2);
 	/* equation 13b */
 	double termb0 = log((zpd + f2)/(zmd + f1));
 	double termb1 = (a2/4.0)*(zpd/f2cubed - zmd/f1cubed);
@@ -476,7 +468,7 @@ void Con2020::_LargeRhoEdwards(double rho, double z, double zmd,
 }
 
 
-void Con2020::_SmallRhoEdwards(double rho, double zmd, double zpd, 
+void Con2020::_SmallRhoEdwards(double rho, double z, double zmd, double zpd, 
 					double a2, double *Brho, double *Bz) { 
 	
 	double zmd2 = zmd*zmd;
@@ -499,7 +491,7 @@ void Con2020::_SmallRhoEdwards(double rho, double zmd, double zpd,
 	
 	double terma0 = rhoov2*(1.0/f1 - 1.0/f2);
 	double terma1 = rho3ov16*(f3 - f4);
-	
+	printf("%f %f %f\n",mui_,terma0,terma1);
 	Brho[0] = mui_*(terma0 + terma1);
 	
 	/* equation 9b */
@@ -569,7 +561,16 @@ void Con2020::_InitIntegrals() {
 		Eq17_[zcase] = new double[rnbes_[zcase]];
 		Eq18_[zcase] = new double[znbes_[zcase]];
 		ExpLambdaD_[zcase] = new double[znbes_[zcase]];
-		
+	}
+	
+	_RecalcIntegrals();
+}
+
+void Con2020::_RecalcIntegrals(){
+	
+	int zcase, i;
+	double ld;
+	for (zcase=0;zcase<6;zcase++) {	
 		/* initialize lambda for z and rho cases */
 		for (i=0;i<rnbes_[zcase];i++) {
 			rlambda_[zcase][i] = i*dlambda_brho_;
@@ -595,7 +596,6 @@ void Con2020::_InitIntegrals() {
 			ExpLambdaD_[zcase][i] = exp(-ld);
 		}
 	}
-	
 	
 		
 }
@@ -632,6 +632,25 @@ void Con2020::_DeleteIntegrals() {
 	delete[] znbes_;
 }
 
+void Con2020::_Integral(double rho, double absz, double z, 
+						double *Brho, double *Bphi, double *Bz) {
+	
+	/* calculate the inner contribution to Brho and Bz */
+	_IntegralInner(rho,absz,z,Brho,Bz);
+	
+	/* also the azimuthal field */
+	_AzimuthalField(rho,absz,z,Bphi);
+	printf("Inner: %f %f %f\n",Brho[0],Bphi[0],Bz[0]);
+	/* we need to calculate the outer edge contribution */
+	double oBrho, oBz;
+	_AnalyticOuter(rho,z,&oBrho,&oBz);
+	printf("Outer: %f %f\n",oBrho,oBz);
+	/*subtract it */
+	Brho[0] -= oBrho;
+	Bz[0] -= oBz;
+	
+}
+
 
 void Con2020::_IntegralChecks(int n, double *absz, int *chind, int ncase[]) {
 
@@ -657,6 +676,28 @@ void Con2020::_IntegralChecks(int n, double *absz, int *chind, int ncase[]) {
 		chind[i] -= ((int) check2);
 		ncase[chind[i]]++;
 	}
+	
+}
+
+void Con2020::_IntegralCheck(double absz, int *chind) {
+
+	int i;
+	double check1;
+	bool check2;
+	
+	
+	check1 = fabs(absz - d_);
+	check2 = (absz < d_*1.1);
+
+	if (check1 >= 0.7) {
+		chind[0] = 1;
+	} else if (check1 < 0.1) {
+		chind[0] = 5;
+	} else {
+		chind[0] = 3;
+	}
+	chind[0] -= ((int) check2);
+	
 	
 }
 
@@ -690,6 +731,26 @@ void Con2020::_SolveIntegral(int n, double *rho, double *z,
 	delete[] chind;
 	
 }	
+
+void Con2020::_IntegralInner( 	double rho, double absz, double z,
+								double *Brho, double *Bz) {
+	int chind;
+	/* check which set of integral parameters we need to use*/
+	_IntegralCheck(absz,&chind);
+	
+	if (absz > d_) {
+		/* in this case we want to use equations 14 and 15 outside
+		 * of the finite current sheet */
+		_IntegrateEq14(chind,rho,z,absz,Brho);
+		_IntegrateEq15(chind,rho,absz,Bz);
+	} else { 
+		/* here we are inside the current sheet and should integrate
+		 * equations 17 and 18 */
+		_IntegrateEq17(chind,rho,z,Brho);
+		_IntegrateEq18(chind,rho,z,Bz);			
+	}	
+	
+}
 	
 void Con2020::_IntegrateEq14(int zcase, double rho, double z, double absz, double *Brho) {
 	
@@ -748,7 +809,7 @@ void Con2020::_IntegrateEq17(int zcase, double rho, double z, double *Brho) {
 	
 	/* create an array to integrate over */
 	int n = rnbes_[zcase];
-	double *func = new double[n];
+	double *func = new double[n]; //these arrays can be pre-allocated for overwriting
 	double *j1lr = new double[n];
 	
 	/* calculate the other bessel function */
@@ -796,4 +857,146 @@ void Con2020::_IntegrateEq18(int zcase, double rho, double z, double *Bz) {
 }
 	
 					
+void Con2020::_Hybrid(double rho, double absz, double z, 
+						double *Brho, double *Bphi, double *Bz) {
 
+
+	/* calculate the inner contribution to Brho and Bz */
+	if ((absz <= 1.5*d_) && (fabs(rho - r0_) <= 2.0)) {
+		/* use integration */
+		_IntegralInner(rho,absz,z,Brho,Bz);
+	} else {
+		/* use analytical */
+		_AnalyticInner(rho,z,Brho,Bz);
+	}
+
+	/* also the azimuthal field */
+	_AzimuthalField(rho,absz,z,Bphi);
+
+	/* we need to calculate the outer edge contribution */
+	double oBrho, oBz;
+	_AnalyticOuter(rho,z,&oBrho,&oBz);
+
+	/*subtract it */
+	Brho[0] -= oBrho;
+	Bz[0] -= oBz;
+
+}
+
+
+void Con2020::SetEdwardsEqs(bool Edwards) {
+	Edwards_ = Edwards;
+	
+	/* reset function pointers */
+	_SetModelFunctions();
+}
+
+void Con2020::SetEqType(const char *eqtype) {
+	
+	if (	(strcmp(eqtype_,"analytic") == 0) ||
+			(strcmp(eqtype_,"integral") == 0) ||
+			(strcmp(eqtype_,"hybrid") == 0)) {
+		/* this is a valid string - update it */
+		eqtype_ = eqtype;
+		
+		_SetModelFunctions();
+	} else {
+		printf("eqtype '%s' not recognised - ignoring\n",eqtype);
+	}
+	
+}
+	
+void Con2020::SetCurrentDensity(double mui) {
+	
+	if (isfinite(mui)) {
+		/* good value (hopefully) */
+		mui_ = mui;
+	} else {
+		printf("Non-finite value - ignoring\n");
+	}
+}
+	
+void Con2020::SetRadCurrentDensity(double irho) {
+	if (isfinite(irho)) {
+		/* good value (hopefully) */
+		irho_ = irho;
+	} else {
+		printf("Non-finite value - ignoring\n");
+	}	
+}
+
+void Con2020::SetR0(double r0) {
+	if (isfinite(r0) && (r0 >= 0.0)) {
+		/* good value (hopefully) */
+		r0_ = r0;
+		r0sq_ = r0_*r0_;
+	} else if (!isfinite(r0)) {
+		printf("Non-finite value - ignoring\n");
+	} else {
+		printf("r0 must have a positive value\n");
+	}
+}
+
+void Con2020::SetR1(double r1) {
+	if (isfinite(r1) && (r1 >= 0.0)) {
+		/* good value (hopefully) */
+		r1_ = r1;
+		r1sq_ = r1_*r1_;
+	} else if (!isfinite(r1)) {
+		printf("Non-finite value - ignoring\n");
+	} else {
+		printf("r1 must have a positive value\n");
+	}
+}
+
+void Con2020::SetCSHalfThickness(double d) {
+
+	if (isfinite(d) && (d >= 0.0)) {
+		/* good value (hopefully) */
+		d_ = d;
+	} else if (!isfinite(d)) {
+		printf("Non-finite value - ignoring\n");
+	} else {
+		printf("d must have a positive value\n");
+	}
+}	
+	
+void Con2020::SetCSTilt(double xt) {
+	
+	if (isfinite(xt)) {
+		/* good value (hopefully) */
+		xt_ = xt;
+		disctilt_ = xt_*deg2rad;
+		cosxt_ = cos(disctilt_);
+		sinxt_ = sin(disctilt_);
+	} else {
+		printf("Non-finite value - ignoring\n");
+	}
+}
+
+void Con2020::SetCSTiltAzimuth(double xp) {
+	if (isfinite(xp)) {
+		/* good value (hopefully) */
+		xp_ = xp;
+		discshift_ = (xp_ - 180.0)*deg2rad;
+		cosxp_ = cos(discshift_);
+		sinxp_ = sin(discshift_);
+	} else {
+		printf("Non-finite value - ignoring\n");
+	}
+}		
+		
+		
+void Con2020::SetErrCheck(bool ErrChk) {
+	ErrChk_ = ErrChk;
+}
+
+void Con2020::SetCartIn(bool CartIn) {
+	CartIn_ = CartIn;
+	_SetIOFunctions();
+}
+
+void Con2020::SetCartOut(bool CartOut) {
+	CartOut_ = CartOut;
+	_SetIOFunctions();
+}

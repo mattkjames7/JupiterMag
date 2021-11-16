@@ -12,29 +12,75 @@
 #endif
 using namespace std;
 
+/* function pointer for input conversion */
+class Con2020; /*this is needed for the pointer below */ 
+typedef void (Con2020::*InputConvFunc)(int,double*,double*,double*,
+						double*,double*,double*,double*,double*,
+						double*,double*,double*,double*);
+/* Output conversion */
+typedef void (Con2020::*OutputConvFunc)(int,double*,double*,double*,
+				double*,double*,double*,double*,
+				double*,double*,double*,
+				double*,double*,double*);
+
+/* Model function */
+typedef void (Con2020::*ModelFunc)(double,double,double,double*,double*,double*);
+
+/* analytical approximation equations */
+typedef void (Con2020::*Approx)(double,double,double,double,double,double*,double*);
 
 class Con2020 {
 	public:
 		/* constructors */
 		Con2020();
-		Con2020(double,double,double,double,double,double,double,const char*);
+		Con2020(double,double,double,double,double,double,double,const char*,bool,bool,bool,bool);
 	
 		/* destructor */
 		~Con2020();
 		
 		/* these functions will be used to set the equations used, if
 		 * they need to be changed post-initialisation */
-		void UseEdwardsEqs(bool);
+		void SetEdwardsEqs(bool);
 		void SetEqType(const char*);
+		void SetCurrentDensity(double);
+		void SetRadCurrentDensity(double);
+		void SetR0(double);
+		void SetR1(double);
+		void SetCSHalfThickness(double);
+		void SetCSTilt(double);
+		void SetCSTiltAzimuth(double);
+		void SetErrCheck(bool);
+		void SetCartIn(bool);
+		void SetCartOut(bool);
 		
-		/* This function will be used to call the model */
-		void Field(int,double*,double*,double*,double*,double*,double*,bool,bool);
+		/* these mamber functions will be the "getter" version of the
+		 * above setters */
+		bool GetEdwardsEqs();
+		const char * GetEqType();
+		double GetCurrentDensity();
+		double GetRadCurrentDensity();
+		double GetR0();
+		double GetR1();
+		double GetCSHalfThickness();
+		double GetCSTilt();
+		double GetCSTiltAzimuth();
+		bool GetErrCheck();
+		bool GetCartIn();
+		bool GetCartOut();
+		
+		/* This function will be used to call the model, it is overloaded
+		 * so that we have one for arrays, one for scalars */
+		void Field(int,double*,double*,double*,double*,double*,double*);
+		void Field(double,double,double,double*,double*,double*);
 		
 	private:
 		/* model parameters */
-		double mui_,irho_,r0_,r1_,d_,xt_,xp_,discshift_,disctilt_;
+		double mui_,irho_,r0_,r1_,d_,xt_,xp_,disctilt_,discshift_;
+		double r0sq_, r1sq_;
+		double cosxp_,sinxp_,cosxt_,sinxt_;
 		const char *eqtype_;
-		bool Edwards_;
+		bool Edwards_, ErrChk_;
+		bool CartIn_,CartOut_;
 		
 		/* Bessel function arrays - arrays prefixed with r and z are
 		 * to be used for integrals which calcualte Brho and Bz,
@@ -70,34 +116,62 @@ class Con2020 {
 
 
 		/* coordinate conversions for positions */
-		void _SysIII2Mag(int,double*,double*,double*,double*,double*,double*,double*,double*,double*,double*,double*,double*);
-		void _PolSysIII2Mag(int,double*,double*,double*,double*,double*,double*,double*,double*,double*,double*,double*,double*);
+		InputConvFunc _ConvInput;
+		void _SysIII2Mag(int,double*,double*,double*,
+						double*,double*,double*,double*,double*,
+						double*,double*,double*,double*);
+		void _PolSysIII2Mag(int,double*,double*,double*,
+						double*,double*,double*,double*,double*,
+						double*,double*,double*,double*);
 		
 		
 		/* coordinate conversion for magnetic field vector */
-		void _BMag2SysIII(int,double*,double*,double*,double*,double*,
-							double*,double*,double*,double*);
-		void _BMag2PolSysIII(int,double*,double*,double*,double*,
-							double*,double*,double*,double*,double*,
-							double*,double*,double*,double*);				
+		OutputConvFunc _ConvOutput;
+		void _BMag2SysIII(int,double*,double*,double*,
+							double*,double*,double*,double*,
+							double*,double*,double*,
+							double*,double*,double*);
+		void _BMag2PolSysIII(int,double*,double*,double*,
+							double*,double*,double*,double*,
+							double*,double*,double*,
+							double*,double*,double*);	
+
+		/* Functions to update function pointers */
+		void _SetIOFunctions();
+		void _SetModelFunctions();
+		ModelFunc _Model;
+		
 							
 		/* Azimuthal field */
 		void _AzimuthalField(int,double*,double*,double*,double*);
+		void _AzimuthalField(double,double,double,double*);
 		
 		/* analytic equations */
+		void _Analytic(double,double,double,double*,double*,double*);
 		void _SolveAnalytic(int,double*,double*,double,double*,double*);
+		Approx _LargeRho;
+		Approx _SmallRho;
+		void _AnalyticInner(double,double,double*,double*);
+		void _AnalyticOuter(double,double,double*,double*);
 		void _LargeRhoConnerney(double,double,double,double,double,double*,double*);
 		void _SmallRhoConnerney(double,double,double,double,double,double*,double*);
 		void _LargeRhoEdwards(double,double,double,double,double,double*,double*);
-		void _SmallRhoEdwards(double,double,double,double,double*,double*);
+		void _SmallRhoEdwards(double,double,double,double,double,double*,double*);
 		
 		/* integral-related functions */
+		void _Integral(double,double,double,double*,double*,double*);
+		void _IntegralInner(double, double, double,	double*, double*);
 		void _InitIntegrals();
+		void _RecalcIntegrals();
 		void _DeleteIntegrals();
 		void _IntegralChecks(int,double*,int*,int[]);
+		void _IntegralCheck(double,int*);
 		void _SolveIntegral(int,double*,double*,double*,double*,double*);
 		void _IntegrateEq14(int,double,double,double,double*);
 		void _IntegrateEq15(int,double,double,double*);
 		void _IntegrateEq17(int,double,double,double*);
 		void _IntegrateEq18(int,double,double,double*);
+
+		/* hybrid */
+		void _Hybrid(double,double,double,double*,double*,double*);
 };
