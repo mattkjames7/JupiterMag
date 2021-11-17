@@ -1,5 +1,5 @@
 # CFLAGS for CC
-CFLAGS=-lm -fopenmp -fPIC -std=c++11 -ggdb
+CFLAGS=-g -lm -fopenmp -fPIC -std=c++11 -W
 
 # Compiler
 CCo=g++ -c $(CFLAGS)
@@ -13,11 +13,12 @@ obj:
 	$(CCo) trap.cc -o trap.o 
 
 lib:
-	$(CC) libcon2020.cc *o -shared -o libcon2020.so
+	$(CC) libcon2020.cc *.o -shared -o libcon2020.so
 	
 test:
 	$(CC) test.cc *.o -o test
 
 clean:
-	rm -v *.o *.so *.bin
+	rm -v *.o 
+	rm -v *.so
 	rm test

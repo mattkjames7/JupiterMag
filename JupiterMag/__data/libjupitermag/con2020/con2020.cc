@@ -6,12 +6,12 @@ Con2020::Con2020() {
 	irho_ = 16.7;
 	r0_ = 7.8;
 	r0sq_ = r0_*r0_;
-	r1sq_ = r1_*r1_;
 	r1_ = 51.4;
+	r1sq_ = r1_*r1_;
 	d_ = 3.6;
 	xt_ = 9.3;
 	xp_ = 155.8;
-	eqtype_ = "integral";
+	eqtype_ = "hybrid";
 	Edwards_ = true;
 	ErrChk_ = true;
 	CartIn_ = true;
@@ -43,8 +43,8 @@ Con2020::Con2020(double mui, double irho, double r0, double r1,
 	irho_ = 16.7;
 	r0_ = 7.8;
 	r0sq_ = r0_*r0_;
-	r1sq_ = r1_*r1_;
 	r1_ = 51.4;
+	r1sq_ = r1_*r1_;
 	d_ = 3.6;
 	xt_ = 9.3;
 	xp_ = 155.8;
@@ -109,7 +109,6 @@ void Con2020::_SetModelFunctions() {
 	
 	/* now we need to set which model functions we will use
 	 * (analytic, intergral or hybrid) */
-	printf("%s\n",eqtype_);
 	if (strcmp(eqtype_,"analytic") == 0) {
 		_Model = &Con2020::_Analytic;
 	} else if (strcmp(eqtype_,"integral") == 0) {
@@ -372,7 +371,8 @@ void Con2020::_AnalyticInner(	double rho, double z,
 								double *Brho, double *Bz) {
 	
 	/* define a few required variables */
-	double zpd, zmd;
+	double zpd = z + d_;
+	double zmd = z - d_;
 
 	if (rho >= r0_) {
 		(this->*_LargeRho)(rho,z,zmd,zpd,r0sq_,Brho,Bz);
@@ -386,7 +386,8 @@ void Con2020::_AnalyticOuter(	double rho, double z,
 								double *Brho, double *Bz) {
 	
 	/* define a few required variables */
-	double zpd, zmd;
+	double zpd = z + d_;
+	double zmd = z - d_;
 
 	if (rho >= r1_) {
 		(this->*_LargeRho)(rho,z,zmd,zpd,r1sq_,Brho,Bz);
@@ -460,7 +461,7 @@ void Con2020::_LargeRhoEdwards(double rho, double z, double zmd,
 	double terma1 = (rho*a2/4)*(1.0/f2cubed - 1.0/f1cubed);
 	double terma2 = (2.0/rho)*clip(z,-d_,d_);
 	Brho[0] = mui_*(terma0 + terma1 + terma2);
-	printf("%f %f %f %f\n",mui_,terma0,terma1,terma2);
+
 	/* equation 13b */
 	double termb0 = log((zpd + f2)/(zmd + f1));
 	double termb1 = (a2/4.0)*(zpd/f2cubed - zmd/f1cubed);
@@ -491,7 +492,7 @@ void Con2020::_SmallRhoEdwards(double rho, double z, double zmd, double zpd,
 	
 	double terma0 = rhoov2*(1.0/f1 - 1.0/f2);
 	double terma1 = rho3ov16*(f3 - f4);
-	printf("%f %f %f\n",mui_,terma0,terma1);
+
 	Brho[0] = mui_*(terma0 + terma1);
 	
 	/* equation 9b */
@@ -546,8 +547,8 @@ void Con2020::_InitIntegrals() {
 	double ld;
 	for (zcase=0;zcase<6;zcase++) {
 		/* calculate the length of the arrays for each case */
-		rnbes_[zcase] = (int) (rlmx_array_[zcase]/dlambda_brho_);
-		znbes_[zcase] = (int) (zlmx_array_[zcase]/dlambda_bz_);
+		rnbes_[zcase] = (int) (rlmx_array_[zcase]/dlambda_brho_) - 1;
+		znbes_[zcase] = (int) (zlmx_array_[zcase]/dlambda_bz_) - 1;
 		
 		/* allocate the second dimension */
 		rlambda_[zcase] = new double[rnbes_[zcase]];
@@ -573,10 +574,10 @@ void Con2020::_RecalcIntegrals(){
 	for (zcase=0;zcase<6;zcase++) {	
 		/* initialize lambda for z and rho cases */
 		for (i=0;i<rnbes_[zcase];i++) {
-			rlambda_[zcase][i] = i*dlambda_brho_;
+			rlambda_[zcase][i] = (i+1)*dlambda_brho_;
 		}
 		for (i=0;i<znbes_[zcase];i++) {
-			zlambda_[zcase][i] = i*dlambda_bz_;
+			zlambda_[zcase][i] = (i+1)*dlambda_bz_;
 		}
 	
 		/* calculate j0(r0*lambda) */
@@ -587,7 +588,7 @@ void Con2020::_RecalcIntegrals(){
 		for (i=0;i<rnbes_[zcase];i++) {
 			ld = d_*rlambda_[zcase][i];
 			Eq14_[zcase][i] = rj0_lambda_r0_[zcase][i]*sinh(ld)/rlambda_[zcase][i];
-			Eq17_[zcase][i] = rj0_lambda_r0_[zcase][i]*exp(-ld);
+			Eq17_[zcase][i] = rj0_lambda_r0_[zcase][i]*exp(-ld)/rlambda_[zcase][i];
 		}	
 		for (i=0;i<znbes_[zcase];i++) {
 			ld = d_*zlambda_[zcase][i];
@@ -640,11 +641,11 @@ void Con2020::_Integral(double rho, double absz, double z,
 	
 	/* also the azimuthal field */
 	_AzimuthalField(rho,absz,z,Bphi);
-	printf("Inner: %f %f %f\n",Brho[0],Bphi[0],Bz[0]);
+
 	/* we need to calculate the outer edge contribution */
 	double oBrho, oBz;
 	_AnalyticOuter(rho,z,&oBrho,&oBz);
-	printf("Outer: %f %f\n",oBrho,oBz);
+
 	/*subtract it */
 	Brho[0] -= oBrho;
 	Bz[0] -= oBz;
