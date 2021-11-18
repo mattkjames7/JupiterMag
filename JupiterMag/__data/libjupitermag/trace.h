@@ -2,10 +2,11 @@
 #define __TRACE_H__
 #include <stdio.h>
 #include <stdlib.h>
-#include <vector.h>
-
+#include <vector>
+#include <math.h>
+#include "traceclosestpos.h"
 #endif
-
+using namespace std;
 /* this will be used for all of the model wrapper functions (configure model first) */
 typedef void (*FieldFuncPtr)(double,double,double,double*,double*,double*);
 
@@ -17,13 +18,21 @@ class Trace {
 		Trace(vector<FieldFuncPtr>);
 		~Trace();
 		
-		void InputPos(int,double*,double,*double*);
+		void InputPos(int,double*,double*,double*);
+		void SetTraceCFG(int, double,double,double,double,double,bool,int);
 		void SetTraceCFG();
 		
 		void SetAlpha(int,double*,double);
 	
-		void TraceField(int*,double**,double**,double**,double**,double**,double**);
+		/* tracing */
+		void TraceField(int*,double**,double**,double**,double**,double**,double**,double**);
 		void TraceField();
+		void StepVector(double,double,double,double,double*,double*,double*);
+		bool ContinueTrace(double,double,double,double*);
+		void Step(double,double,double,double*,double*,double*,double*,double*,double*,double*);
+		void ReverseElements(int, double*);
+		void RKMTrace(	double,double,double,int*,double*,
+						double*,double*,double*,double*,double*,double*)
 
 		/* get a single field vector */
 		void Field(double,double,double,double*,double*,double*);
@@ -32,9 +41,6 @@ class Trace {
 		void CalculateTraceDist(double**);
 		void CalculateTraceDist();
 		void _CalculateTraceDist();
-		void CalculateTraceR(double**);
-		void CalculateTraceR();
-		void _CalculateTraceR();
 		void CalculateTraceRnorm(double**);
 		void CalculateTraceRnorm();
 		void _CalculateTraceRnorm();
@@ -71,9 +77,10 @@ class Trace {
 
 		/* trace params */
 		int MaxLen_;
-		double DSMax_;
+		double MaxStep_, MinStep_, InitStep_;
 		bool Verbose_;
 		int TraceDir_;
+		double ErrMax_;
 		
 		/* trace coords */
 		int *nstep_;
@@ -94,23 +101,13 @@ class Trace {
 
 		/* booleans to tell the object what has been done */
 		bool inputPos_;
-		bool inputModelParams_,allocModelParams_;
-		bool traceConfigured_;
-		bool allocV_;
-		bool tracedGSM_,allocGSM_;
-		bool tracedGSE_,allocGSE_;
-		bool tracedSM_,allocSM_;
-		bool allocEndpoints_;
+		bool tracedField_,allocTrace_;
 		bool hasFootprints_,allocFootprints_;
+		bool allocEqFP_;
 		bool hasDist_,allocDist_;
-		bool hasR_,allocR_;
 		bool hasRnorm_,allocRnorm_;
 		bool hasHalpha_,allocHalpha_, allocHalpha3D_;
-		bool setModel_;
-		bool allocNstep_;
 		bool allocAlpha_;
-		bool allocEqFP_;
-		bool allocMP_;
 
 		
 
@@ -131,9 +128,7 @@ class Trace {
 		ModelFuncPtr ModelFunc_;
 	
 		/* hidden trace functions */
-		void _TraceGSM();
-		void _TraceGSE();
-		void _TraceSM();
+		void _TraceField();
 
 		/* halpha functions */
 		bool _CheckHalpha();

@@ -8,27 +8,18 @@ Trace::Trace(vector<FieldFuncPtr> Funcs) {
 
 	/* initialize all of the boolean parameters */
 	inputPos_ = false;
-	inputModelParams_ = false;
-	allocModelParams_ = false;
-	traceConfigured_ = false;
-	traced_ = false;
+	tracedField_ = false;
 	allocTrace_ = false;
 	hasFootprints_ = false;
 	allocFootprints_ = false;
 	hasDist_ = false;
 	allocDist_ = false;
-	hasR_ = false;
-	allocR_ = false;
 	hasRnorm_= false;
 	allocRnorm_ = false;
 	hasHalpha_= false;
 	allocHalpha_ = false;
 	allocHalpha3D_ = false;
-	setModel_ = false;
-	allocNstep_ = false;
 	allocEqFP_ = false;
-	allocEndpoints_ = false;
-	allocMP_ = false;
 	allocAlpha_ = false;
 	
 	/* default trace parameters */
@@ -46,23 +37,9 @@ Trace::~Trace() {
 		delete[] x0_;
 		delete[] y0_;
 		delete[] z0_;
-		delete[] Date_;
-		delete[] ut_;
-	}
-
-	/* parameters */
-	if (allocModelParams_) {
-		for (i=0;i<n_;i++) {
-			delete[] parmod_[i];
-		}
-		delete[] parmod_;
-		delete[] iopt_;
 	}
 
 	/* traces */
-	if (allocMP_) {
-		delete[] inMP_;
-	}
 	if (allocTrace_) {
 		for (i=0;i<n_;i++) {
 			delete[] x_[i];
@@ -71,6 +48,7 @@ Trace::~Trace() {
 			delete[] bx_[i];
 			delete[] by_[i];
 			delete[] bz_[i];
+			delete[] R_[i];
 		}
 		delete[] x_;
 		delete[] y_;
@@ -78,10 +56,7 @@ Trace::~Trace() {
 		delete[] bx_;
 		delete[] by_;
 		delete[] bz_;
-	}
-
-	/* nstep */
-	if (allocNstep_) {
+		delete[] R_;
 		delete[] nstep_;
 	}
 
@@ -99,14 +74,6 @@ Trace::~Trace() {
 			delete[] S_[i];
 		}
 		delete[] S_;
-	}
-
-	/* radial distance */
-	if (allocR_) {
-		for (i=0;i<n_;i++) {
-			delete[] R_[i];
-		}
-		delete[] R_;
 	}
 
 	/* r norm distance */
@@ -136,15 +103,13 @@ Trace::~Trace() {
 	}
 
 	/* footprint/endpoints */
-	if (allocEndpoints_) {
+	if (allocEqFP_) {
 		delete[] xfn_;
 		delete[] yfn_;
 		delete[] zfn_;
 		delete[] xfs_;
 		delete[] yfs_;
 		delete[] zfs_;
-	}	
-	if (allocEqFP_) {
 		delete[] xfe_;
 		delete[] yfe_;
 		delete[] zfe_;
@@ -176,15 +141,19 @@ void Trace::InputPos(	int n, double *x, double *y, double *z) {
 						
 }		
 
-void Trace::SetTraceCFG(int MaxLen, double StepSize, 
+void Trace::SetTraceCFG(int MaxLen, double MaxStep, double InitStep,
+						double MinStep, double ErrMax, double Delta,
 						bool Verbose, int TraceDir) {
 	
 	/* set all of the params */					
 	MaxLen_ = MaxLen;
-	DSMax_ = DSMax;
+	MaxStep_ = MaxStep;
+	MinStep_ = MinStep;
+	InitStep_ = InitStep;
 	Verbose_ = Verbose;
 	TraceDir_ = TraceDir;
-	
+	ErrMax_ = ErrMax;
+	Delta_ = Delta;
 	
 }
 
@@ -192,14 +161,17 @@ void Trace::SetTraceCFG() {
 	
 	/* set default params */					
 	MaxLen_ = 1000;
-	StepSize_ = 0.1;
+	MaxStep_ = 1.0
+	InitStep_ = 0.5
+	MinStep_ = 0.001;
 	Verbose_ = false;
 	TraceDir_ = 0;
-	
+	ErrMax_ = 0.0001;
+	Delta_ = 0.05;
 	
 }
 
-void Trace::SetAlpha(int nalpha, double *alpha, double Delta) {
+void Trace::SetAlpha(int nalpha, double *alpha) {
 	
 	/*NOTE: for each alpha, there will be two traces - one for the 
 	 * supplied value and one for alpha + 180 */
@@ -215,7 +187,6 @@ void Trace::SetAlpha(int nalpha, double *alpha, double Delta) {
 		alpha0_[i] = alpha[i]*dtor;
 		alpha1_[i] = fmod(alpha[i]*dtor + M_PI,2*M_PI);
 	}
-	Delta_ = Delta;
 }
 
 
@@ -229,7 +200,7 @@ Trace Trace::TracePosition(int i, double x, double y, double z) {
 	T.InputPos(1,&x,&y,&z);
 	
 	/* set the model up */
-	T.SetTraceCFG(MaxLen_,StepSize_,false,0);
+	T.SetTraceCFG(MaxLen_,MaxStep_,InitStep_,MinStep_,ErrMax_,false,0);
 	
 	/* run the GSM trace */
 	T.TraceField();
@@ -265,8 +236,8 @@ void Trace::_CalculateTraceHalpha(	int i, int j, double *halpha) {
 	double *yc1 = new double[nstep_[i]];
 	double *zc1 = new double[nstep_[i]];
 
-	TraceClosestPos(	R,
-						nstep_[i],x_[i],y_[i],z_[i],
+	traceClosestPos(	nstep_[i],x_[i],y_[i],z_[i],
+						bx_[i],by_[i],bz_[i],
 						T0.nstep_[0],T0.x_[0],T0.y_[0],T0.z_[0],
 						T1.nstep_[0],T1.x_[0],T1.y_[0],T1.z_[0],
 						xc0,yc0,zc0,xc1,yc1,zc1);
@@ -407,6 +378,9 @@ void Trace::_CalculateHalphaStartPoints(int i, int j,
 							double *xe0, double *ye0, double *ze0,
 							double *xe1, double *ye1, double *ze1) {
 	
+	/* this bit assumes that we are at z = 0 with vertical field lines,
+	 * which will not be strictly true - this might need rewriting at some
+	 * point (although I don't think it will make much of a difference */
 	/* calculate the tracing start points for each alpha */
 	double dt, dp, beta, dx, dy;
 	
@@ -563,7 +537,7 @@ void Trace::Step(	double x0, double y0, double z0,
 	Field(x[0],y[0],z[0],Bx,By,Bz);					
 }
 
-void Trace::ReverseElements(int n, double x) {
+void Trace::ReverseElements(int n, double *x) {
 	int i;
 	double tmp;
 	for (i=0;i<(n/2);i++) {
@@ -587,9 +561,11 @@ void Trace::RKMTrace(	double x0, double y0, double z0,
 	double step;
 	bool cont = ContinueTrace(x[0],y[0],z[0],&R[0]);
 	
-	/* trace in one direction (along the field)*/
+	/* trace in one direction */
 	if ((TraceDir_ == 1) || (TraceDir_ == 0)) {
-		step = InitStep_;
+		/* I think this will trace opposite to the direction of the field,
+		 * into the northern hemisphere */ 
+		step = -InitStep_;
 		while ((cont) && (nstep[0] < (MaxLen_/2 - 1))) {
 			Step(	x[nstep[0]-1],y[nstep[0]-1],z[nstep[0]-1],step,
 					&x[nstep[0]],&y[nstep[0]],&z[nstep[0]],
@@ -611,7 +587,9 @@ void Trace::RKMTrace(	double x0, double y0, double z0,
 	/* trace in the opposite direction */
 	cont = ContinueTrace(x[nstep[0]-1],y[nstep[0]-1],z[nstep[0]-1],&R[nstep[0]-1]);
 	if ((TraceDir_ == -1) || (TraceDir_ == 0)) {
-		step = -InitStep_;
+		/* hopefully this will go in the direction fo the field vectors
+		 * towards the southern hemisphere */
+		step = InitStep_;
 		while ((cont) && (nstep[0] < (MaxLen_ - 1))) {
 			Step(	x[nstep[0]-1],y[nstep[0]-1],z[nstep[0]-1],step,
 					&x[nstep[0]],&y[nstep[0]],&z[nstep[0]],
@@ -625,7 +603,7 @@ void Trace::RKMTrace(	double x0, double y0, double z0,
 
 
 void Trace::TraceField(	int *nstep,
-						double **x, double **y, double **z,
+						double **x, double **y, double **z, double **R,
 						double **bx, double **by, double **bz) {
 	
 	/* link the pointers within the object to those supplied by this 
@@ -636,7 +614,8 @@ void Trace::TraceField(	int *nstep,
 	z_ = z;					
 	bxm_ = bx;					
 	by_ = by;					
-	bz_ = bz;		
+	bz_ = bz;	
+	R_ = R;	
 	
 	/* call the tracing code */
 	_TraceField();
@@ -646,16 +625,14 @@ void Trace::TraceField(	int *nstep,
 void Trace::TraceField() {
 	
 	/* no pointers provided: allocate them*/
-	if (!allocNstep_) {
-		nstep_ = new int[n_];
-		allocNstep_ = true;
-	}
+	nstep_ = new int[n_];
 	x_ = new double*[n_];					
 	y_ = new double*[n_];					
 	z_ = new double*[n_];					
 	bx_ = new double*[n_];					
 	by_ = new double*[n_];					
 	bz_ = new double*[n_];
+	R_ = new double*[n_];
 	int i;
 	for (i=0;i<n_;i++) {
 		x_[i] = new double[MaxLen_];					
@@ -664,6 +641,7 @@ void Trace::TraceField() {
 		bx_[i] = new double[MaxLen_];					
 		by_[i] = new double[MaxLen_];					
 		bz_[i] = new double[MaxLen_];		
+		R_[i] = new double[MaxLen_];		
 	}		
 	allocTrace_ = true;
 	
@@ -690,28 +668,6 @@ void Trace::_TraceField() {
 		return;
 	}
 	
-	/* check we have a model */
-	if (!setModel_) {
-		printf("Set model function with SetModel() first\n");
-		return;
-	}
-	
-	/* check that we have model parameters */
-	if (!inputModelParams_) {
-		printf("Run SetModelParams() before tracing\n");
-		return;
-	}
-	
-	/* allocate the endpoints */
-	xfn_ = new double[n_];
-	yfn_ = new double[n_];
-	zfn_ = new double[n_];
-	xfs_ = new double[n_];
-	yfs_ = new double[n_];
-	zfs_ = new double[n_];
-	allocEndpoints_ = true;
-	
-
 	for (i=0;i<n_;i++) {
 		if (Verbose_) {
 			printf("\rTracing field line %d of %d (%6.2f)%%",i+1,n_,((float) (i+1)*100.0)/n_);
@@ -719,9 +675,9 @@ void Trace::_TraceField() {
 
 
 		/* perform trace */
+		RKMTrace(x0_[i],y0_[i],z0_[i],&nstep_[i],R_[i],x_[i],y_[i],z_[i],bx_[i],by_[i],bz_[i]);
 		
-		/*get B vectors along trace*/
-				
+		
 	}	
 	if (Verbose_) { 
 		printf("\n");
@@ -762,39 +718,6 @@ void Trace::_CalculateTraceDist() {
 	hasDist_ = true;
 }
 
-
-
-void Trace::CalculateTraceR() {
-	int i;
-	R_ = new double*[n_];
-	for (i=0;i<n_;i++) {
-		R_[i] = new double[MaxLen_];
-	}
-	allocR_ = true;
-	
-	_CalculateTraceR();
-}
-
-void Trace::CalculateTraceR(double **R) {
-	
-	R_ = R;
-	
-	_CalculateTraceR();
-}
-
-void Trace::_CalculateTraceR() {
-	int i, j;
-	double x2, y2, z2;
-	for (i=0;i<n_;i++) {
-		for (j=0;j<nstep_[i];j++) {
-			x2 = x_[i][j]*x_[i][j];
-			y2 = y_[i][j]*y_[i][j];
-			z2 = z_[i][j]*z_[i][j];
-			S_[i][j] = S_[i][j-1] + sqrt(x2 + y2 + z2);
-		}
-	}
-	hasR_ = true;
-}
 
 
 void Trace::CalculateTraceRnorm() {
@@ -846,16 +769,103 @@ void Trace::CalculateTraceFP(double **FP) {
 }
 
 void Trace::_CalculateTraceFP() {
+
+	/* before running this we should check that the following functions 
+	 * have been called:
+	 * 1. TraceField()
+	 * 2. CalcualteTraceDist() */
+	if (!tracedField_) {
+		printf("Call TraceField() before calculating footprints\n");
+		return;
+	}
+	if (!hasDist_) {
+		printf("Call CalcualteTraceDist() before calculating footprints\n");
+		return;
+	}
 	
+
+	/* allocate the endpoints */
+	xfn_ = new double[n_];
+	yfn_ = new double[n_];
+	zfn_ = new double[n_];
+	xfs_ = new double[n_];
+	yfs_ = new double[n_];
+	zfs_ = new double[n_];
+	allocEndpoints_ = true;
+	
+	/* and "equatorial" footprints" */	
 	xfe_ = new double[n_];
 	yfe_ = new double[n_];
 	zfe_ = new double[n_];
 	allocEqFP_ = true;
 	
-	int i, j;
+	double rho, latn, lats, lonn, lons, lone, Lshell, FlLen;
+	double rad2deg = 180/M_PI;
+	int i, j, imaxR;
 	for (i=0;i<n_;i++) {
+		/* north footprint */
+		if ((TraceDir_ == 0) || (TraceDir_ == 1)) {
+			xfn_[i] = x_[i][0];
+			yfn_[i] = y_[i][0];
+			zfn_[i] = z_[i][0];
+			
+			/* latitude (not co-lat)  and longitude - in degrees*/
+			rho = sqrt(xfn_[i]*xfn_[i] + yfn_[i]*yfn_[i]);
+			latn = rad2deg*atan2(zfn_[i],rho);
+			lonn = rad2deg*atan2(yfn_[i],xfn_[i]);
+		} else {
+			latn = NAN;
+			lonn = NAN;
+		}
 		
-							
+		/* south footprint */
+		if ((TraceDir_ == 0) || (TraceDir_ == -1)) {
+			xfs_[i] = x_[i][nstep_[i]-1];
+			yfs_[i] = y_[i][nstep_[i]-1];
+			zfs_[i] = z_[i][nstep_[i]-1];
+			
+			/* latitude (not co-lat)  and longitude - in degrees*/
+			rho = sqrt(xfs_[i]*xfs_[i] + yfs_[i]*yfs_[i]);
+			lats = rad2deg*atan2(zfs_[i],rho);
+			lons = rad2deg*atan2(yfs_[i],xfs_[i]);
+		} else {
+			lats = NAN;
+			lons = NAN;
+		}				
+		
+		/* equatorial (sort of, axtually at Rmax) footprint */
+		if (TraceDir_ == 0) {
+			/* find the furthest point along the field line */
+			imaxR = -1;
+			Lshell = 0.0;
+			for (j=0;j<nstep_[i];j++) {
+				if (R_[i][j] > Lshell) {
+					Lshell = R_[i][j];
+					imaxR = j;
+				}
+			}
+			
+			xfe_[i] = x_[i][imaxR];
+			yfe_[i] = y_[i][imaxR];
+			zfe_[i] = z_[i][imaxR];
+			
+			/* latitude (not co-lat)  and longitude - in degrees*/
+			lone = rad2deg*atan2(yfe_[i],xfe_[i]);
+			
+			/* field length */
+			FlLen = S_[i][nstep_[i]];
+		} else {
+			Lshell = NAN;
+			lone = NAN;
+			FlLen = NAN;
+		}	
+		FP_[i][0] = latn;
+		FP_[i][1] = lonn;
+		FP_[i][2] = lats;
+		FP_[i][3] = lons;
+		FP_[i][4] = lone;
+		FP_[i][5] = Lshell;
+		FP_[i][6] = FlLen;
 	}
 	hasFootprints_ = true;
 }
