@@ -11,7 +11,7 @@ Con2020::Con2020() {
 	d_ = 3.6;
 	xt_ = 9.3;
 	xp_ = 155.8;
-	eqtype_ = "hybrid";
+	strcpy(eqtype_,"hybrid");
 	Edwards_ = true;
 	ErrChk_ = true;
 	CartIn_ = true;
@@ -48,7 +48,7 @@ Con2020::Con2020(double mui, double irho, double r0, double r1,
 	d_ = 3.6;
 	xt_ = 9.3;
 	xp_ = 155.8;
-	eqtype_ = "hybrid";
+	strcpy(eqtype_,"hybrid");
 	Edwards_ = Edwards;
 	ErrChk_ = ErrChk;
 	CartIn_ = CartIn;
@@ -892,19 +892,27 @@ void Con2020::SetEdwardsEqs(bool Edwards) {
 	_SetModelFunctions();
 }
 
+bool Con2020::GetEdwardsEqs() {
+	return Edwards_;
+}
+
 void Con2020::SetEqType(const char *eqtype) {
 	
-	if (	(strcmp(eqtype_,"analytic") == 0) ||
-			(strcmp(eqtype_,"integral") == 0) ||
-			(strcmp(eqtype_,"hybrid") == 0)) {
+	if (	(strcmp(eqtype,"analytic") == 0) ||
+			(strcmp(eqtype,"integral") == 0) ||
+			(strcmp(eqtype,"hybrid") == 0)) {
 		/* this is a valid string - update it */
-		eqtype_ = eqtype;
+		strcpy(eqtype_,eqtype);
 		
 		_SetModelFunctions();
 	} else {
 		printf("eqtype '%s' not recognised - ignoring\n",eqtype);
 	}
 	
+}
+
+void Con2020::GetEqType(char *eqtype) {
+	strcpy(eqtype,eqtype_);
 }
 	
 void Con2020::SetCurrentDensity(double mui) {
@@ -916,6 +924,10 @@ void Con2020::SetCurrentDensity(double mui) {
 		printf("Non-finite value - ignoring\n");
 	}
 }
+
+double Con2020::GetCurrentDensity() {
+	return mui_;
+}
 	
 void Con2020::SetRadCurrentDensity(double irho) {
 	if (isfinite(irho)) {
@@ -924,6 +936,10 @@ void Con2020::SetRadCurrentDensity(double irho) {
 	} else {
 		printf("Non-finite value - ignoring\n");
 	}	
+}
+
+double Con2020::GetRadCurrentDensity() {
+	return irho_;
 }
 
 void Con2020::SetR0(double r0) {
@@ -938,6 +954,10 @@ void Con2020::SetR0(double r0) {
 	}
 }
 
+double Con2020::GetR0() {
+	return r0_;
+}
+
 void Con2020::SetR1(double r1) {
 	if (isfinite(r1) && (r1 >= 0.0)) {
 		/* good value (hopefully) */
@@ -948,6 +968,10 @@ void Con2020::SetR1(double r1) {
 	} else {
 		printf("r1 must have a positive value\n");
 	}
+}
+
+double Con2020::GetR1() {
+	return r1_;
 }
 
 void Con2020::SetCSHalfThickness(double d) {
@@ -961,6 +985,10 @@ void Con2020::SetCSHalfThickness(double d) {
 		printf("d must have a positive value\n");
 	}
 }	
+
+double Con2020::GetCSHalfThickness() {
+	return d_;
+}
 	
 void Con2020::SetCSTilt(double xt) {
 	
@@ -975,6 +1003,10 @@ void Con2020::SetCSTilt(double xt) {
 	}
 }
 
+double Con2020::GetCSTilt() {
+	return xt_;
+}
+
 void Con2020::SetCSTiltAzimuth(double xp) {
 	if (isfinite(xp)) {
 		/* good value (hopefully) */
@@ -987,9 +1019,16 @@ void Con2020::SetCSTiltAzimuth(double xp) {
 	}
 }		
 		
+double Con2020::GetCSTiltAzimuth() {
+	return xp_;
+}
 		
 void Con2020::SetErrCheck(bool ErrChk) {
 	ErrChk_ = ErrChk;
+}
+
+bool Con2020::GetErrCheck() {
+	return ErrChk_;
 }
 
 void Con2020::SetCartIn(bool CartIn) {
@@ -997,7 +1036,15 @@ void Con2020::SetCartIn(bool CartIn) {
 	_SetIOFunctions();
 }
 
+bool Con2020::GetCartIn() {
+	return CartIn_;
+}
+
 void Con2020::SetCartOut(bool CartOut) {
 	CartOut_ = CartOut;
 	_SetIOFunctions();
+}
+
+bool Con2020::GetCartOut() {
+	return CartOut_;
 }

@@ -3,17 +3,37 @@
 void Con2020Field(int n, double *p0, double *p1, double *p2,
 			double *B0, double *B1, double *B2) {
 
-	/* could create a separaate function for default model */
+	/* could create a separate function for default model */
 	con2020.Field(n,p0,p1,p2,B0,B1,B2);
 						
 }
 
-void GetModelParams(double *mui, double *irho, double *r0, double *r1,
-				double *d, double *xt, double *xp, const char *eqtype,
-				bool *Edwards, bool *ErrChk, bool *CartIn, bool *CartOut) {
-					
+void Con2020FieldVector(double p0, double p1, double p2,
+			double *B0, double *B1, double *B2) {
+
+	/* could create a separate function for default model */
+	con2020.Field(p0,p1,p2,B0,B1,B2);
+						
 }
-void SetModelParams(double mui, double irho, double r0, double r1,
+
+void GetCon2020Params(double *mui, double *irho, double *r0, double *r1,
+				double *d, double *xt, double *xp, char *eqtype,
+				bool *Edwards, bool *ErrChk, bool *CartIn, bool *CartOut) {
+	
+	mui[0] = con2020.GetCurrentDensity();
+	irho[0] = con2020.GetRadCurrentDensity();
+	r0[0] = con2020.GetR0();
+	r1[0] = con2020.GetR1();
+	d[0] = con2020.GetCSHalfThickness();
+	xt[0] = con2020.GetCSTilt();
+	xp[0] = con2020.GetCSTiltAzimuth();
+	Edwards[0] = con2020.GetEdwardsEqs();
+	ErrChk[0] = con2020.GetErrCheck();
+	CartIn[0] = con2020.GetCartIn();
+	CartOut[0] = con2020.GetCartOut();
+	con2020.GetEqType(eqtype);	
+}
+void SetCon2020Params(double mui, double irho, double r0, double r1,
 				double d, double xt, double xp, const char *eqtype,
 				bool Edwards, bool ErrChk, bool CartIn, bool CartOut) {
 	

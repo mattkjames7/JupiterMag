@@ -23,12 +23,19 @@ struct schmidtcoeffs {
 class Internal {
 	public:
 		Internal(const char*);
+		Internal(unsigned char *);
 		~Internal();
 	
 		/*these two functions will calculate the field in Cartesian RH 
 		 * system III coordinates.*/
-		void Field(int,double*,double*,double*,double*,double*,double*,bool,bool);
+		void Field(int,double*,double*,double*,double*,double*,double*);
+		void Field(double,double,double,double*,double*,double*);
 		
+		/* set model parameters*/
+		void SetCartIn(bool);
+		void SetCartOut(bool);
+		bool GetCartIn();
+		bool GetCartOut();
 		
 	private:
 		/*Schmidt coefficients */
@@ -54,6 +61,8 @@ class Internal {
 		void _SphHarm(int,double*,double*,double*,double*,double*,double*);
 		
 		/* coordinate/field vector rotation */
+		bool CartIn_;
+		bool CartOut_;
 		void _Cart2Pol(int,double*,double*,double*,double*,double*,double*);
 		void _BPol2BCart(int,double*,double*,double*,double*,double*,double*,double*,double*);
 	

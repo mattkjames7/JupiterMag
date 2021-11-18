@@ -16,6 +16,8 @@ Internal::Internal(const char *model) {
 		ptr = &_binary_vip4coeffs_bin_start;
 	}
 	
+	
+	
 	/* read the coeffs into the object */
 	_LoadSchmidt(ptr);
 	
@@ -23,6 +25,25 @@ Internal::Internal(const char *model) {
 	_Schmidt();
 	_CoeffGrids();
 	
+	/* set I/O coords */
+	CartIn_ = true;
+	CartOut_ = true;
+	
+}
+
+Internal::Internal(unsigned char *ptr) {
+	
+	
+	/* read the coeffs into the object */
+	_LoadSchmidt(ptr);
+	
+	/* calcualte Schmidt normalized coefficient grids */
+	_Schmidt();
+	_CoeffGrids();
+	
+	/* set I/O coords */
+	CartIn_ = true;
+	CartOut_ = true;	
 }
 
 Internal::~Internal() {
@@ -40,6 +61,22 @@ Internal::~Internal() {
 	delete[] Snm_;
 	delete[] g_;
 	delete[] h_;
+}
+
+void Internal::SetCartIn(bool CartIn) {
+	CartIn_ = CartIn;
+}
+
+bool Internal::GetCartIn() {
+	return CartIn_;
+}
+
+void Internal::SetCartOut(bool CartOut) {
+	CartOut_ = CartOut;
+}
+
+bool Internal::GetCartOut() {
+	return CartOut_;
 }
 
 void Internal::_LoadSchmidt(unsigned char *ptr){
@@ -388,15 +425,14 @@ void Internal::_BPol2BCart(int l, double *t, double *p,
 }
 
 void Internal::Field(int l, double *p0, double *p1, double *p2,
-					double *B0, double *B1, double *B2,
-					bool PolIn, bool PolOut) {
+					double *B0, double *B1, double *B2) {
 	
 	/* some IO pointers */
 	int i;
 	double *r, *t, *p, *Br, *Bt, *Bp;
 	
 	/* set the input pointers */
-	if (PolIn) {
+	if (!CartIn_) {
 		r = p0;
 		t = p1;
 		p = p2;
@@ -408,7 +444,7 @@ void Internal::Field(int l, double *p0, double *p1, double *p2,
 	}
 	
 	/* set up the output pointers */
-	if (PolOut) {
+	if (!CartOut_) {
 		Br = B0;
 		Bt = B1;
 		Bp = B2;
@@ -422,7 +458,7 @@ void Internal::Field(int l, double *p0, double *p1, double *p2,
 	_SphHarm(l,r,t,p,Br,Bt,Bp);
 	
 	/* rotate field vector if needed and delete output arrays */
-	if (!PolOut) {
+	if (CartOut_) {
 		_BPol2BCart(l,t,p,Br,Bt,Bp,B0,B1,B2);
 		delete[] Br;
 		delete[] Bt;
@@ -430,9 +466,37 @@ void Internal::Field(int l, double *p0, double *p1, double *p2,
 	}
 	
 	/* delete input arrays */
-	if (!PolIn) {
+	if (CartIn_) {
 		delete[] r;
 		delete[] t;
 		delete[] p;
+	}
+}
+
+void Internal::Field(	double p0, double p1, double p2,
+						double *B0, double *B1, double *B2) {
+	
+	/* temporary variables*/
+	double r, t, p, Br, Bt, Bp;
+	
+	/* convert input coords (or not) */
+	if (!CartIn_) {
+		r = p0;
+		t = p1;
+		p = p2;
+	} else { 
+		_Cart2Pol(1,&p0,&p1,&p2,&r,&t,&p);
+	}
+	
+	/* call the model */
+	_SphHarm(1,&r,&t,&p,&Br,&Bt,&Bp);
+	
+	/* rotate field vector if needed and delete output arrays */
+	if (CartOut_) {
+		_BPol2BCart(1,&t,&p,&Br,&Bt,&Bp,B0,B1,B2);
+	} else {
+		B0[0] = Br;
+		B1[0] = Bt;
+		B2[0] = Bp;
 	}
 }

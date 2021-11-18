@@ -18,4 +18,17 @@ extern "C" {
 					double *B0, double *B1, double *B2,
 					bool PolIn, bool PolOut, const char *Model);
 
+
+	void JRM09FieldArray(	int n, double *p0, double *p1, double *p2,
+						double *B0, double *B1, double *B2);
+	void JRM09Field(	double p0, double p1, double p2,
+						double *B0, double *B1, double *B2);
+	void SetJRM09Config(bool CartIn, bool CartOut);
+	void GetJRM09Config(bool *CartIn, bool *CartOut);
+	void VIP4FieldArray(	int n, double *p0, double *p1, double *p2,
+						double *B0, double *B1, double *B2);
+	void VIP4Field(	double p0, double p1, double p2,
+						double *B0, double *B1, double *B2);
+	void SetVIP4Config(bool CartIn, bool CartOut);
+	void GetVIP4Config(bool *CartIn, bool *CartOut);
 }
