@@ -34,9 +34,9 @@ c_bool_ptr = np.ctypeslib.ndpointer(ct.c_bool,flags="C_CONTIGUOUS")
 
 
 #con2020 wrapper function
-_CCon2020Field = libcon2020.Con2020Field
-_CCon2020Field.restype = None
-_CCon2020Field.argtypes = [		c_int,			#number of input elements
+_CCon2020FieldArray = libcon2020.Con2020FieldArray
+_CCon2020FieldArray.restype = None
+_CCon2020FieldArray.argtypes = [c_int,			#number of input elements
 								c_double_ptr,	#x/r array
 								c_double_ptr,	#y/t array
 								c_double_ptr,	#z/p array
@@ -44,9 +44,9 @@ _CCon2020Field.argtypes = [		c_int,			#number of input elements
 								c_double_ptr,	#Bx/Br output array
 								c_double_ptr]	#Bx/Br output array]
 								
-_CCon2020FieldVector = libcon2020.Con2020FieldVector
-_CCon2020FieldVector.restype = None
-_CCon2020FieldVector.argtypes = [	c_double,	#x/r scalar
+_CCon2020Field = libcon2020.Con2020Field
+_CCon2020Field.restype = None
+_CCon2020Field.argtypes = [		c_double,	#x/r scalar
 								c_double,	#y/t scalar
 								c_double,	#z/p scalar
 								c_double_ptr,	#Bx/Br output scalar

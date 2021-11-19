@@ -1,6 +1,8 @@
 #include "libcon2020.h"
 
-void Con2020Field(int n, double *p0, double *p1, double *p2,
+Con2020 con2020;
+
+void Con2020FieldArray(int n, double *p0, double *p1, double *p2,
 			double *B0, double *B1, double *B2) {
 
 	/* could create a separate function for default model */
@@ -8,7 +10,7 @@ void Con2020Field(int n, double *p0, double *p1, double *p2,
 						
 }
 
-void Con2020FieldVector(double p0, double p1, double p2,
+void Con2020Field(double p0, double p1, double p2,
 			double *B0, double *B1, double *B2) {
 
 	/* could create a separate function for default model */

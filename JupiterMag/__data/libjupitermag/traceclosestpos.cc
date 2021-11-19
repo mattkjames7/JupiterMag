@@ -75,7 +75,7 @@ void _ClosestPos(	double px, double py, double pz,
 
 
 void _Closest4Pos(	double px, double py, double pz,
-					double *x, double *y, double *z, int n,
+					int n, double *x, double *y, double *z,
 					int *nc, double *cx, double *cy, double *cz) {
 	int i, k=0;
 	if (n == 0) {

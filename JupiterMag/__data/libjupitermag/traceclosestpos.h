@@ -19,7 +19,7 @@ void _ClosestPos(	double px, double py, double pz,
 					double *xc, double *yc, double *zc );
 					
 void _Closest4Pos(	double px, double py, double pz,
-					double *x, double *y, double *z, int n,
+					int n, double *x, double *y, double *z, 
 					int *nc, double *cx, double *cy, double *cz);
 
 void _ClosestPosSpline(int nc, double *cx, double *cy, double *cz,

@@ -1,8 +1,12 @@
 #include "libinternal.h"
 
+/* we want to initialize the model objects witht heir parameters */
+Internal vip4("VIP4");
+Internal jrm09("JRM09");
+
 void InternalField(int l, double *p0, double *p1, double *p2,
 					double *B0, double *B1, double *B2,
-					bool PolIn, bool PolOut, const char *Model) {
+					const char *Model) {
 
 	/* select the appropriate model (default to VIP4) */
 	if (strcmp(Model,"VIP4") == 0) {

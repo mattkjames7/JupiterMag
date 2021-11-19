@@ -14,9 +14,10 @@ obj:
 	ld -r -b binary -o jrm09coeffs.o jrm09coeffs.bin
 	ld -r -b binary -o vip4coeffs.o vip4coeffs.bin
 	$(CCo) internal.cc -o internal.o 
+	$(CCo) libinternal.cc -o libinternal.o
 
 lib:
-	$(CC) libinternal.cc *o -shared -o libinternal.so
+	$(CC) *.o -shared -o libinternal.so
 
 clean:
 	rm -v *.o *.so *.bin

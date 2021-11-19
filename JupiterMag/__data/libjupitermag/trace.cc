@@ -4,7 +4,7 @@ Trace::Trace(vector<FieldFuncPtr> Funcs) {
 	
 	/* set the field fucntion pointers vector */
 	Funcs_ = Funcs;
-	nf_ = Funcs.size;
+	nf_ = Funcs.size();
 
 	/* initialize all of the boolean parameters */
 	inputPos_ = false;
@@ -129,7 +129,7 @@ void Trace::InputPos(	int n, double *x, double *y, double *z) {
 	x0_ = new double[n];
 	y0_ = new double[n];
 	z0_ = new double[n];
-	
+	int i;
 	for (i=0;i<n_;i++) {
 		x0_[i] = x[i];
 		y0_[i] = y[i];
@@ -154,21 +154,21 @@ void Trace::SetTraceCFG(int MaxLen, double MaxStep, double InitStep,
 	TraceDir_ = TraceDir;
 	ErrMax_ = ErrMax;
 	Delta_ = Delta;
-	
+	MaxR_ = 1000.0;
 }
 
 void Trace::SetTraceCFG() {
 	
 	/* set default params */					
 	MaxLen_ = 1000;
-	MaxStep_ = 1.0
-	InitStep_ = 0.5
+	MaxStep_ = 1.0;
+	InitStep_ = 0.5;
 	MinStep_ = 0.001;
 	Verbose_ = false;
 	TraceDir_ = 0;
 	ErrMax_ = 0.0001;
 	Delta_ = 0.05;
-	
+	MaxR_ = 1000.0;
 }
 
 void Trace::SetAlpha(int nalpha, double *alpha) {
@@ -178,14 +178,16 @@ void Trace::SetAlpha(int nalpha, double *alpha) {
 	/* set the alpha pointer */
 	nalpha_ = nalpha;
 	//alpha_ = alpha;
-	alpha0_ = new double[nalpha_];
-	alpha1_ = new double[nalpha_];
-	allocAlpha_ = true;
-	double dtor = M_PI/180.0;
-	int i;
-	for (i=0;i<nalpha;i++) {
-		alpha0_[i] = alpha[i]*dtor;
-		alpha1_[i] = fmod(alpha[i]*dtor + M_PI,2*M_PI);
+	if (nalpha > 0) {
+		alpha0_ = new double[nalpha_];
+		alpha1_ = new double[nalpha_];
+		allocAlpha_ = true;
+		double dtor = M_PI/180.0;
+		int i;
+		for (i=0;i<nalpha;i++) {
+			alpha0_[i] = alpha[i]*dtor;
+			alpha1_[i] = fmod(alpha[i]*dtor + M_PI,2*M_PI);
+		}
 	}
 }
 
@@ -193,14 +195,14 @@ void Trace::SetAlpha(int nalpha, double *alpha) {
 Trace Trace::TracePosition(int i, double x, double y, double z) {
 	/* return a new trace object at the supplied position using the
 	 * parameters at time i */
-	Trace T;
+	Trace T(Funcs_);
 	
 	/* input position and time - I am pretty certain that the midpoints
 	 * of the field lines are stored in SM coords */
 	T.InputPos(1,&x,&y,&z);
 	
 	/* set the model up */
-	T.SetTraceCFG(MaxLen_,MaxStep_,InitStep_,MinStep_,ErrMax_,false,0);
+	T.SetTraceCFG(MaxLen_,MaxStep_,InitStep_,MinStep_,ErrMax_,Delta_,false,0);
 	
 	/* run the GSM trace */
 	T.TraceField();
@@ -219,10 +221,6 @@ void Trace::_CalculateTraceHalpha(	int i, int j, double *halpha) {
 
 	/* get the trace starting points first */
 	_CalculateHalphaStartPoints(i,j,&xe0,&ye0,&ze0,&xe1,&ye1,&ze1);
-
-	/* calculate rotation matrices */
-	MatrixArray R = TraceRotationMatrices(nstep_[i],bx_[i],by_[i],bz_[i]);
-	
 
 	/* do two traces */
 	Trace T0 = TracePosition(i,xe0,ye0,ze0);
@@ -439,7 +437,7 @@ bool Trace::ContinueTrace(double x, double y, double z, double *R) {
 	
 	R[0] = sqrt(x*x + y*y + z*z);
 	if (R[0] >= MaxR_) {
-		return True;
+		return true;
 	}
 
 	/* Jupiter's equatorial and polar Radii (a and b, respectively)
@@ -448,7 +446,7 @@ bool Trace::ContinueTrace(double x, double y, double z, double *R) {
 	double b = 0.935;
 		
 	/* figure out some latitudes (t) */
-	double rho = sqrt(x**2 + y**2);
+	double rho = sqrt(x*x + y*y);
 	double t = atan2(z,rho);
 		
 	/* work out the Radius of Jupiter at that latitude */
@@ -481,7 +479,7 @@ void Trace::Step(	double x0, double y0, double z0,
 	double x2,y2,z2;
 	double x3,y3,z3;
 	double x4,y4,z4;
-	double step3 = step[0]/3.0
+	double step3 = step[0]/3.0;
 	double Err;
 	bool repeat = true;	
 	
@@ -496,9 +494,9 @@ void Trace::Step(	double x0, double y0, double z0,
 		y2 = y0 + 0.5*(ry1 + ry2);
 		z2 = z0 + 0.5*(rz1 + rz2);
 		StepVector(x2,y2,z2,step3,&rx3,&ry3,&rz3);
-		x3 = x0 + 0.375(rx1 + 3*rx3);
-		y3 = y0 + 0.375(ry1 + 3*ry3);
-		z3 = z0 + 0.375(rz1 + 3*rz3);
+		x3 = x0 + 0.375*(rx1 + 3*rx3);
+		y3 = y0 + 0.375*(ry1 + 3*ry3);
+		z3 = z0 + 0.375*(rz1 + 3*rz3);
 		StepVector(x3,y3,z3,step3,&rx4,&ry4,&rz4);
 		x4 = x0 + 1.5*(rx1 - 3*rx3 + 4*rx4);
 		y4 = y0 + 1.5*(ry1 - 3*ry3 + 4*ry4);
@@ -567,7 +565,7 @@ void Trace::RKMTrace(	double x0, double y0, double z0,
 		 * into the northern hemisphere */ 
 		step = -InitStep_;
 		while ((cont) && (nstep[0] < (MaxLen_/2 - 1))) {
-			Step(	x[nstep[0]-1],y[nstep[0]-1],z[nstep[0]-1],step,
+			Step(	x[nstep[0]-1],y[nstep[0]-1],z[nstep[0]-1],&step,
 					&x[nstep[0]],&y[nstep[0]],&z[nstep[0]],
 					&Bx[nstep[0]],&By[nstep[0]],&Bz[nstep[0]]);
 			cont = ContinueTrace(x[nstep[0]],y[nstep[0]],z[nstep[0]],&R[nstep[0]]);
@@ -591,7 +589,7 @@ void Trace::RKMTrace(	double x0, double y0, double z0,
 		 * towards the southern hemisphere */
 		step = InitStep_;
 		while ((cont) && (nstep[0] < (MaxLen_ - 1))) {
-			Step(	x[nstep[0]-1],y[nstep[0]-1],z[nstep[0]-1],step,
+			Step(	x[nstep[0]-1],y[nstep[0]-1],z[nstep[0]-1],&step,
 					&x[nstep[0]],&y[nstep[0]],&z[nstep[0]],
 					&Bx[nstep[0]],&By[nstep[0]],&Bz[nstep[0]]);
 			cont = ContinueTrace(x[nstep[0]],y[nstep[0]],z[nstep[0]],&R[nstep[0]]);
@@ -612,7 +610,7 @@ void Trace::TraceField(	int *nstep,
 	x_ = x;					
 	y_ = y;					
 	z_ = z;					
-	bxm_ = bx;					
+	bx_ = bx;					
 	by_ = by;					
 	bz_ = bz;	
 	R_ = R;	
@@ -667,7 +665,7 @@ void Trace::_TraceField() {
 		printf("Need InputPos() before trace\n");
 		return;
 	}
-	
+	int i;
 	for (i=0;i<n_;i++) {
 		if (Verbose_) {
 			printf("\rTracing field line %d of %d (%6.2f)%%",i+1,n_,((float) (i+1)*100.0)/n_);
@@ -682,6 +680,7 @@ void Trace::_TraceField() {
 	if (Verbose_) { 
 		printf("\n");
 	}
+	tracedField_ = true;
 }
 
 
@@ -754,7 +753,7 @@ void Trace::CalculateTraceFP() {
 	int i;
 	FP_ = new double*[n_];
 	for (i=0;i<n_;i++) {
-		FP_[i] = new double[15];
+		FP_[i] = new double[7];
 	}
 	allocFootprints_ = true;
 	
@@ -791,7 +790,6 @@ void Trace::_CalculateTraceFP() {
 	xfs_ = new double[n_];
 	yfs_ = new double[n_];
 	zfs_ = new double[n_];
-	allocEndpoints_ = true;
 	
 	/* and "equatorial" footprints" */	
 	xfe_ = new double[n_];
@@ -931,7 +929,7 @@ void Trace::GetTraceRnorm(double **Rnorm) {
 void Trace::GetTraceFootprints(double **FP) {
 	int i, j;
 	for (i=0;i<n_;i++) {
-		for (j=0;j<15;j++) {
+		for (j=0;j<7;j++) {
 			FP[i][j] = FP_[i][j];
 		}
 	}	

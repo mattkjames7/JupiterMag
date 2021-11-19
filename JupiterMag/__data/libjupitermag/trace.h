@@ -22,7 +22,7 @@ class Trace {
 		void SetTraceCFG(int, double,double,double,double,double,bool,int);
 		void SetTraceCFG();
 		
-		void SetAlpha(int,double*,double);
+		void SetAlpha(int,double*);
 	
 		/* tracing */
 		void TraceField(int*,double**,double**,double**,double**,double**,double**,double**);
@@ -32,7 +32,7 @@ class Trace {
 		void Step(double,double,double,double*,double*,double*,double*,double*,double*,double*);
 		void ReverseElements(int, double*);
 		void RKMTrace(	double,double,double,int*,double*,
-						double*,double*,double*,double*,double*,double*)
+						double*,double*,double*,double*,double*,double*);
 
 		/* get a single field vector */
 		void Field(double,double,double,double*,double*,double*);
@@ -81,6 +81,7 @@ class Trace {
 		bool Verbose_;
 		int TraceDir_;
 		double ErrMax_;
+		double MaxR_;
 		
 		/* trace coords */
 		int *nstep_;
@@ -123,9 +124,6 @@ class Trace {
 		double ***Halpha3D_;
 		double **FP_;
 		
-		/* model */
-		const char *Model_;
-		ModelFuncPtr ModelFunc_;
 	
 		/* hidden trace functions */
 		void _TraceField();

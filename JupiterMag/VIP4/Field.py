@@ -1,9 +1,11 @@
 import numpy as np
-from ._CFunctions import _CCon2020Field
+from ._CFunctions import _CVIP4FieldArray,_CGetVIP4Config,_CSetVIP4Config
 
-def Con2020Field(p0,p1,p2,PolIn=False,PolOut=False):
+def Field(p0,p1,p2,CartIn=True,CartOut=True):
 	'''
-	Call one of the Con2020 field model for Jupiter.
+	Return the Con 2020 magnetic field vector(s). Check the model 
+	config using JupiterMag.Con2020.Config() to see whether Cartesian or
+	polar coordinates are used for input/output.
 	
 	Inputs
 	======
@@ -16,25 +18,17 @@ def Con2020Field(p0,p1,p2,PolIn=False,PolOut=False):
 	p2 : float
 		Array/scalar containing z or phi right-handed System III 
 		coordinate
-	PolIn : bool
-		If True - input coordinates are r, theta and phi (radial 
-		distance in Rj, colatitude in radians and east longitude in
-		radians), otherwise inputs are Cartesian x, y and z in Rj.
-	PolOut : bool
-		If True - output field vector is in polar coordinates, otherwise
-		it is returned in Cartesian System III coordinates.
 
 	Returns
 	=======
 	B0 : float
-		Either Bx or Br (depending on PolOut) in nT
+		Either Bx or Br in nT
 	B1 : float
 		Either By or Btheta in nT
 	B2 : float
 		Either Bz or Bphi in nT
 	
 	'''
-
 
 	#make sure that the inputs are the correct type
 	if (hasattr(p0,'__iter__') == False):
@@ -50,13 +44,15 @@ def Con2020Field(p0,p1,p2,PolIn=False,PolOut=False):
 	else:
 		_p2 = np.array(p2).astype('float64')
 	_l = np.int32(np.size(_p0))
-	_PolIn = np.bool8(PolIn)
-	_PolOut = np.bool8(PolOut)
+
 	_B0 = np.zeros(_l,dtype='float64')
 	_B1 = np.zeros(_l,dtype='float64')
 	_B2 = np.zeros(_l,dtype='float64')
 	
+
 	#call the model
-	_CCon2020Field(_l,_p0,_p1,_p2,_B0,_B1,_B2,_PolIn,_PolOut)
+	_CVIP4FieldArray(_l,_p0,_p1,_p2,_B0,_B1,_B2)
 	
 	return _B0,_B1,_B2
+	
+	

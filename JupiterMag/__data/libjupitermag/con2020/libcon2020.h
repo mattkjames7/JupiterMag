@@ -5,18 +5,18 @@
 #include "con2020.h"
 #include <string.h>
 
-#endif
+
 using namespace std;
 
 /* we want to initialize the model objects with its parameters */
-Con2020 con2020;
+extern Con2020 con2020;
 
 extern "C" {
 	/* these wrappers can be used to get the magnetic field vectors */
-	void Con2020Field(int n, double *p0, double *p1, double *p2,
+	void Con2020FieldArray(int n, double *p0, double *p1, double *p2,
 					double *B0, double *B1, double *B2);
 	
-	void Con2020FieldVector(double p0, double p1, double p2,
+	void Con2020Field(double p0, double p1, double p2,
 			double *B0, double *B1, double *B2);
 
 
@@ -30,3 +30,4 @@ extern "C" {
 					bool Edwards, bool ErrChk, bool CartIn, bool CartOut);
 
 }
+#endif
