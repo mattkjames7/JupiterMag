@@ -1,7 +1,7 @@
 import numpy as np
 from ._CFunctions import _CJRM09FieldArray,_CGetJRM09Config,_CSetJRM09Config
 
-def Field(p0,p1,p2,CartIn=True,CartOut=True):
+def Field(p0,p1,p2):
 	'''
 	Return the Con 2020 magnetic field vector(s). Check the model 
 	config using JupiterMag.Con2020.Config() to see whether Cartesian or
