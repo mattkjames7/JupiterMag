@@ -37,7 +37,7 @@ def _GetCFG():
 	cfg['CartesianIn'] = CartIn[0]
 	cfg['CartesianOut'] = CartOut[0]
 	cfg['equation_type'] = eqtype.value.decode()
-	print(cfg['equation_type'])
+
 	return cfg
 
 def _SetCFG(cfg):

@@ -3,23 +3,23 @@ import ctypes as ct
 import os
 from . import Globals
 
-# check that the internal field library exists
-try:
-	libinternal = ct.CDLL(Globals.ModulePath+"__data/libjupitermag/internal/libinternal.so")
-except:
-	print('importing libinternal.so failed, attempting to recompile')
-	path = Globals.ModulePath
-	if '/usr/local/' in path:
-		sudo = 'sudo '
-	else:
-		sudo = ''
+# # check that the internal field library exists
+# try:
+	# libinternal = ct.CDLL(Globals.ModulePath+"__data/libjupitermag/internal/libinternal.so")
+# except:
+	# print('importing libinternal.so failed, attempting to recompile')
+	# path = Globals.ModulePath
+	# if '/usr/local/' in path:
+		# sudo = 'sudo '
+	# else:
+		# sudo = ''
 
-	CWD = os.getcwd()
-	os.chdir(Globals.ModulePath+"__data/libjupitermag/internal/")
-	os.system(sudo+'make clean')
-	os.system(sudo+'make')
-	os.chdir(CWD)	
-	libinternal = ct.CDLL(Globals.ModulePath+"__data/libjupitermag/internal/libinternal.so")
+	# CWD = os.getcwd()
+	# os.chdir(Globals.ModulePath+"__data/libjupitermag/internal/")
+	# os.system(sudo+'make clean')
+	# os.system(sudo+'make')
+	# os.chdir(CWD)	
+	# libinternal = ct.CDLL(Globals.ModulePath+"__data/libjupitermag/internal/libinternal.so")
 
 # check that the jupiter mag field library exists
 try:
@@ -60,7 +60,7 @@ c_double_ptr = type('c_double_ptr',(c_double_ptr_base,),{'from_param':classmetho
 c_double_ptr_ptr = np.ctypeslib.ndpointer(np.uintp,ndim=1,flags="C_CONTIGUOUS")
 
 #internal model wrapper function
-_CInternalField = libinternal.InternalField
+_CInternalField = libjupitermag.InternalField
 _CInternalField.restype = None
 _CInternalField.argtypes = [	c_int,			#number of elements
 								c_double_ptr,	#x/r array

@@ -96,7 +96,7 @@ void Con2020::_SetIOFunctions() {
 }
 
 void Con2020::_SetModelFunctions() {
-	
+
 	/* firstly set whether we are using the Edwards or Connerney 
 	 * analytical functions */
 	if (Edwards_) {
@@ -115,6 +115,8 @@ void Con2020::_SetModelFunctions() {
 		_Model = &Con2020::_Integral;
 	} else if (strcmp(eqtype_,"hybrid") == 0) {
 		_Model = &Con2020::_Hybrid;
+	} else {
+		printf("What's going on here then?\n");
 	}
 	 
 }
@@ -284,7 +286,7 @@ void Con2020::_AzimuthalField(double rho, double absz, double z, double *Bphi) {
 
 void Con2020::Field(double p0, double p1, double p2,
 					double *B0, double *B1, double *B2) {
-						
+
 	/* create a bunch of empty variables */
 	double x, y, z, rho, absz;
 	double cost, sint, cosp, sinp;	
@@ -735,6 +737,7 @@ void Con2020::_SolveIntegral(int n, double *rho, double *z,
 
 void Con2020::_IntegralInner( 	double rho, double absz, double z,
 								double *Brho, double *Bz) {
+	//printf("\n_IntegralInner\n");
 	int chind;
 	/* check which set of integral parameters we need to use*/
 	_IntegralCheck(absz,&chind);
@@ -908,7 +911,7 @@ void Con2020::SetEqType(const char *eqtype) {
 	} else {
 		printf("eqtype '%s' not recognised - ignoring\n",eqtype);
 	}
-	
+
 }
 
 void Con2020::GetEqType(char *eqtype) {

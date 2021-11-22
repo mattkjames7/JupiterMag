@@ -2,7 +2,7 @@ import numpy as np
 import ctypes as ct
 import os
 from .. import Globals
-from .. _CFunctions import libinternal
+from .. _CFunctions import libjupitermag
 
 #define some dtypes
 c_char_p = ct.c_char_p
@@ -16,7 +16,7 @@ c_int_ptr = np.ctypeslib.ndpointer(ct.c_int,flags="C_CONTIGUOUS")
 c_bool_ptr = np.ctypeslib.ndpointer(ct.c_bool,flags="C_CONTIGUOUS")
 
 #model field
-_CJRM09FieldArray = libinternal.JRM09FieldArray
+_CJRM09FieldArray = libjupitermag.JRM09FieldArray
 _CJRM09FieldArray.restype = None
 _CJRM09FieldArray.argtypes = [	c_int, 			#number of elements
 								c_double_ptr,	#p0
@@ -27,13 +27,13 @@ _CJRM09FieldArray.argtypes = [	c_int, 			#number of elements
 								c_double_ptr]	#B2
 
 #set model config
-_CSetJRM09Config = libinternal.SetJRM09Config
+_CSetJRM09Config = libjupitermag.SetJRM09Config
 _CSetJRM09Config.restype = None
 _CSetJRM09Config.argtypes = [	c_bool,			#Cart In
 								c_bool]			#Cart Out
 								
 #get model config
-_CGetJRM09Config = libinternal.GetJRM09Config
+_CGetJRM09Config = libjupitermag.GetJRM09Config
 _CGetJRM09Config.restype = None
 _CGetJRM09Config.argtypes = [	c_bool_ptr,		#Cart In
 								c_bool_ptr ]	#Cart Out

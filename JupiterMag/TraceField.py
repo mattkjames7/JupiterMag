@@ -5,6 +5,8 @@ from ._ptr2D import _ptr2D
 from . import JRM09
 from . import VIP4 
 from . import Con2020
+import matplotlib.pyplot as plt
+from .Tools.PlotJupiter import PlotJupiterXY,PlotJupiterXZ
 		
 class TraceField(object):
 	'''
@@ -88,7 +90,7 @@ class TraceField(object):
 					'Delta'		:		0.05,
 					'Verbose'	:		False,
 					'TraceDir'	:		'both',
-					'alpha' 	:		[0.0,90.0]}
+					'alpha' 	:		[]}
 		dkeys = list(defargs.keys())
 		kkeys = list(kwargs.keys())
 		cfg = {}
@@ -146,7 +148,6 @@ class TraceField(object):
 		_Rnorm = _ptr2D(self.Rnorm)		
 		_FP = _ptr2D(self.FP)
 
-
 		#call the C code
 		_CTraceField(	self.n,self.x0,self.y0,self.z0,
 						self.IntModelCode,self.ExtModelCode,
@@ -177,7 +178,141 @@ class TraceField(object):
 			for i in range(0,7):
 				setattr(self,fpnames[i],self.FP[:,i])
 
+	def PlotXZ(self,ind='all',fig=None,maps=[1,1,0,0]):
+		'''
+		plot field lines in the X-Z plane
 		
+		'''
+		
+		if ind == 'all':
+			ind = np.arange(self.n)
+		elif np.size(ind) == 1:
+			ind = np.array([ind]).flatten()
+		else:
+			ind = np.array(ind)
+			
+		
+		if fig is None:
+			fig = plt
+			fig.figure()
+		if hasattr(fig,'Axes'):	
+			ax = fig.subplot2grid((maps[1],maps[0]),(maps[3],maps[2]))
+		else:
+			ax = fig
+		
+		if np.size(np.shape(self.x)) == 2:
+			x = self.x[ind].T
+			z = self.z[ind].T
+		else:
+			x = self.x
+			z = self.z
+			
+
+		ax.plot(x,z,color='black')
+		
+		ax.set_ylabel('$z_{SIII}$ (R$_J$)')
+		ax.set_xlabel('$x_{SIII}$ (R$_J$)')
+
+		mxx = np.nanmax(x)
+		mxz = np.nanmax(z)
+		mx = 1.1*np.nanmax([mxx,mxz])		
+		ax.set_xlim(-mx,mx)
+		ax.set_ylim(-mx,mx)
+		
+		PlotJupiterXZ(ax)
+		ax.set_aspect(1.0)
+		return ax
 	
+	def PlotXY(self,ind='all',fig=None,maps=[1,1,0,0]):
+		'''
+		plot field lines in the X-Y plane
 		
+		'''
+		
+		if ind == 'all':
+			ind = np.arange(self.n)
+		elif np.size(ind) == 1:
+			ind = np.array([ind]).flatten()
+		else:
+			ind = np.array(ind)
+			
+		
+		if fig is None:
+			fig = plt
+			fig.figure()
+		if hasattr(fig,'Axes'):	
+			ax = fig.subplot2grid((maps[1],maps[0]),(maps[3],maps[2]))
+		else:
+			ax = fig
+		
+		if np.size(np.shape(self.x)) == 2:
+			x = self.x[ind].T
+			y = self.y[ind].T
+		else:
+			x = self.x
+			y = self.y
+			
+		ax.plot(y,x,color='black')
+		yl = ax.get_xlim()
+		ax.set_xlim(yl[::-1])
+		
+		ax.set_xlabel('$y_{SIII}$ (R$_J$)')
+		ax.set_ylabel('$x_{SIII}$ (R$_J$)')
+
+		mxx = np.nanmax(x)
+		mxy = np.nanmax(y)
+		mx = 1.1*np.nanmax([mxx,mxy])		
+		ax.set_xlim(mx,-mx)
+		ax.set_ylim(-mx,mx)
+		
+		PlotJupiterXY(ax)
+		ax.set_aspect(1.0)
+		return ax
+	
+	def PlotRhoZ(self,ind='all',fig=None,maps=[1,1,0,0]):
+		'''
+		plot field lines in the rho-Z plane
+		
+		'''
+		
+		if ind == 'all':
+			ind = np.arange(self.n)
+		elif np.size(ind) == 1:
+			ind = np.array([ind]).flatten()
+		else:
+			ind = np.array(ind)
+			
+		
+		if fig is None:
+			fig = plt
+			fig.figure()
+		if hasattr(fig,'Axes'):	
+			ax = fig.subplot2grid((maps[1],maps[0]),(maps[3],maps[2]))
+		else:
+			ax = fig
+		
+		if np.size(np.shape(self.x)) == 2:
+			x = self.x[ind].T
+			y = self.y[ind].T
+			z = self.z[ind].T
+		else:
+			x = self.x
+			y = self.y
+			z = self.z
+		
+		r = np.sqrt(x**2 + y**2)
+		ax.plot(r,z,color='black')
+		
+		ax.set_ylabel('$z_{SIII}$ (R$_J$)')
+		ax.set_xlabel(r'$\rho_{SIII}$ (R$_J$)')
+
+		mxr = np.nanmax(r)
+		mxz = np.nanmax(z)
+		mx = 1.1*np.nanmax([mxr,mxz])		
+		ax.set_xlim(-mx,mx)
+		ax.set_ylim(-mx,mx)
+		
+		PlotJupiterXZ(ax)
+		ax.set_aspect(1.0)
+		return ax
 	

@@ -110,9 +110,6 @@ class Trace {
 		bool hasHalpha_,allocHalpha_, allocHalpha3D_;
 		bool allocAlpha_;
 
-		
-
-	
 		/* field length, R, Rnorm, Halpha, Footprints */
 		int nalpha_;
 		double *alpha0_, *alpha1_;

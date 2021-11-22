@@ -549,7 +549,7 @@ void Trace::RKMTrace(	double x0, double y0, double z0,
 						int *nstep, double *R,
 						double *x, double *y, double *z,
 						double *Bx, double *By, double *Bz) {
-	
+
 	/* intialize the trace */
 	nstep[0] = 1;
 	x[0] = x0;
@@ -614,7 +614,7 @@ void Trace::TraceField(	int *nstep,
 	by_ = by;					
 	bz_ = bz;	
 	R_ = R;	
-	
+
 	/* call the tracing code */
 	_TraceField();
 }
@@ -643,7 +643,6 @@ void Trace::TraceField() {
 	}		
 	allocTrace_ = true;
 	
-	
 	/* call the tracing code */
 	_TraceField();
 	
@@ -653,7 +652,6 @@ void Trace::TraceField() {
 void Trace::_TraceField() {
 	
 	/* this function actually calls the tracing routines */
-	
 	/* check this hasn't already been done */
 	if (tracedField_) {
 		printf("Attempted to trace twice? not happening mate...\n");
@@ -665,10 +663,11 @@ void Trace::_TraceField() {
 		printf("Need InputPos() before trace\n");
 		return;
 	}
+
 	int i;
 	for (i=0;i<n_;i++) {
 		if (Verbose_) {
-			printf("\rTracing field line %d of %d (%6.2f)%%",i+1,n_,((float) (i+1)*100.0)/n_);
+			printf("\rTracing field line %d of %d (%6.2f)%",i+1,n_,((float) (i+1)*100.0)/n_);
 		}
 
 
