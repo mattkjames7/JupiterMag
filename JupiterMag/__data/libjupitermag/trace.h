@@ -33,7 +33,9 @@ class Trace {
 		void ReverseElements(int, double*);
 		void RKMTrace(	double,double,double,int*,double*,
 						double*,double*,double*,double*,double*,double*);
-
+		void FixFootprints(	int,double*,double*,double*,double*,
+							double*,double*,double*);
+						
 		/* get a single field vector */
 		void Field(double,double,double,double*,double*,double*);
 
@@ -94,6 +96,18 @@ class Trace {
 		double *xfn_, *yfn_, *zfn_;
 		double *xfs_, *yfs_, *zfs_;
 		double *xfe_, *yfe_, *zfe_;
+
+
+		/* field length, R, Rnorm, Halpha, Footprints */
+		int nalpha_;
+		double *alpha0_, *alpha1_;
+		double Delta_;
+		double **S_;
+		double **R_;
+		double **Rnorm_;
+		double *Halpha_;
+		double ***Halpha3D_;
+		double **FP_;
 	
 	private:
 		/* this is the number of field contributions */
@@ -110,16 +124,6 @@ class Trace {
 		bool hasHalpha_,allocHalpha_, allocHalpha3D_;
 		bool allocAlpha_;
 
-		/* field length, R, Rnorm, Halpha, Footprints */
-		int nalpha_;
-		double *alpha0_, *alpha1_;
-		double Delta_;
-		double **S_;
-		double **R_;
-		double **Rnorm_;
-		double *Halpha_;
-		double ***Halpha3D_;
-		double **FP_;
 		
 	
 		/* hidden trace functions */

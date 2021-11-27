@@ -22,4 +22,4 @@ test:
 clean:
 	rm -v *.o 
 	rm -v *.so
-	rm test
+	#rm test

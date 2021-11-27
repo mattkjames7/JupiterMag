@@ -596,7 +596,90 @@ void Trace::RKMTrace(	double x0, double y0, double z0,
 			nstep[0]++;
 		}
 	}
+	
+	/* sort the footprints out */
+	FixFootprints(nstep[0],R,x,y,z,Bx,By,Bz);
+}
+
+void Trace::FixFootprints(	int nstep, double *R,
+						double *x, double *y, double *z,
+						double *Bx, double *By, double *Bz) {
+	
+	/* this function will fix each of the footprints using interpolation
+	 * such that they were actually on the surface */
+	
+	/* these are temporary variables to be used for interpolation */
+	int i0, i1;
+	double ts[2], tr[2];
+	double dx, dy, dz, dr, ds, s1, m;
+	
+	if ((TraceDir_ == 1) || (TraceDir_ == 0)) {
+		/* north footprint */
+		i0 = 0;
+		i1 = 1;
 		
+		/* use linear interpolation (it's generally close enough) */
+		dx = x[i1] - x[i0];
+		dy = y[i1] - y[i0];
+		dz = z[i1] - z[i0];
+		ts[0] = 0.0;
+		ts[1] = sqrt(dx*dx + dy*dy + dz*dz);
+		tr[0] = sqrt(x[i0]*x[i0] + y[i0]*y[i0] + z[i0]*z[i0]);
+		tr[1] = sqrt(x[i1]*x[i1] + y[i1]*y[i1] + z[i1]*z[i1]);
+			
+		/* gradient */
+		dr = tr[1] - tr[0];
+		ds = ts[1] - ts[0];
+		m = dr/ds;
+			
+		/* solve for R = 1, where R = m*s + c */
+		s1 = (1.0 - tr[0])/m;
+			
+		/* interpolate x, y and z*/
+		x[i0] = (dx/ds)*s1 + x[i0];
+		y[i0] = (dy/ds)*s1 + y[i0];
+		z[i0] = (dz/ds)*s1 + z[i0];
+		
+		/* recalculate the field */
+		Field(x[i0],y[i0],z[i0],&Bx[i0],&By[i0],&Bz[i0]);	
+		
+		/* fix R */
+		R[i0] = sqrt(x[i0]*x[i0] + y[i0]*y[i0] + z[i0]*z[i0]);
+	}
+	
+	if ((TraceDir_ == -1) || (TraceDir_ == 0)) {
+		/* south footprint */
+		i0 = nstep - 1;
+		i1 = nstep - 2;
+		
+		/* use linear interpolation (it's generally close enough) */
+		dx = x[i1] - x[i0];
+		dy = y[i1] - y[i0];
+		dz = z[i1] - z[i0];
+		ts[0] = 0.0;
+		ts[1] = sqrt(dx*dx + dy*dy + dz*dz);
+		tr[0] = sqrt(x[i0]*x[i0] + y[i0]*y[i0] + z[i0]*z[i0]);
+		tr[1] = sqrt(x[i1]*x[i1] + y[i1]*y[i1] + z[i1]*z[i1]);
+			
+		/* gradient */
+		dr = tr[1] - tr[0];
+		ds = ts[1] - ts[0];
+		m = dr/ds;
+			
+		/* solve for R = 1, where R = m*s + c */
+		s1 = (1.0 - tr[0])/m;
+			
+		/* interpolate x, y and z*/
+		x[i0] = (dx/ds)*s1 + x[i0];
+		y[i0] = (dy/ds)*s1 + y[i0];
+		z[i0] = (dz/ds)*s1 + z[i0];
+
+		/* recalculate the field */
+		Field(x[i0],y[i0],z[i0],&Bx[i0],&By[i0],&Bz[i0]);	
+		
+		/* fix R */
+		R[i0] = sqrt(x[i0]*x[i0] + y[i0]*y[i0] + z[i0]*z[i0]);
+	}
 }
 
 

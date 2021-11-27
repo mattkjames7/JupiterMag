@@ -84,7 +84,7 @@ class TraceField(object):
 		#kwargs
 		defargs = {	'MaxLen'	:		1000,
 					'MaxStep'	:		1.0,
-					'InitStep'	:		0.5,
+					'InitStep'	:		0.1,
 					'MinStep'	:		0.001,
 					'ErrMax'	:		0.0001,
 					'Delta'		:		0.05,
