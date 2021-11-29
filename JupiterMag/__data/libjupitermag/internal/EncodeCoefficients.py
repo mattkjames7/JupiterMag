@@ -55,7 +55,8 @@ def EncodeCoefficients(fnamein,fnameout):
 	
 
 if __name__ == "__main__":
-	coeffs = ['vipalcoeffs','isaaccoeffs','jrm09coeffs','vip4coeffs']
+	coeffs = ['vit4coeffs','vipalcoeffs','isaaccoeffs','jrm09coeffs',
+				'vip4coeffs','o6coeffs']
 	for c in coeffs:
 		print('Converting {:s}'.format(c))
 		EncodeCoefficients(c+'.dat',c+'.bin')
