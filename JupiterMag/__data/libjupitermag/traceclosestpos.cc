@@ -14,6 +14,7 @@ void traceClosestPos(	int n, double *x, double *y, double *z,
 	
 	/* calculate the closest position for each step */
 	int i;
+	double d0, d1;
 	for (i=0;i<n;i++) {
 		_ClosestPos(	x[i],y[i],z[i],
 						bx[i],by[i],bz[i],
@@ -23,6 +24,9 @@ void traceClosestPos(	int n, double *x, double *y, double *z,
 						bx[i],by[i],bz[i],
 						n1,x1,y1,z1,
 						&xc1[i],&yc1[i],&zc1[i]);
+		d0 = sqrt(pow(x[i]-xc0[i],2) + pow(y[i]-yc0[i],2) + pow(z[i]-zc0[i],2));
+		d1 = sqrt(pow(x[i]-xc1[i],2) + pow(y[i]-yc1[i],2) + pow(z[i]-zc1[i],2));
+		printf("%d %f %f\n",i,d0,d1);
 	}
 							
 }
@@ -62,6 +66,7 @@ void _ClosestPos(	double px, double py, double pz,
 	double costheta[4];
 	for (i=0;i<nc;i++) {
 		costheta[i] = udx[i]*uBx + udy[i]*uBy + udz[i]*uBz;
+		printf("%d %f\n",i,acos(costheta[i])*180/M_PI);
 	}
 	
 	/* interpolate to find approximately where cos(theta) = 0 */
@@ -109,7 +114,7 @@ void _Closest4Pos(	double px, double py, double pz,
 			Imind = i;
 		}
 	}
-	
+	printf("I: %d D: %f\n",Imind,sqrt(dmin));
 
 	int I4[4], imn, imx;
 
@@ -150,7 +155,11 @@ void _Closest4Pos(	double px, double py, double pz,
 		cx[i] = x[I4[i]];
 		cy[i] = y[I4[i]];
 		cz[i] = z[I4[i]];
+		//printf("%f ",sqrt(pow(px - cx[i],2) + pow(py - cy[i],2) + pow(pz - cz[i],2)));
 	}
+	//printf("\n");
+	nc[0] = 4;
+	
 }
 
 

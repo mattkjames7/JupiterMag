@@ -33,6 +33,7 @@ def EncodeCoefficients(fnamein,fnameout):
 	#fill them
 	for i in range(0,nl):
 		s = lines[i].split()
+
 		if s[0] == 'h':
 			gh[i] = 1
 		else:
@@ -54,7 +55,7 @@ def EncodeCoefficients(fnamein,fnameout):
 	
 
 if __name__ == "__main__":
-	coeffs = ['jrm09coeffs','vip4coeffs']
+	coeffs = ['isaaccoeffs','jrm09coeffs','vip4coeffs']
 	for c in coeffs:
 		print('Converting {:s}'.format(c))
 		EncodeCoefficients(c+'.dat',c+'.bin')

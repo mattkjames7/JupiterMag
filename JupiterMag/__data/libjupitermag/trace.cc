@@ -479,12 +479,16 @@ void Trace::Step(	double x0, double y0, double z0,
 	double x2,y2,z2;
 	double x3,y3,z3;
 	double x4,y4,z4;
-	double step3 = step[0]/3.0;
+	double step3;
 	double Err;
+	double xn, yn, zn, Rn;
+	bool cont;
+	bool adjstep = false;
 	bool repeat = true;	
 	
 	while (repeat) {
 		/* this bit repeats until we get a desired step size */
+		step3 = step[0]/3.0;
 		StepVector(x0,y0,z0,step3,&rx1,&ry1,&rz1);
 		x1 = x0 + rx1;
 		y1 = y0 + ry1;
@@ -503,34 +507,51 @@ void Trace::Step(	double x0, double y0, double z0,
 		z4 = z0 + 1.5*(rz1 - 3*rz3 + 4*rz4);
 		StepVector(x4,y4,z4,step3,&rx5,&ry5,&rz5);
 		
-		Err = fabs(rx1 - 4.5*rx3 + 4*rx4 - 0.5*rx5);
+		Err  = fabs(rx1 - 4.5*rx3 + 4*rx4 - 0.5*rx5);
 		Err += fabs(ry1 - 4.5*ry3 + 4*ry4 - 0.5*ry5);
 		Err += fabs(rz1 - 4.5*rz3 + 4*rz4 - 0.5*rz5);
-		
-		if ((Err <= ErrMax_) && (fabs(step[0]) <= MaxStep_)) {
+
+		/* check that the next position is good */
+		xn = x0 + 0.5*(rx1 + 4*rx4 + rx5);
+		yn = y0 + 0.5*(ry1 + 4*ry4 + ry5);
+		zn = z0 + 0.5*(rz1 + 4*rz4 + rz5);	
+		cont = ContinueTrace(xn,yn,zn,&Rn);
+		if ((!cont) && (fabs(step[0]) > MinStep_)) {
+			step[0] = 0.5*step[0];
+			if (fabs(step[0]) < MinStep_) {
+				step[0] = (step[0]/fabs(step[0]))*MinStep_;
+			}
+			adjstep = true;
+		} else if (!cont) {
+			step[0] = (step[0]/fabs(step[0]))*MinStep_;
 			repeat = false;
-		} else {
-			if (Err > ErrMax_) {
-				if (step[0] > MinStep_) {
-					step[0] = step[0]*0.5;
-				} else {
-					repeat = false;
-				}
-			}
-			if (fabs(step[0]) > MaxStep_) {
-				step[0] = MaxStep_;
-			}
 		}
 		
-		if ((Err < 0.04*ErrMax_) && (fabs(step[0]) < (MaxStep_/1.5))) {
-			step[0] = 1.5*step[0];
-		}		
-		
+		if (cont) {
+			if ((Err <= ErrMax_) && (fabs(step[0]) <= MaxStep_)) {
+				repeat = false;
+			} else {
+				if (Err > ErrMax_) {
+					if (fabs(step[0]) > MinStep_) {
+						step[0] = step[0]*0.5;
+					} else {
+						repeat = false;
+					}
+				}
+				if (fabs(step[0]) > MaxStep_) {
+					step[0] = (step[0]/fabs(step[0]))*MaxStep_;
+				}
+			}
+			
+			if ((Err < 0.04*ErrMax_) && (fabs(step[0]) < (MaxStep_/1.5))) {
+				step[0] = 1.5*step[0];
+			}		
+		}
 	}
 	
-	x[0] = x0 + 0.5*(rx1 + 4*rx4 + rx5);
-	y[0] = y0 + 0.5*(ry1 + 4*ry4 + ry5);
-	z[0] = z0 + 0.5*(rz1 + 4*rz4 + rz5);	
+	x[0] = xn;
+	y[0] = yn;
+	z[0] = zn;	
 	
 	Field(x[0],y[0],z[0],Bx,By,Bz);					
 }
@@ -598,7 +619,7 @@ void Trace::RKMTrace(	double x0, double y0, double z0,
 	}
 	
 	/* sort the footprints out */
-	FixFootprints(nstep[0],R,x,y,z,Bx,By,Bz);
+	//FixFootprints(nstep[0],R,x,y,z,Bx,By,Bz);
 }
 
 void Trace::FixFootprints(	int nstep, double *R,
@@ -610,13 +631,29 @@ void Trace::FixFootprints(	int nstep, double *R,
 	
 	/* these are temporary variables to be used for interpolation */
 	int i0, i1;
-	double ts[2], tr[2];
+	double a = 1.0;
+	double b = 0.935;	
+	double rho[2], t[2], rhoj[2], zj[2];
+	double ts[2], tr[2], Rs, rs[2];
 	double dx, dy, dz, dr, ds, s1, m;
 	
 	if ((TraceDir_ == 1) || (TraceDir_ == 0)) {
 		/* north footprint */
 		i0 = 0;
 		i1 = 1;
+		
+		/* get the approximate R where the "surface" is */
+		rho[0] = sqrt(x[i0]*x[i0] + y[i0]*y[i0]);
+		rho[1] = sqrt(x[i1]*x[i1] + y[i1]*y[i1]);
+		t[0] = atan2(z[i0],rho[0]);
+		t[1] = atan2(z[i1],rho[1]);
+		rhoj[0] = a*cos(t[0]);
+		rhoj[1] = a*cos(t[1]);
+		zj[0] = b*sin(t[0]);
+		zj[1] = b*sin(t[1]);
+		rs[0] = sqrt(rhoj[0]*rhoj[0] + zj[0]*zj[0]);
+		rs[1] = sqrt(rhoj[1]*rhoj[1] + zj[1]*zj[1]);
+		Rs = 0.5*(rs[0] + rs[1]);
 		
 		/* use linear interpolation (it's generally close enough) */
 		dx = x[i1] - x[i0];
@@ -633,7 +670,7 @@ void Trace::FixFootprints(	int nstep, double *R,
 		m = dr/ds;
 			
 		/* solve for R = 1, where R = m*s + c */
-		s1 = (1.0 - tr[0])/m;
+		s1 = (Rs - tr[0])/m;
 			
 		/* interpolate x, y and z*/
 		x[i0] = (dx/ds)*s1 + x[i0];
@@ -651,6 +688,19 @@ void Trace::FixFootprints(	int nstep, double *R,
 		/* south footprint */
 		i0 = nstep - 1;
 		i1 = nstep - 2;
+
+		/* get the approximate R where the "surface" is */
+		rho[0] = sqrt(x[i0]*x[i0] + y[i0]*y[i0]);
+		rho[1] = sqrt(x[i1]*x[i1] + y[i1]*y[i1]);
+		t[0] = atan2(z[i0],rho[0]);
+		t[1] = atan2(z[i1],rho[1]);
+		rhoj[0] = a*cos(t[0]);
+		rhoj[1] = a*cos(t[1]);
+		zj[0] = b*sin(t[0]);
+		zj[1] = b*sin(t[1]);
+		rs[0] = sqrt(rhoj[0]*rhoj[0] + zj[0]*zj[0]);
+		rs[1] = sqrt(rhoj[1]*rhoj[1] + zj[1]*zj[1]);
+		Rs = 0.5*(rs[0] + rs[1]);
 		
 		/* use linear interpolation (it's generally close enough) */
 		dx = x[i1] - x[i0];
@@ -667,7 +717,7 @@ void Trace::FixFootprints(	int nstep, double *R,
 		m = dr/ds;
 			
 		/* solve for R = 1, where R = m*s + c */
-		s1 = (1.0 - tr[0])/m;
+		s1 = (Rs - tr[0])/m;
 			
 		/* interpolate x, y and z*/
 		x[i0] = (dx/ds)*s1 + x[i0];
@@ -750,7 +800,7 @@ void Trace::_TraceField() {
 	int i;
 	for (i=0;i<n_;i++) {
 		if (Verbose_) {
-			printf("\rTracing field line %d of %d (%6.2f)%",i+1,n_,((float) (i+1)*100.0)/n_);
+			printf("\rTracing field line %d of %d (%6.2f)%%",i+1,n_,((float) (i+1)*100.0)/n_);
 		}
 
 

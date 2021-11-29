@@ -85,7 +85,7 @@ class TraceField(object):
 		defargs = {	'MaxLen'	:		1000,
 					'MaxStep'	:		1.0,
 					'InitStep'	:		0.1,
-					'MinStep'	:		0.001,
+					'MinStep'	:		0.0001,
 					'ErrMax'	:		0.0001,
 					'Delta'		:		0.05,
 					'Verbose'	:		False,

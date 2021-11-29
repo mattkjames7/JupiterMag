@@ -26,6 +26,8 @@ int main() {
 
 	/* configure the trace parameters */
 	T.SetTraceCFG();
+	T.MaxStep_ = 0.01;
+	T.InitStep_ = 0.01;
 
 	/* set up the alpha calculation */
 	T.SetAlpha(nalpha,&alpha);
