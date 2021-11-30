@@ -59,18 +59,6 @@ c_double_ptr = type('c_double_ptr',(c_double_ptr_base,),{'from_param':classmetho
 
 c_double_ptr_ptr = np.ctypeslib.ndpointer(np.uintp,ndim=1,flags="C_CONTIGUOUS")
 
-#internal model wrapper function
-_CInternalField = libjupitermag.InternalField
-_CInternalField.restype = None
-_CInternalField.argtypes = [	c_int,			#number of elements
-								c_double_ptr,	#x/r array
-								c_double_ptr,	#y/t array
-								c_double_ptr,	#z/p array
-								c_double_ptr,	#Bx/Br output array
-								c_double_ptr,	#Bx/Br output array
-								c_double_ptr,	#Bx/Br output array
-								c_char_p ]		#Model string
-
 
 #field tracing routine
 _CTraceField = libjupitermag.TraceField

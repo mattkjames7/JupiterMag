@@ -3,20 +3,25 @@
 /* we want to initialize the model objects witht heir parameters */
 Internal vip4("VIP4");
 Internal jrm09("JRM09");
+InternalModel internalModel;
 
-void InternalField(int l, double *p0, double *p1, double *p2,
-					double *B0, double *B1, double *B2,
-					const char *Model) {
+void InternalField(int n, double *p0, double *p1, double *p2,
+					double *B0, double *B1, double *B2) {
 
-	/* select the appropriate model (default to VIP4) */
-	if (strcmp(Model,"VIP4") == 0) {
-		vip4.Field(l,p0,p1,p2,B0,B1,B2);
-	} else if (strcmp(Model,"JRM09") == 0) {
-		jrm09.Field(l,p0,p1,p2,B0,B1,B2);
-	} else {
-		vip4.Field(l,p0,p1,p2,B0,B1,B2);
-	}		
-						
+	internalModel.Field(n,p0,p1,p2,B0,B1,B2);
+				
+}
+
+void SetInternalCFG(char *Model, bool CartIn, bool CartOut) {
+	internalModel.SetCartIn(CartIn);
+	internalModel.SetCartOut(CartOut);
+	internalModel.SetModel(Model);
+}
+
+void GetInternalCFG(char *Model, bool *CartIn, bool *CartOut) {
+	CartIn[0] = internalModel.GetCartIn();
+	CartOut[0] = internalModel.GetCartOut();
+	internalModel.GetModel(Model);
 }
 
 

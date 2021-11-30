@@ -5,7 +5,7 @@
 #include <math.h>
 #include <string.h>
 
-#endif
+
 using namespace std;
 
 /* here are the pointers to the memory where the coefficients are stored*/
@@ -81,3 +81,4 @@ class Internal {
 		void _BPol2BCart(int,double*,double*,double*,double*,double*,double*,double*,double*);
 	
 };
+#endif
