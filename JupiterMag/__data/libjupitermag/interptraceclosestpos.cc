@@ -57,11 +57,51 @@ double ClosestS(double x, double y, double z,
 					
 }
 
+double AngleDiff( double s,								/* current position along the field line */
+					Spline Sx, Spline Sy, Spline Sz,	/* Splines converting s to a  vector */
+					double x, double y, double z,		/* this is the position along the original field line */
+					double bx, double by, double bz) {	/* B field unit vector */
+	
+	/* get the current position vector */
+	double xc, yc, zc;
+	Sx.Interpolate(1,s,&xc);					
+	Sy.Interpolate(1,s,&yc);					
+	Sz.Interpolate(1,s,&zc);	
+	
+	/* get unit vector */
+	double dx, dy, dz, d;
+	dx = xc - x;
+	dy = yc - y;
+	dz = zc - z;
+	d = sqrt(dx*dx + dy*dy + dz*dz);
+	dx = dx/d;
+	dy = dy/d;
+	dz = dz/d;
+	
+	/* get the angle */
+	double dot, angle;
+	dot = dx*bx + yc*by  zc*bz;
+	
+	return fabs(M_PI/2 - acos(dot));
+	
+					
+						
+}
+
 void OptimizePos(	double x, double y, double z,
 					double bx, double by, double bz,
 					double s0, 
 					Spline Sx, Spline Sy, Spline Sz,
 					double *xc, double *yc, double *zc) {
-						
+	
+	/* Nelder-Mead settings */
+	int MaxIter = 1000;
+	double Tol = 0.001;
+	
+	/* initial/current positions */
+	double scurr[] = {s0+0.1,s0-0.1};
+	
+	/* current difference between current angle and 90 degrees */
+					
 						
 }
