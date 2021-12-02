@@ -9,8 +9,6 @@
 using namespace std;
 
 /* we want to initialize the model objects witht heir parameters */
-extern Internal vip4;
-extern Internal jrm09;
 extern InternalModel internalModel;
 
 extern "C" {
@@ -34,5 +32,50 @@ extern "C" {
 						double *B0, double *B1, double *B2);
 	void SetVIP4Config(bool CartIn, bool CartOut);
 	void GetVIP4Config(bool *CartIn, bool *CartOut);
+	
+
+	void GSFC13EVField(	double p0, double p1, double p2,
+						double *B0, double *B1, double *B2);
+
+	void GSFC15EVField(	double p0, double p1, double p2,
+						double *B0, double *B1, double *B2);
+
+	void GSFC15EVSField(	double p0, double p1, double p2,
+						double *B0, double *B1, double *B2);
+
+	void ISAACField(	double p0, double p1, double p2,
+						double *B0, double *B1, double *B2);
+
+	void JPL15EVField(	double p0, double p1, double p2,
+						double *B0, double *B1, double *B2);
+
+	void JPL15EVSField(	double p0, double p1, double p2,
+						double *B0, double *B1, double *B2);
+
+	void O4Field(	double p0, double p1, double p2,
+						double *B0, double *B1, double *B2);
+
+	void O6Field(	double p0, double p1, double p2,
+						double *B0, double *B1, double *B2);
+
+	void P11AField(	double p0, double p1, double p2,
+						double *B0, double *B1, double *B2);
+
+	void SHAField(	double p0, double p1, double p2,
+						double *B0, double *B1, double *B2);
+
+	void U17EVField(	double p0, double p1, double p2,
+						double *B0, double *B1, double *B2);
+
+	void V117EVField(	double p0, double p1, double p2,
+						double *B0, double *B1, double *B2);
+
+	void VIPALField(	double p0, double p1, double p2,
+						double *B0, double *B1, double *B2);
+
+	void VIT4Field(	double p0, double p1, double p2,
+						double *B0, double *B1, double *B2);
+
+	
 }
 #endif

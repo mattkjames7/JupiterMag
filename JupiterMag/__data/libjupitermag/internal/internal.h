@@ -81,4 +81,22 @@ class Internal {
 		void _BPol2BCart(int,double*,double*,double*,double*,double*,double*,double*,double*);
 	
 };
+
 #endif
+
+extern Internal vip4;
+extern Internal jrm09;
+extern Internal gsfc13ev;
+extern Internal gsfc15ev;
+extern Internal gsfc15evs;
+extern Internal isaac;
+extern Internal jpl15ev;
+extern Internal jpl15evs;
+extern Internal o4;
+extern Internal o6;
+extern Internal p11a;
+extern Internal sha;
+extern Internal u17ev;
+extern Internal v117ev;
+extern Internal vipal;
+extern Internal vit4;

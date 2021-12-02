@@ -27,9 +27,9 @@ class InternalModel {
 		void Field(double,double,double,double*,double*,double*);
 				
 		/* these objects are the models to use */
-		Internal *vip4, *jrm09, *gsfc13ev, *gsfc15ev, *gsfc15evs, *isaac,
-				*jpl15ev, *jpl15evs, *o4, *o6, *p11a, *sha, *u17ev, *v117ev,
-				*vipal, *vit4;
+		Internal *vip4_, *jrm09_, *gsfc13ev_, *gsfc15ev_, *gsfc15evs_, 
+				*isaac_, *jpl15ev_, *jpl15evs_, *o4_, *o6_, *p11a_, 
+				*sha_, *u17ev_, *v117ev_, *vipal_, *vit4_;
 	private:
 		Internal *CurrentModel_;
 		char CurrentModelName_[32];

@@ -3,25 +3,25 @@
 InternalModel::InternalModel() {
 	
 	/* load all of the models */
-	vip4 = new Internal(&_binary_vip4coeffs_bin_start);
-	jrm09 = new Internal(&_binary_jrm09coeffs_bin_start);
-	gsfc13ev = new Internal(&_binary_gsfc13evcoeffs_bin_start);
-	gsfc15ev = new Internal(&_binary_gsfc15evcoeffs_bin_start);
-	gsfc15evs = new Internal(&_binary_gsfc15evscoeffs_bin_start);
-	isaac = new Internal(&_binary_isaaccoeffs_bin_start);
-	jpl15ev = new Internal(&_binary_jpl15evcoeffs_bin_start);
-	jpl15evs = new Internal(&_binary_jpl15evscoeffs_bin_start);
-	o4 = new Internal(&_binary_o4coeffs_bin_start);
-	o6 = new Internal(&_binary_o6coeffs_bin_start);
-	p11a = new Internal(&_binary_p11acoeffs_bin_start);
-	sha = new Internal(&_binary_shacoeffs_bin_start);
-	u17ev = new Internal(&_binary_u17evcoeffs_bin_start);
-	v117ev = new Internal(&_binary_v117evcoeffs_bin_start);
-	vipal = new Internal(&_binary_vipalcoeffs_bin_start);
-	vit4 = new Internal(&_binary_vit4coeffs_bin_start);
+	vip4_ = &vip4;
+	jrm09_ = &jrm09;
+	gsfc13ev_ = &gsfc13ev;
+	gsfc15ev_ = &gsfc15ev;
+	gsfc15evs_ = &gsfc15evs;
+	isaac_ = &isaac;
+	jpl15ev_ = &jpl15ev;
+	jpl15evs_ = &jpl15evs;
+	o4_ = &o4;
+	o6_ = &o6;
+	p11a_ = &p11a;
+	sha_ = &sha;
+	u17ev_ = &u17ev;
+	v117ev_ = &v117ev;
+	vipal_ = &vipal;
+	vit4_ = &vit4;
 		
 	/* set the current model */
-	CurrentModel_ = jrm09;
+	CurrentModel_ = jrm09_;
 	strcpy(CurrentModelName_,"JRM09");
 	
 	/* default parameters */
@@ -34,24 +34,7 @@ InternalModel::InternalModel() {
 
 
 InternalModel::~InternalModel() {
-	
-	/* delete all of the models */
-	delete vip4;
-	delete jrm09;
-	delete gsfc13ev;
-	delete gsfc15ev;
-	delete gsfc15evs;
-	delete isaac;
-	delete jpl15ev;
-	delete jpl15evs;
-	delete o4;
-	delete o6;
-	delete p11a;
-	delete sha;
-	delete u17ev;
-	delete v117ev;
-	delete vipal;
-	delete vit4;
+
 }	
 
 void InternalModel::SetCartIn(bool CartIn){
@@ -81,37 +64,37 @@ void InternalModel::SetModel(char *ModelName) {
 	/* Find the correct model and set it */
 	bool validmodel = true;
 	if (strcmp(ModelName,"JRM09") == 0) {
-		CurrentModel_ = jrm09;
+		CurrentModel_ = jrm09_;
 	} else if (strcmp(ModelName,"VIP4") == 0) {
-		CurrentModel_ = vip4;
+		CurrentModel_ = vip4_;
 	} else if (strcmp(ModelName,"GSFC13EV") == 0) {
-		CurrentModel_ = gsfc13ev;
+		CurrentModel_ = gsfc13ev_;
 	} else if (strcmp(ModelName,"GSFC15EV") == 0) {
-		CurrentModel_ = gsfc15ev;
+		CurrentModel_ = gsfc15ev_;
 	} else if (strcmp(ModelName,"GSFC15EVS") == 0) {
-		CurrentModel_ = gsfc15evs;
+		CurrentModel_ = gsfc15evs_;
 	} else if (strcmp(ModelName,"ISAAC") == 0) {
-		CurrentModel_ = isaac;
+		CurrentModel_ = isaac_;
 	} else if (strcmp(ModelName,"JPL15EV") == 0) {
-		CurrentModel_ = jpl15ev;
+		CurrentModel_ = jpl15ev_;
 	} else if (strcmp(ModelName,"JPL15EVS") == 0) {
-		CurrentModel_ = jpl15evs;
+		CurrentModel_ = jpl15evs_;
 	} else if (strcmp(ModelName,"O4") == 0) {
-		CurrentModel_ = o4;
+		CurrentModel_ = o4_;
 	} else if (strcmp(ModelName,"O6") == 0) {
-		CurrentModel_ = o6;
+		CurrentModel_ = o6_;
 	} else if (strcmp(ModelName,"P11A") == 0) {
-		CurrentModel_ = p11a;
+		CurrentModel_ = p11a_;
 	} else if (strcmp(ModelName,"SHA") == 0) {
-		CurrentModel_ = sha;
+		CurrentModel_ = sha_;
 	} else if (strcmp(ModelName,"U17EV") == 0) {
-		CurrentModel_ = u17ev;
+		CurrentModel_ = u17ev_;
 	} else if (strcmp(ModelName,"V117EV") == 0) {
-		CurrentModel_ = v117ev;
+		CurrentModel_ = v117ev_;
 	} else if (strcmp(ModelName,"VIPAL") == 0) {
-		CurrentModel_ = vipal;
+		CurrentModel_ = vipal_;
 	} else if (strcmp(ModelName,"VIT4") == 0) {
-		CurrentModel_ = vit4;
+		CurrentModel_ = vit4_;
 	} else {
 		printf("Invalid model name: %s, ignoring...\n",ModelName);
 		validmodel = false;

@@ -1,5 +1,22 @@
 #include "internal.h"
 
+Internal vip4(&_binary_vip4coeffs_bin_start);
+Internal jrm09(&_binary_jrm09coeffs_bin_start);
+Internal gsfc13ev(&_binary_gsfc13evcoeffs_bin_start);
+Internal gsfc15ev(&_binary_gsfc15evcoeffs_bin_start);
+Internal gsfc15evs(&_binary_gsfc15evscoeffs_bin_start);
+Internal isaac(&_binary_isaaccoeffs_bin_start);
+Internal jpl15ev(&_binary_jpl15evcoeffs_bin_start);
+Internal jpl15evs(&_binary_jpl15evscoeffs_bin_start);
+Internal o4(&_binary_o4coeffs_bin_start);
+Internal o6(&_binary_o6coeffs_bin_start);
+Internal p11a(&_binary_p11acoeffs_bin_start);
+Internal sha(&_binary_shacoeffs_bin_start);
+Internal u17ev(&_binary_u17evcoeffs_bin_start);
+Internal v117ev(&_binary_v117evcoeffs_bin_start);
+Internal vipal(&_binary_vipalcoeffs_bin_start);
+Internal vit4(&_binary_vit4coeffs_bin_start);
+
 Internal::Internal(const char *model) {
 	
 	

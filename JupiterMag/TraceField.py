@@ -7,6 +7,7 @@ from . import VIP4
 from . import Con2020
 import matplotlib.pyplot as plt
 from .Tools.PlotJupiter import PlotJupiterXY,PlotJupiterXZ
+from .Tools.GetLegendHandLab import GetLegendHandLab
 		
 class TraceField(object):
 	'''
@@ -178,7 +179,7 @@ class TraceField(object):
 			for i in range(0,7):
 				setattr(self,fpnames[i],self.FP[:,i])
 
-	def PlotXZ(self,ind='all',fig=None,maps=[1,1,0,0]):
+	def PlotXZ(self,ind='all',fig=None,maps=[1,1,0,0],label=None,color='black'):
 		'''
 		plot field lines in the X-Z plane
 		
@@ -208,7 +209,12 @@ class TraceField(object):
 			z = self.z
 			
 
-		ax.plot(x,z,color='black')
+		ln = ax.plot(x,z,color=color)
+		if not label is None:
+			hs,ls = GetLegendHandLab(ax)
+			hs.append(ln[0])
+			ls.append(label)
+			ax.legend(hs,ls)
 		
 		ax.set_ylabel('$z_{SIII}$ (R$_J$)')
 		ax.set_xlabel('$x_{SIII}$ (R$_J$)')
@@ -221,9 +227,10 @@ class TraceField(object):
 		
 		PlotJupiterXZ(ax)
 		ax.set_aspect(1.0)
+
 		return ax
 	
-	def PlotXY(self,ind='all',fig=None,maps=[1,1,0,0]):
+	def PlotXY(self,ind='all',fig=None,maps=[1,1,0,0],label=None,color='black'):
 		'''
 		plot field lines in the X-Y plane
 		
@@ -252,7 +259,12 @@ class TraceField(object):
 			x = self.x
 			y = self.y
 			
-		ax.plot(y,x,color='black')
+		ln = ax.plot(y,x,color=color)
+		if not label is None:
+			hs,ls = GetLegendHandLab(ax)
+			hs.append(ln[0])
+			ls.append(label)
+			ax.legend(hs,ls)
 		yl = ax.get_xlim()
 		ax.set_xlim(yl[::-1])
 		
@@ -269,7 +281,7 @@ class TraceField(object):
 		ax.set_aspect(1.0)
 		return ax
 	
-	def PlotRhoZ(self,ind='all',fig=None,maps=[1,1,0,0]):
+	def PlotRhoZ(self,ind='all',fig=None,maps=[1,1,0,0],label=None,color='black'):
 		'''
 		plot field lines in the rho-Z plane
 		
@@ -301,7 +313,12 @@ class TraceField(object):
 			z = self.z
 		
 		r = np.sqrt(x**2 + y**2)
-		ax.plot(r,z,color='black')
+		ln = ax.plot(r,z,color=color)
+		if not label is None:
+			hs,ls = GetLegendHandLab(ax)
+			hs.append(ln[0])
+			ls.append(label)
+			ax.legend(hs,ls)
 		
 		ax.set_ylabel('$z_{SIII}$ (R$_J$)')
 		ax.set_xlabel(r'$\rho_{SIII}$ (R$_J$)')

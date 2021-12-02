@@ -66,7 +66,7 @@ def Test(Model='JRM09',R=0.85,MaxDeg=10):
 	ax.set_aspect(1.0)
 	ax.set_xlabel('SIII East Longitude ($^\circ$)')
 	ax.set_ylabel('SIII Latitude ($^\circ$)')
-		
+	ax.set_title(Model)
 	sm = ax.pcolormesh(long,latg,Bg,cmap='RdYlBu_r',norm=norm)
 	ct = ax.contour(longc,latgc,Bg,colors='grey',levels=np.linspace(-50,50,11))
 	ax.clabel(ct, inline=True, fontsize=8,fmt='%2d')

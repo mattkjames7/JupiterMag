@@ -1,8 +1,7 @@
 #include "libinternal.h"
 
 /* we want to initialize the model objects witht heir parameters */
-Internal vip4("VIP4");
-Internal jrm09("JRM09");
+
 InternalModel internalModel;
 
 void InternalField(int n, double *p0, double *p1, double *p2,
@@ -70,3 +69,88 @@ void GetVIP4Config(bool *CartIn, bool *CartOut) {
 	CartIn[0] = vip4.GetCartIn();
 	CartOut[0] = vip4.GetCartOut();
 }
+
+void GSFC13EVField(	double p0, double p1, double p2,
+					double *B0, double *B1, double *B2) {
+						
+	gsfc13ev.Field(p0,p1,p2,B0,B1,B2);
+}
+
+void GSFC15EVField(	double p0, double p1, double p2,
+					double *B0, double *B1, double *B2) {
+						
+	gsfc15ev.Field(p0,p1,p2,B0,B1,B2);
+}
+
+void GSFC15EVSField(	double p0, double p1, double p2,
+					double *B0, double *B1, double *B2) {
+						
+	gsfc15evs.Field(p0,p1,p2,B0,B1,B2);
+}
+
+void ISAACField(	double p0, double p1, double p2,
+					double *B0, double *B1, double *B2) {
+						
+	isaac.Field(p0,p1,p2,B0,B1,B2);
+}
+
+void JPL15EVField(	double p0, double p1, double p2,
+					double *B0, double *B1, double *B2) {
+						
+	jpl15ev.Field(p0,p1,p2,B0,B1,B2);
+}
+
+void JPL15EVSField(	double p0, double p1, double p2,
+					double *B0, double *B1, double *B2) {
+						
+	jpl15evs.Field(p0,p1,p2,B0,B1,B2);
+}
+
+void O4Field(	double p0, double p1, double p2,
+					double *B0, double *B1, double *B2) {
+						
+	o4.Field(p0,p1,p2,B0,B1,B2);
+}
+
+void O6Field(	double p0, double p1, double p2,
+					double *B0, double *B1, double *B2) {
+						
+	o6.Field(p0,p1,p2,B0,B1,B2);
+}
+
+void P11AField(	double p0, double p1, double p2,
+					double *B0, double *B1, double *B2) {
+						
+	p11a.Field(p0,p1,p2,B0,B1,B2);
+}
+
+void SHAField(	double p0, double p1, double p2,
+					double *B0, double *B1, double *B2) {
+						
+	sha.Field(p0,p1,p2,B0,B1,B2);
+}
+
+void U17EVField(	double p0, double p1, double p2,
+					double *B0, double *B1, double *B2) {
+						
+	u17ev.Field(p0,p1,p2,B0,B1,B2);
+}
+
+void V117EVField(	double p0, double p1, double p2,
+					double *B0, double *B1, double *B2) {
+						
+	v117ev.Field(p0,p1,p2,B0,B1,B2);
+}
+
+void VIPALField(	double p0, double p1, double p2,
+					double *B0, double *B1, double *B2) {
+						
+	vipal.Field(p0,p1,p2,B0,B1,B2);
+}
+
+void VIT4Field(	double p0, double p1, double p2,
+					double *B0, double *B1, double *B2) {
+						
+	vit4.Field(p0,p1,p2,B0,B1,B2);
+}
+
