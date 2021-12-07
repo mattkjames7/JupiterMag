@@ -30,8 +30,6 @@ int main() {
 	/* configure the trace parameters */
 	printf("Set the trace parameters \n");
 	T.SetTraceCFG();
-	T.MaxStep_ = 0.01;
-	T.InitStep_ = 0.01;
 
 	/* set up the alpha calculation */
 	printf("Initialize alpha\n");

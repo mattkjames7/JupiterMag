@@ -84,6 +84,7 @@ class Trace {
 		int TraceDir_;
 		double ErrMax_;
 		double MaxR_;
+		double Rsurf_;
 		
 		/* trace coords */
 		int *nstep_;

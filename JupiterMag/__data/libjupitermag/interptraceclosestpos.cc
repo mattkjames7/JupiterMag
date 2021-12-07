@@ -82,7 +82,7 @@ double AngleDiff( 	double s,								/* current position along the field line */
 	double dot, angle;
 	dot = dx*bx + dy*by + dz*bz;
 	
-	return fabs(M_PI/2 - acos(dot));
+	return fabs(M_PI/2 - acos(dot))*180.0/M_PI;
 	
 					
 						
@@ -96,14 +96,15 @@ void OptimizePos(	double x, double y, double z,
 	
 	/* Nelder-Mead settings */
 	int MaxIter = 1000;
-	double tol = 0.001;
+	double tola = 0.01;
+	double tolf = 0.01;
 	double alpha = 1.0;
 	double gamma = 2.0;
 	double rho = 0.5;
 	double sigma = 0.5;
 	
 	/* initial/current positions */
-	double s[] = {s0+0.1,s0-0.1};
+	double s[] = {s0+0.01,s0-0.01};
 	
 	/* B unit vector */
 	double B = sqrt(bx*bx + by*by + bz*bz);
@@ -195,7 +196,7 @@ void OptimizePos(	double x, double y, double z,
 		}
 		
 		/* check if we have more or less converged */
-		if (fabs(f[1]-f[0]) <= tol) {
+		if ((fabs(0.5*(f[1]+f[0])) <= tola) && (fabs(f[1]-f[0]) <= tolf)) {
 			cont = false;
 			succ = true;
 		}
@@ -211,5 +212,9 @@ void OptimizePos(	double x, double y, double z,
 	scnt = 0.5*(s[0] + s[1]);
 	Sx.Interpolate(1,&scnt,xc);					
 	Sy.Interpolate(1,&scnt,yc);					
-	Sz.Interpolate(1,&scnt,zc);							
+	Sz.Interpolate(1,&scnt,zc);
+	//double a = bxu*(x-xc[0]) + byu*(y-yc[0]) + bzu*(z-zc[0]);
+	//double b = acos(a)*180.0/M_PI;
+		
+	//printf("s0: %f, scnt: %f, niter %d, d90: %f, da: %f, dot: %f, angle: %f\n",s0,scnt,n,fabs(0.5*(f[1]+f[0])),fabs(f[1]-f[0]),a,b);
 }

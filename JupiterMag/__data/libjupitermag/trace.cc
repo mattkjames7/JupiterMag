@@ -24,6 +24,10 @@ Trace::Trace(vector<FieldFuncPtr> Funcs) {
 	
 	/* default trace parameters */
 	SetTraceCFG();
+	
+	/* this is a hack - used to end trace at lower altitudes, while
+	 * retaining Jupiter's oblateness */
+	Rsurf_ = 1.0;
 		
 }
 
@@ -203,6 +207,7 @@ Trace Trace::TracePosition(int i, double x, double y, double z) {
 	
 	/* set the model up */
 	T.SetTraceCFG(MaxLen_,MaxStep_,InitStep_,MinStep_,ErrMax_,Delta_,false,0);
+	T.Rsurf_ = 0.8;
 	
 	/* run the GSM trace */
 	T.TraceField();
@@ -455,7 +460,7 @@ bool Trace::ContinueTrace(double x, double y, double z, double *R) {
 	double Rj = sqrt(rhoj*rhoj + zj*zj);
 		
 		
-	if (R[0] < Rj) {
+	if (R[0] < Rsurf_*Rj) {
 		return false;
 	}
 	
