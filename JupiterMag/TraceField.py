@@ -62,9 +62,9 @@ class TraceField(object):
 		
 
 		#Convert input variables to appropriate numpy dtype:
-		self.x0 = np.array(x0).astype("float64")
-		self.y0 = np.array(y0).astype("float64")
-		self.z0 = np.array(z0).astype("float64")
+		self.x0 = np.array([x0]).flatten().astype("float64")
+		self.y0 = np.array([y0]).flatten().astype("float64")
+		self.z0 = np.array([z0]).flatten().astype("float64")
 		self.n = np.int32(self.x0.size)
 
 		self.IntModel = IntModel
@@ -148,7 +148,7 @@ class TraceField(object):
 		_R = _ptr2D(self.R)
 		_Rnorm = _ptr2D(self.Rnorm)		
 		_FP = _ptr2D(self.FP)
-
+		
 		#call the C code
 		_CTraceField(	self.n,self.x0,self.y0,self.z0,
 						self.IntModelCode,self.ExtModelCode,
@@ -333,3 +333,126 @@ class TraceField(object):
 		ax.set_aspect(1.0)
 		return ax
 	
+	
+	def PlotHalpha(self,TI='all',AI='all',fig=None,maps=[1,1,0,0]):
+		'''
+		Plot h_alpha (see Singer et al 1982) for a field line.
+		
+		Inputs
+		======
+		TI : int|str
+			Index of trace to plot. TI='all' will plot for all traces.
+		AI : int|str
+			Index of alpha angle to plot for. AI will plot all alphas.
+		fig : None|matplotlib.pyplot|matplotlib.pyplot.Axes
+			None - a new figure will be created with new axes
+			matplotlib.pyplot - existing figure, new axes
+			matplotlib.pyplot.Axes - existing axes instance to be used
+				(maps ignored in the case).
+		maps : list|tuple|numpy.ndarray
+			Four element array-like, denoting subplot position,
+			e.g. [xmaps,ymaps,xmap,ymap]
+				xmaps : number of subplots in x-direction
+				ymaps : number of subplots in y-direction
+				xmap : position index (0 is left)
+				ymap : position index (0 is top)
+		
+		
+		'''
+		if AI == 'all':
+			AI = np.arange(self.nalpha)
+		
+		if np.size(AI) == 1:
+			AI = np.array([AI]).flatten()
+			
+		if TI == 'all':
+			TI = np.arange(self.n)
+		
+		if np.size(TI) == 1:
+			TI = np.array([TI]).flatten()
+			
+		if fig is None:
+			fig = plt
+			fig.figure()
+		if hasattr(fig,'Axes'):	
+			ax = fig.subplot2grid((maps[1],maps[0]),(maps[3],maps[2]))
+		else:
+			ax = fig		
+			
+		for t in TI:
+			if np.size(np.shape(self.x)) == 1:
+				#trace arrays have been flattened 
+				for a in AI:
+					ax.plot(self.s,self.halpha[a],label=r'$\alpha=${:5.1f}'.format(self.alpha[a]))
+			else:
+				for a in AI:
+					ax.plot(self.s[t],self.halpha[t,a],label=r'Trace {:d} $\alpha=${:5.1f}'.format(t,self.alpha[a]))
+
+		ax.legend()
+		ax.set_xlabel(r'$s$ (R$_J$)')
+		ax.set_ylabel(r'$h_{\alpha}$')
+
+		return ax
+		
+	def PlotPigtail(self,Proj='normal',ShowLabels=True,Time=None,
+					Hemisphere='both',colatlim=None,
+					fig=None,maps=[1,1,0,0],**kwargs):
+		'''
+		Pigtail plot.
+		
+		Inputs
+		======
+		Proj : str
+			'normal' : plot footprints on latitude/longitude plot
+			'abnormal' : plot as though we are looking down on the pole
+		ShowLabels : bool
+			This will display some sort of time axis, if Time is provided
+		Time : None|float64|(int32,float32)
+			Time of each trace - must have same number of elements as 
+			there are traces.
+			float64 : continuous time
+			(int32,float32) : (Date formatted yyyymmdd,UT in hours)
+		Hemisphere : str
+			'north'|'south'|'both'
+
+		
+		'''
+		
+		#get the stuff to plot
+		rn = np.abs(self.LatN)
+		rs = np.abs(self.LatS)
+		tn = self.LonN*np.pi/180.0
+		ts = self.LonS*np.pi/180.0
+		if Proj == 'abnormal':
+			rn = np.sin(rn)
+			rs = np.sin(rs)
+
+		#lower latitude limit
+		if colatlim is None:
+			if Proj == 'normal':
+				colatlim = np.min([rn.min(),rs.min()])
+			else:
+				colatlim = 1.0
+		if Proj == 'normal':
+			rlim = [90.0,colatlim]
+		else:
+			rlim = [0.0,1.0]
+		
+		if fig is None:
+			fig = plt
+			fig.figure()
+		if hasattr(fig,'Axes'):	
+			ax = fig.subplot2grid((maps[1],maps[0]),(maps[3],maps[2]),projection='polar')
+		else:
+			ax = fig		
+		ax.set_theta_zero_location("N")
+		ax.set_rlim(rlim)
+		if Hemisphere.lower() in ['both','north']:
+			ax.plot(tn,rn,linewidth=kwargs.get('linewidth',2.0),color=kwargs.get('color','red'),label='North')	
+		if Hemisphere.lower() in ['both','south']:
+			ax.plot(ts,rs,linewidth=kwargs.get('linewidth',2.0),color=kwargs.get('color','orange'),label='South')	
+		
+		ax.legend()
+		
+		return ax
+		
