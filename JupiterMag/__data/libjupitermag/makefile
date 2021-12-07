@@ -16,7 +16,7 @@ obj:
 	
 	$(CCo) model.cc -o model.o
 	$(CCo) trace.cc -o trace.o
-	$(CCo) traceclosestpos.cc -o traceclosestpos.o
+	$(CCo) interptraceclosestpos.cc -o interptraceclosestpos.o
 
 	
 lib:

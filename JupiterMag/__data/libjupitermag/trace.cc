@@ -234,10 +234,10 @@ void Trace::_CalculateTraceHalpha(	int i, int j, double *halpha) {
 	double *yc1 = new double[nstep_[i]];
 	double *zc1 = new double[nstep_[i]];
 
-	traceClosestPos(	nstep_[i],x_[i],y_[i],z_[i],
+	interptraceClosestPos(	nstep_[i],x_[i],y_[i],z_[i],
 						bx_[i],by_[i],bz_[i],
-						T0.nstep_[0],T0.x_[0],T0.y_[0],T0.z_[0],
-						T1.nstep_[0],T1.x_[0],T1.y_[0],T1.z_[0],
+						T0.nstep_[0],T0.x_[0],T0.y_[0],T0.z_[0],T0.S_[0],
+						T1.nstep_[0],T1.x_[0],T1.y_[0],T1.z_[0],T1.S_[0],
 						xc0,yc0,zc0,xc1,yc1,zc1);
 
 	/* calculate distances and then halpha */

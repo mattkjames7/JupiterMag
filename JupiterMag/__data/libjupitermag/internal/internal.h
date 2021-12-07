@@ -38,6 +38,7 @@ class Internal {
 	public:
 		Internal(const char*);
 		Internal(unsigned char *);
+		Internal(const Internal&);
 		~Internal();
 	
 		/*these two functions will calculate the field in Cartesian RH 
@@ -79,6 +80,8 @@ class Internal {
 		bool CartOut_;
 		void _Cart2Pol(int,double*,double*,double*,double*,double*,double*);
 		void _BPol2BCart(int,double*,double*,double*,double*,double*,double*,double*,double*);
+		
+		bool copy;
 	
 };
 

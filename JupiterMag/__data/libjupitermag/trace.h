@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <math.h>
-#include "traceclosestpos.h"
+#include "interptraceclosestpos.h"
 #endif
 using namespace std;
 /* this will be used for all of the model wrapper functions (configure model first) */

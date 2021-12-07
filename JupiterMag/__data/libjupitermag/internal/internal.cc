@@ -46,6 +46,9 @@ Internal::Internal(const char *model) {
 	CartIn_ = true;
 	CartOut_ = true;
 	
+	/* tell object that it is not a copy */
+	copy = false;
+	
 }
 
 Internal::Internal(unsigned char *ptr) {
@@ -61,23 +64,38 @@ Internal::Internal(unsigned char *ptr) {
 	/* set I/O coords */
 	CartIn_ = true;
 	CartOut_ = true;	
+	
+	/* tell object that it is not a copy */
+	copy = false;
+}
+
+Internal::Internal(const Internal &obj) {
+	
+	copy = true;
+	nschc_ = obj.nschc_;
+	schc_ = obj.schc_;
+	Snm_ = obj.Snm_;
+	nmax_ = obj.nmax_;
+	g_ = obj.g_;
+	h_ = obj.h_;
 }
 
 Internal::~Internal() {
-	
-	/* delete the structure containing coefficients */
-	delete[] schc_;
-	
-	/* delete other variables containing other coefficients */
-	int n;
-	for (n=0;n<=nmax_;n++) {
-		delete[] Snm_[n];
-		delete[] g_[n];
-		delete[] h_[n];
+	if (!copy) {
+		/* delete the structure containing coefficients */
+		delete[] schc_;
+		
+		/* delete other variables containing other coefficients */
+		int n;
+		for (n=0;n<=nmax_;n++) {
+			delete[] Snm_[n];
+			delete[] g_[n];
+			delete[] h_[n];
+		}
+		delete[] Snm_;
+		delete[] g_;
+		delete[] h_;
 	}
-	delete[] Snm_;
-	delete[] g_;
-	delete[] h_;
 }
 
 void Internal::SetCartIn(bool CartIn) {
