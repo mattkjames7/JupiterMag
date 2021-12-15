@@ -380,7 +380,7 @@ void Internal::_SphHarm(int l, double *r, double *t, double *p,
 			for (i=0;i<l;i++) {
 				sumr[i] += Pnm[n][m][i]*(g_[n][m]*cosmp[m][i] + h_[n][m]*sinmp[m][i]);
 				sumt[i] += dPnm[n][m][i]*(g_[n][m]*cosmp[m][i] + h_[n][m]*sinmp[m][i]);
-				sump[i] += ((double) m)*Pnm[n][m][i]*(h_[n][m]*cosmp[m][i] + g_[n][m]*sinmp[m][i]);
+				sump[i] += ((double) m)*Pnm[n][m][i]*(h_[n][m]*cosmp[m][i] - g_[n][m]*sinmp[m][i]);
 			}
 		}
 		

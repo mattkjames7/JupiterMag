@@ -129,7 +129,7 @@ def TestOutput(fname=None,Model='VIP4'):
 	cfg0 = Config()
 	
 	#set to polar
-	Config(CartesianIn=False,CartesianOut=False)
+	Config(Model=Model,CartesianIn=False,CartesianOut=False)
 	
 	#positions to test
 	r = np.array([3,3,3,3, 3,3,3,3, 3,3,3,3, 3,3,3,3],dtype='float64')
@@ -137,7 +137,7 @@ def TestOutput(fname=None,Model='VIP4'):
 	phi = np.array([0,27,180,340, 0,27,180,340, 0,27,180,340, 0,27,180,340],dtype='float64')
 	
 	#model output
-	Br,Bt,Bp = Model(r,theta*np.pi/180.0,phi*np.pi/180.0)
+	Br,Bt,Bp = Field(r,theta*np.pi/180.0,phi*np.pi/180.0)
 
 	
 	#restore config
