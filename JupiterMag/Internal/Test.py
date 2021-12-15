@@ -121,3 +121,45 @@ def TimeScalar():
 	Config(**cfg0)
 	
 	print('Time: {:f}s'.format(t1-t0))
+
+
+def TestOutput(fname=None,Model='VIP4'):
+
+	#get original config
+	cfg0 = Config()
+	
+	#set to polar
+	Config(CartesianIn=False,CartesianOut=False)
+	
+	#positions to test
+	r = np.array([3,3,3,3, 3,3,3,3, 3,3,3,3, 3,3,3,3],dtype='float64')
+	theta = np.array([10,10,10,10,55,55,55,55,90,90,90,90,130,130,130,130],dtype='float64')
+	phi = np.array([0,27,180,340, 0,27,180,340, 0,27,180,340, 0,27,180,340],dtype='float64')
+	
+	#model output
+	Br,Bt,Bp = Model(r,theta*np.pi/180.0,phi*np.pi/180.0)
+
+	
+	#restore config
+	Config(**cfg0)
+
+	#save to file
+	lines = []
+	
+	out = '  R  | Theta |  Phi  |         Br         |         Bt         |         Bp         '
+	print(out)
+	lines.append(out)
+
+	out = '-----|-------|-------|--------------------|--------------------|--------------------' 
+	print(out)
+	lines.append(out)
+	for i in range(0,r.size):
+		out = ' {:3.1f} | {:5.1f} | {:5.1f} | {:18.11f} | {:18.11f} | {:18.11f}'.format(r[i],theta[i],phi[i],Br[i],Bt[i],Bp[i])
+		print(out)
+		lines.append(out)
+	
+	if not fname is None:
+		f = open(fname,'w')
+		for l in lines:
+			f.write(l+'\n')
+		f.close()
