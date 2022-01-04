@@ -2,6 +2,7 @@
 
 Internal vip4(&_binary_vip4coeffs_bin_start);
 Internal jrm09(&_binary_jrm09coeffs_bin_start);
+Internal jrm33(&_binary_jrm33coeffs_bin_start);
 Internal gsfc13ev(&_binary_gsfc13evcoeffs_bin_start);
 Internal gsfc15ev(&_binary_gsfc15evcoeffs_bin_start);
 Internal gsfc15evs(&_binary_gsfc15evscoeffs_bin_start);
@@ -256,7 +257,7 @@ void Internal::_CoeffGrids() {
 }
 
 void Internal::_Legendre(int l, double *costheta, double *sintheta, 
-						double ***Pnm, double ***dPnm) {
+						int nmax, double ***Pnm, double ***dPnm) {
 	
 	/* set up the intial few terms */
 	int n, m, i;
@@ -271,7 +272,7 @@ void Internal::_Legendre(int l, double *costheta, double *sintheta,
 	
 	/* now recurse through the rest of them */
 	double n21,onenm,nm1;
-	for (n=2;n<=nmax_;n++) {
+	for (n=2;n<=nmax;n++) {
 		n21 = 2.0*n - 1.0;
 		for (m=0;m<=n;m++) {
 			if (m < n-1) {
@@ -298,15 +299,21 @@ void Internal::_Legendre(int l, double *costheta, double *sintheta,
 	
 }
 
-
+/* try making a scalar version of this to remove new/delete allocation*/
 void Internal::_SphHarm(int l, double *r, double *t, double *p,
-					double *Br, double *Bt, double *Bp) {
+					int MaxDeg, double *Br, double *Bt, double *Bp) {
+	
+	/* set the maximum degree of the model to use */
+	int nmax = nmax_;
+	if ((MaxDeg > 0) && (MaxDeg < nmax_)) {
+		nmax = MaxDeg;
+	}
 	
 	/* create arrays for the Legendre polynomials */
 	int n, m, i;
-	double ***Pnm = new double**[nmax_+1];
-	double ***dPnm = new double**[nmax_+1];
-	for (n=0;n<=nmax_;n++) {
+	double ***Pnm = new double**[nmax+1];
+	double ***dPnm = new double**[nmax+1];
+	for (n=0;n<=nmax;n++) {
 		Pnm[n] = new double*[n+1];
 		dPnm[n] = new double*[n+1];
 		
@@ -333,9 +340,9 @@ void Internal::_SphHarm(int l, double *r, double *t, double *p,
 			sint1[i] = 1.0/sint[i];
 		}
 	}
-	double **cosmp = new double*[nmax_+1];
-	double **sinmp = new double*[nmax_+1];
-	for (m=0;m<=nmax_;m++) {
+	double **cosmp = new double*[nmax+1];
+	double **sinmp = new double*[nmax+1];
+	for (m=0;m<=nmax;m++) {
 		cosmp[m] = new double[l];
 		sinmp[m] = new double[l];
 		if (m == 0) {
@@ -356,7 +363,7 @@ void Internal::_SphHarm(int l, double *r, double *t, double *p,
 	
 	
 	/* calculate the Legendre polynomials */
-	_Legendre(l,cost,sint,Pnm,dPnm);
+	_Legendre(l,cost,sint,nmax,Pnm,dPnm);
 	
 	/* set B components to 0 */
 	for (i=0;i<l;i++) {
@@ -366,7 +373,7 @@ void Internal::_SphHarm(int l, double *r, double *t, double *p,
 	}
 	
 	/* now start summing stuff up */
-	for (n=1;n<=nmax_;n++) {
+	for (n=1;n<=nmax;n++) {
 		/* zero the sum arrays and update the C parameter */
 		for (i=0;i<l;i++) {
 			C[i] = C[i]*r1[i];
@@ -400,7 +407,7 @@ void Internal::_SphHarm(int l, double *r, double *t, double *p,
 	
 	
 	/* delete the arrays */
-	for (n=0;n<=nmax_;n++) {
+	for (n=0;n<=nmax;n++) {
 		for (m=0;m<=n;m++) {
 			delete[] Pnm[n][m];
 			delete[] dPnm[n][m];
@@ -490,7 +497,56 @@ void Internal::Field(int l, double *p0, double *p1, double *p2,
 	}
 	
 	/* call the model */
-	_SphHarm(l,r,t,p,Br,Bt,Bp);
+	_SphHarm(l,r,t,p,nmax_,Br,Bt,Bp);
+	
+	/* rotate field vector if needed and delete output arrays */
+	if (CartOut_) {
+		_BPol2BCart(l,t,p,Br,Bt,Bp,B0,B1,B2);
+		delete[] Br;
+		delete[] Bt;
+		delete[] Bp;
+	}
+	
+	/* delete input arrays */
+	if (CartIn_) {
+		delete[] r;
+		delete[] t;
+		delete[] p;
+	}
+}
+
+void Internal::Field(int l, double *p0, double *p1, double *p2,
+					int MaxDeg, double *B0, double *B1, double *B2) {
+	
+	/* some IO pointers */
+	int i;
+	double *r, *t, *p, *Br, *Bt, *Bp;
+	
+	/* set the input pointers */
+	if (!CartIn_) {
+		r = p0;
+		t = p1;
+		p = p2;
+	} else { 
+		r = new double[l];
+		t = new double[l];
+		p = new double[l];
+		_Cart2Pol(l,p0,p1,p2,r,t,p);
+	}
+	
+	/* set up the output pointers */
+	if (!CartOut_) {
+		Br = B0;
+		Bt = B1;
+		Bp = B2;
+	} else { 
+		Br = new double[l];
+		Bt = new double[l];
+		Bp = new double[l];		
+	}
+	
+	/* call the model */
+	_SphHarm(l,r,t,p,MaxDeg,Br,Bt,Bp);
 	
 	/* rotate field vector if needed and delete output arrays */
 	if (CartOut_) {
@@ -524,7 +580,35 @@ void Internal::Field(	double p0, double p1, double p2,
 	}
 	
 	/* call the model */
-	_SphHarm(1,&r,&t,&p,&Br,&Bt,&Bp);
+	_SphHarm(1,&r,&t,&p,nmax_,&Br,&Bt,&Bp);
+	
+	/* rotate field vector if needed and delete output arrays */
+	if (CartOut_) {
+		_BPol2BCart(1,&t,&p,&Br,&Bt,&Bp,B0,B1,B2);
+	} else {
+		B0[0] = Br;
+		B1[0] = Bt;
+		B2[0] = Bp;
+	}
+}
+
+void Internal::Field(	double p0, double p1, double p2, int MaxDeg,
+						double *B0, double *B1, double *B2) {
+	
+	/* temporary variables*/
+	double r, t, p, Br, Bt, Bp;
+	
+	/* convert input coords (or not) */
+	if (!CartIn_) {
+		r = p0;
+		t = p1;
+		p = p2;
+	} else { 
+		_Cart2Pol(1,&p0,&p1,&p2,&r,&t,&p);
+	}
+	
+	/* call the model */
+	_SphHarm(1,&r,&t,&p,MaxDeg,&Br,&Bt,&Bp);
 	
 	/* rotate field vector if needed and delete output arrays */
 	if (CartOut_) {

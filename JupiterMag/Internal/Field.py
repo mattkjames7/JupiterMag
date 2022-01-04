@@ -1,7 +1,7 @@
 import numpy as np
-from ._CFunctions import _CInternalField
+from ._CFunctions import _CInternalField,_CInternalFieldDeg
 
-def Field(p0,p1,p2):
+def Field(p0,p1,p2,MaxDeg=None):
 	'''
 	Return the internal magnetic field vector(s). Check the model 
 	config using JupiterMag.Internal.Config() to see whether Cartesian or
@@ -51,7 +51,11 @@ def Field(p0,p1,p2):
 	
 
 	#call the model
-	_CInternalField(_l,_p0,_p1,_p2,_B0,_B1,_B2)
+	if MaxDeg is None:
+		_CInternalField(_l,_p0,_p1,_p2,_B0,_B1,_B2)
+	else:
+		_MaxDeg = np.int32(MaxDeg)
+		_CInternalFieldDeg(_l,_p0,_p1,_p2,_MaxDeg,_B0,_B1,_B2)
 	
 	return _B0,_B1,_B2
 	

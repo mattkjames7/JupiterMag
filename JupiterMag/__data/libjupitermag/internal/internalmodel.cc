@@ -5,6 +5,7 @@ InternalModel::InternalModel() {
 	/* load all of the models */
 	vip4_ = &vip4;
 	jrm09_ = &jrm09;
+	jrm33_ = &jrm33;
 	gsfc13ev_ = &gsfc13ev;
 	gsfc15ev_ = &gsfc15ev;
 	gsfc15evs_ = &gsfc15evs;
@@ -65,6 +66,8 @@ void InternalModel::SetModel(char *ModelName) {
 	bool validmodel = true;
 	if (strcmp(ModelName,"JRM09") == 0) {
 		CurrentModel_ = jrm09_;
+	} else if (strcmp(ModelName,"JRM33") == 0) {
+		CurrentModel_ = jrm33_;
 	} else if (strcmp(ModelName,"VIP4") == 0) {
 		CurrentModel_ = vip4_;
 	} else if (strcmp(ModelName,"GSFC13EV") == 0) {
@@ -120,9 +123,23 @@ void InternalModel::Field(int n, double *p0, double *p1, double *p2,
 								
 }
 
+void InternalModel::Field(int n, double *p0, double *p1, double *p2,
+							int MaxDeg, double *B0, double *B1, double *B2) {
+	
+	CurrentModel_->Field(n,p0,p1,p2,MaxDeg,B0,B1,B2);
+								
+}
+
 void InternalModel::Field(	double p0, double p1, double p2,
 							double *B0, double *B1, double *B2) {
 	
 	CurrentModel_->Field(p0,p1,p2,B0,B1,B2);
+								
+}
+
+void InternalModel::Field(	double p0, double p1, double p2, int MaxDeg,
+							double *B0, double *B1, double *B2) {
+	
+	CurrentModel_->Field(p0,p1,p2,MaxDeg,B0,B1,B2);
 								
 }

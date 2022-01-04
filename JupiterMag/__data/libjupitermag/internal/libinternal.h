@@ -16,6 +16,8 @@ extern "C" {
 
 	void InternalField(int n, double *p0, double *p1, double *p2,
 						double *B0, double *B1, double *B2);
+	void InternalFieldDeg(int n, double *p0, double *p1, double *p2,
+						int MaxDeg, double *B0, double *B1, double *B2);
 	void SetInternalCFG(char *Model, bool CartIn, bool CartOut);
 
 	void GetInternalCFG(char *Model, bool *CartIn, bool *CartOut);

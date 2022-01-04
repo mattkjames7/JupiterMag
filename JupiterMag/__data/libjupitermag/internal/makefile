@@ -12,6 +12,7 @@ obj:
 	#something addressable within the library
 	python3 EncodeCoefficients.py
 	ld -r -b binary -o jrm09coeffs.o jrm09coeffs.bin
+	ld -r -b binary -o jrm33coeffs.o jrm33coeffs.bin
 	ld -r -b binary -o vip4coeffs.o vip4coeffs.bin
 	ld -r -b binary -o gsfc13evcoeffs.o gsfc13evcoeffs.bin
 	ld -r -b binary -o gsfc15evcoeffs.o gsfc15evcoeffs.bin

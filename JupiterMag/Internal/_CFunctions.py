@@ -25,6 +25,18 @@ _CInternalField.argtypes = [	c_int,			#number of elements
 								c_double_ptr,	#Bx/Br output array
 								c_double_ptr,	#Bx/Br output array
 								c_double_ptr]	#Bx/Br output array
+								
+#internal model wrapper function
+_CInternalFieldDeg = libjupitermag.InternalFieldDeg
+_CInternalFieldDeg.restype = None
+_CInternalFieldDeg.argtypes = [	c_int,			#number of elements
+								c_double_ptr,	#x/r array
+								c_double_ptr,	#y/t array
+								c_double_ptr,	#z/p array
+								c_int,			#MaxDeg
+								c_double_ptr,	#Bx/Br output array
+								c_double_ptr,	#Bx/Br output array
+								c_double_ptr]	#Bx/Br output array
 
 
 #set internal config

@@ -11,6 +11,13 @@ void InternalField(int n, double *p0, double *p1, double *p2,
 				
 }
 
+void InternalFieldDeg(int n, double *p0, double *p1, double *p2,
+					int MaxDeg, double *B0, double *B1, double *B2) {
+
+	internalModel.Field(n,p0,p1,p2,MaxDeg,B0,B1,B2);
+				
+}
+
 void SetInternalCFG(char *Model, bool CartIn, bool CartOut) {
 	internalModel.SetCartIn(CartIn);
 	internalModel.SetCartOut(CartOut);
