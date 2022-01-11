@@ -1,5 +1,5 @@
 import numpy as np
-from ._CFunctions import _CCon2020Field
+from ._CFunctions import _CCon2020Field,_CCon2020FieldArray
 
 def Field(p0,p1,p2):
 	'''
@@ -50,7 +50,7 @@ def Field(p0,p1,p2):
 	_B2 = np.zeros(_l,dtype='float64')
 	
 	#call the model
-	_CCon2020Field(_l,_p0,_p1,_p2,_B0,_B1,_B2)
+	_CCon2020FieldArray(_l,_p0,_p1,_p2,_B0,_B1,_B2)
 	
 	return _B0,_B1,_B2
 	
