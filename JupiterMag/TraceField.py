@@ -2,13 +2,12 @@ import numpy as np
 from ._CFunctions import _CTraceField
 import ctypes
 from ._ptr2D import _ptr2D
-from . import JRM09
-from . import VIP4 
 from . import Con2020
 import matplotlib.pyplot as plt
 from .Tools.PlotJupiter import PlotJupiterXY,PlotJupiterXZ
 from .Tools.GetLegendHandLab import GetLegendHandLab
-		
+from . import Internal		
+
 class TraceField(object):
 	'''
 	Object which stores the result of a magnetic field trace or a series 
@@ -18,7 +17,7 @@ class TraceField(object):
 	
 	'''
 	
-	def __init__(self,x0,y0,z0,IntModel='JRM09',ExtModel='Con2020', 
+	def __init__(self,x0,y0,z0,IntModel='jrm09',ExtModel='Con2020', 
 				FlattenSingleTraces=True,**kwargs):
 		'''
 		Traces along the magnetic field given a starting set of 
@@ -74,11 +73,9 @@ class TraceField(object):
 
 		#make sure models are in Cartesian
 		Models = [IntModel,ExtModel]
-		if "JRM09" in Models:
-			JRM09.Config(CartesianIn=True,CartesianOut=True)
-		elif "VIP4" in Models:
-			VIP4.Config(CartesianIn=True,CartesianOut=True)
-		elif "Con2020" in Models:
+
+		
+		if ExtModel == "Con2020":
 			Con2020.Config(CartesianIn=True,CartesianOut=True)
 			
 

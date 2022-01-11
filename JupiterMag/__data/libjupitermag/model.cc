@@ -7,18 +7,17 @@ void ModelField(double p0, double p1, double p2,
 
 	/* get the internal field model */
 	double Bi0, Bi1, Bi2;
-	if (strcmp(internal,"JRM09") == 0) {
-		jrm09.SetCartIn(CartIn);
-		jrm09.SetCartOut(CartOut);
-		jrm09.Field(p0,p1,p2,&Bi0,&Bi1,&Bi2);
-	} else if (strcmp(internal,"VIP4") == 0) {
-		vip4.SetCartIn(CartIn);
-		vip4.SetCartOut(CartOut);
-		vip4.Field(p0,p1,p2,&Bi0,&Bi1,&Bi2);
-	} else {
+	if (strcmp(internal,"none") == 0) {
+		/* in this case we set everything to 0*/
 		Bi0 = 0.0;
 		Bi1 = 0.0;
 		Bi2 = 0.0;
+	} else {
+		/* set new config */
+		SetInternalCFG(internal,CartIn,CartOut);
+		
+		/* get model field */
+		InternalField(1,&p0,&p1,&p2,&Bi0,&Bi1,&Bi2);
 	}
 	
 	/* and the external field */
@@ -49,20 +48,19 @@ void ModelFieldArray(	int n, double *p0, double *p1, double *p2,
 	double *Bi0 = new double[n];
 	double *Bi1 = new double[n];
 	double *Bi2 = new double[n];
-	if (strcmp(internal,"JRM09") == 0) {
-		jrm09.SetCartIn(CartIn);
-		jrm09.SetCartOut(CartOut);
-		jrm09.Field(n,p0,p1,p2,Bi0,Bi1,Bi2);
-	} else if (strcmp(internal,"VIP4") == 0) {
-		vip4.SetCartIn(CartIn);
-		vip4.SetCartOut(CartOut);
-		vip4.Field(n,p0,p1,p2,Bi0,Bi1,Bi2);
-	} else {
+	if (strcmp(internal,"none") == 0) {
 		for (i=0;i<n;i++) {
 			Bi0[i] = 0.0;
 			Bi1[i] = 0.0;
 			Bi2[i] = 0.0;
 		}
+	} else {
+		/* set new config */
+		SetInternalCFG(internal,CartIn,CartOut);
+		
+		/* get model field */
+		InternalField(n,p0,p1,p2,Bi0,Bi1,Bi2);		
+		
 	}
 	
 	/* and the external field */

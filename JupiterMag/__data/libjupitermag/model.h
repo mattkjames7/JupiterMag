@@ -2,7 +2,7 @@
 #define __MODEL_H__
 #include <stdio.h>
 #include <stdlib.h>
-#include "internal/libinternal.h"
+#include "libinternalfield/libinternalfield/libinternal.h"
 #include "con2020/libcon2020.h"
 #endif
 

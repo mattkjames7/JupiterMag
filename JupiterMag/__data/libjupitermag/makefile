@@ -10,7 +10,6 @@ all: obj lib test
 
 obj:
 	cd con2020;	make all
-	cd internal; make all
 	cd spline; make all
 
 	
@@ -21,21 +20,18 @@ obj:
 	
 lib:
 	$(CC) -shared libjupitermag.cc *.o \
-			internal/*.o \
 			con2020/*.o \
 			spline/*.o \
-			-o libjupitermag.so
+			-o libjupitermag.so -Wl,-rpath='$$ORIGIN/libinternalfield' -L ./libinternalfield -linternalfield
 
 test:
 	$(CC) test.cc *.o \
-			internal/*.o \
 			con2020/*.o \
 			spline/*.o \
-			-o test		
+			-o test	-Wl,-rpath='$$ORIGIN/libinternalfield' -L ./libinternalfield -linternalfield
 
 
 clean:
-	cd internal; make clean
 	cd con2020; make clean
 	cd spline; make clean
 	rm *.o

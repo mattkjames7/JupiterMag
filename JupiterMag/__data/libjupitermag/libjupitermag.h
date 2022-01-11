@@ -5,8 +5,9 @@
 #include <vector>
 #include "trace.h"
 #include "string.h"
-#include "internal/libinternal.h"
 #include "con2020/libcon2020.h"
+#include "libinternalfield/libinternalfield/models.h"
+#include "libinternalfield/libinternalfield/libinternal.h"
 
 
 using namespace std;

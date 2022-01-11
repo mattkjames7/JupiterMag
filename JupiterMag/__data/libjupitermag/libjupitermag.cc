@@ -19,39 +19,41 @@ bool TraceField(int n, double *x0, double *y0, double *z0,
 	vector<FieldFuncPtr> Funcs;
 
 	/* internal model */
-	if (strcmp(IntFunc,"JRM09") == 0) {
-		Funcs.push_back(JRM09Field);
-	} else if (strcmp(IntFunc,"VIP4") == 0) {
-		Funcs.push_back(VIP4Field);
-	} else if (strcmp(IntFunc,"GSFC13EV") == 0) {
-		Funcs.push_back(GSFC13EVField);
-	} else if (strcmp(IntFunc,"GSFC15EV") == 0) {
-		Funcs.push_back(GSFC15EVField);
-	} else if (strcmp(IntFunc,"GSFC15EVS") == 0) {
-		Funcs.push_back(GSFC15EVSField);
-	} else if (strcmp(IntFunc,"ISAAC") == 0) {
-		Funcs.push_back(ISAACField);
-	} else if (strcmp(IntFunc,"JPL15EV") == 0) {
-		Funcs.push_back(JPL15EVField);
-	} else if (strcmp(IntFunc,"JPL15EVS") == 0) {
-		Funcs.push_back(JPL15EVSField);
-	} else if (strcmp(IntFunc,"O4") == 0) {
-		Funcs.push_back(O4Field);
-	} else if (strcmp(IntFunc,"O6") == 0) {
-		Funcs.push_back(O6Field);
-	} else if (strcmp(IntFunc,"P11A") == 0) {
-		Funcs.push_back(P11AField);
-	} else if (strcmp(IntFunc,"SHA") == 0) {
-		Funcs.push_back(SHAField);
-	} else if (strcmp(IntFunc,"U17EV") == 0) {
-		Funcs.push_back(U17EVField);
-	} else if (strcmp(IntFunc,"V117EV") == 0) {
-		Funcs.push_back(V117EVField);
-	} else if (strcmp(IntFunc,"VIPAL") == 0) {
-		Funcs.push_back(VIPALField);
-	} else if (strcmp(IntFunc,"VIT4") == 0) {
-		Funcs.push_back(VIT4Field);
-	}
+	//if (strcmp(IntFunc,"JRM09") == 0) {
+		//Funcs.push_back(JRM09Field);
+	//} else if (strcmp(IntFunc,"VIP4") == 0) {
+		//Funcs.push_back(VIP4Field);
+	//} else if (strcmp(IntFunc,"GSFC13EV") == 0) {
+		//Funcs.push_back(GSFC13EVField);
+	//} else if (strcmp(IntFunc,"GSFC15EV") == 0) {
+		//Funcs.push_back(GSFC15EVField);
+	//} else if (strcmp(IntFunc,"GSFC15EVS") == 0) {
+		//Funcs.push_back(GSFC15EVSField);
+	//} else if (strcmp(IntFunc,"ISAAC") == 0) {
+		//Funcs.push_back(ISAACField);
+	//} else if (strcmp(IntFunc,"JPL15EV") == 0) {
+		//Funcs.push_back(JPL15EVField);
+	//} else if (strcmp(IntFunc,"JPL15EVS") == 0) {
+		//Funcs.push_back(JPL15EVSField);
+	//} else if (strcmp(IntFunc,"O4") == 0) {
+		//Funcs.push_back(O4Field);
+	//} else if (strcmp(IntFunc,"O6") == 0) {
+		//Funcs.push_back(O6Field);
+	//} else if (strcmp(IntFunc,"P11A") == 0) {
+		//Funcs.push_back(P11AField);
+	//} else if (strcmp(IntFunc,"SHA") == 0) {
+		//Funcs.push_back(SHAField);
+	//} else if (strcmp(IntFunc,"U17EV") == 0) {
+		//Funcs.push_back(U17EVField);
+	//} else if (strcmp(IntFunc,"V117EV") == 0) {
+		//Funcs.push_back(V117EVField);
+	//} else if (strcmp(IntFunc,"VIPAL") == 0) {
+		//Funcs.push_back(VIPALField);
+	//} else if (strcmp(IntFunc,"VIT4") == 0) {
+		//Funcs.push_back(VIT4Field);
+	//}
+	Funcs.push_back(getModelFieldPtr(IntFunc));
+	
 
 	/* external model */
 	if (strcmp(ExtFunc,"Con2020") == 0) {

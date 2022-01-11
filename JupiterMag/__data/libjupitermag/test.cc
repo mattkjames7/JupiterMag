@@ -14,7 +14,7 @@ int main() {
 	vector<FieldFuncPtr> Funcs;
 
 	/* internal model */
-	Funcs.push_back(JRM09Field);
+	Funcs.push_back(jrm09Field);
 
 	/* external model */
 	Funcs.push_back(Con2020Field);

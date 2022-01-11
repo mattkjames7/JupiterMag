@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <vector>
 #include "trace.h"
-#include "internal/libinternal.h"
+#include "libinternalfield/libinternalfield/libinternal.h"
 #include "con2020/libcon2020.h"
 #endif
 

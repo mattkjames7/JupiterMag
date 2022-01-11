@@ -23,7 +23,7 @@ def _GetCFG():
 def _SetCFG(cfg):
 	
 	Model = ct.c_char_p(cfg['Model'].encode('utf-8'))
-	CartIn = np.array(cfg['CartesianOut'],dtype='bool')
+	CartIn = np.array(cfg['CartesianIn'],dtype='bool')
 	CartOut = np.array(cfg['CartesianOut'],dtype='bool')
 	
 	_CSetInternalCFG(Model,CartIn,CartOut)
