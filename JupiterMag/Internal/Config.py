@@ -22,7 +22,7 @@ def _GetCFG():
 
 def _SetCFG(cfg):
 	
-	Model = ct.c_char_p(cfg['Model'].encode('utf-8'))
+	Model = ct.c_char_p(cfg['Model'].lower().encode('utf-8'))
 	CartIn = np.array(cfg['CartesianIn'],dtype='bool')
 	CartOut = np.array(cfg['CartesianOut'],dtype='bool')
 	
@@ -36,7 +36,7 @@ def Config(*args,**kwargs):
 	'''
 
 	#list the default arguments here
-	defargs = {	'Model'			: 'JRM09',
+	defargs = {	'Model'			: 'jrm09',
 				'CartesianIn'	: True,
 				'CartesianOut'	: True}
 				

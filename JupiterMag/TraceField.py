@@ -72,7 +72,7 @@ class TraceField(object):
 		self.ExtModelCode = ctypes.c_char_p(ExtModel.encode('utf-8'))
 
 		#make sure models are in Cartesian
-		Models = [IntModel,ExtModel]
+		Models = [IntModel.lower(),ExtModel]
 
 		
 		if ExtModel == "Con2020":
