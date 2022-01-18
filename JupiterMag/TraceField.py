@@ -261,7 +261,9 @@ class TraceField(object):
 			xmap - x position of this subplot
 			ymap - y position of this subplot
 		label : None|str
-		
+			Add label to traces.
+		color : str|array-like
+			Colour to plot the field lines
 		'''
 		
 		if ind == 'all':
@@ -311,8 +313,29 @@ class TraceField(object):
 	
 	def PlotXY(self,ind='all',fig=None,maps=[1,1,0,0],label=None,color='black'):
 		'''
-		plot field lines in the X-Y plane
+		Plot field lines in the X-Y plane
 		
+		Inputs
+		======
+		ind : int|str
+			Index of trace to plot. Can be scalar or an array. If set 
+			ind='all' then all traces will be plotted.
+		fig : None|pyplot|pyplot.Axes instance
+			None - new figure will be created
+			pyplot - new subplot will be created on existing figure
+			pyplot.Axes - existing subplot will be used
+		maps : list
+			4-element array-like to determine the subplot position,
+			ignored when fig=pyplot.Axes.
+			maps = [xmaps,ymaps,xmap,ymap]
+			xmaps - number of subplots in x-direction
+			ymaps - number of subplots in y-direction
+			xmap - x position of this subplot
+			ymap - y position of this subplot
+		label : None|str
+			Add label to traces.
+		color : str|array-like
+			Colour to plot the field lines		
 		'''
 		
 		if ind == 'all':
@@ -362,8 +385,30 @@ class TraceField(object):
 	
 	def PlotRhoZ(self,ind='all',fig=None,maps=[1,1,0,0],label=None,color='black'):
 		'''
-		plot field lines in the rho-Z plane
+		Plot field lines in the rho-Z plane
+
 		
+		Inputs
+		======
+		ind : int|str
+			Index of trace to plot. Can be scalar or an array. If set 
+			ind='all' then all traces will be plotted.
+		fig : None|pyplot|pyplot.Axes instance
+			None - new figure will be created
+			pyplot - new subplot will be created on existing figure
+			pyplot.Axes - existing subplot will be used
+		maps : list
+			4-element array-like to determine the subplot position,
+			ignored when fig=pyplot.Axes.
+			maps = [xmaps,ymaps,xmap,ymap]
+			xmaps - number of subplots in x-direction
+			ymaps - number of subplots in y-direction
+			xmap - x position of this subplot
+			ymap - y position of this subplot
+		label : None|str
+			Add label to traces.
+		color : str|array-like
+			Colour to plot the field lines		
 		'''
 		
 		if ind == 'all':
@@ -477,7 +522,7 @@ class TraceField(object):
 					Hemisphere='both',colatlim=None,
 					fig=None,maps=[1,1,0,0],**kwargs):
 		'''
-		Pigtail plot.
+		Pigtail plot. I don't think it works.
 		
 		Inputs
 		======
@@ -493,8 +538,20 @@ class TraceField(object):
 			(int32,float32) : (Date formatted yyyymmdd,UT in hours)
 		Hemisphere : str
 			'north'|'south'|'both'
-
-		
+		colatlim : None|float
+			Limit of colatitude on the plot
+		fig : None|matplotlib.pyplot|matplotlib.pyplot.Axes
+			None - a new figure will be created with new axes
+			matplotlib.pyplot - existing figure, new axes
+			matplotlib.pyplot.Axes - existing axes instance to be used
+				(maps ignored in the case).
+		maps : list|tuple|numpy.ndarray
+			Four element array-like, denoting subplot position,
+			e.g. [xmaps,ymaps,xmap,ymap]
+				xmaps : number of subplots in x-direction
+				ymaps : number of subplots in y-direction
+				xmap : position index (0 is left)
+				ymap : position index (0 is top)		
 		'''
 		
 		#get the stuff to plot
