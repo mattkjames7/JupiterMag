@@ -5,7 +5,8 @@ import time
 from ..Con2020._ReadTestData import _ReadTestData
 import matplotlib.pyplot as plt
 
-def Test(Model='JRM09',R=0.85,MaxDeg=None,Comp='r',scale = [-60.0,60.0],levels=np.linspace(-50,50,11)):
+def Test(Model='JRM09',R=0.85,MaxDeg=None,Comp='r',scale = [-60.0,60.0],
+			levels=np.linspace(-50,50,11)):
 	'''
 	This is a simple function to test the model by recreating a plot in 
 	Connerney et al 2018 (figure 4, sort of).

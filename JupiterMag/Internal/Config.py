@@ -31,8 +31,30 @@ def _SetCFG(cfg):
 						
 def Config(*args,**kwargs):
 	'''
-	Set and return the VIP4 model configuration
+	Set and return the internal model configuration
 	
+	Input Arguments
+	===============
+	The only accepted argument here is the string "default", i.e.
+	Config("default") which sets the model to default settings.
+	
+	Keywords
+	========
+	Model : str
+		Name of the internal field model to use, current models 
+		available include:
+		"jrm33" (default)|"jrm09"|"vip4"|"vit4"|"vipal"|"isaac"|
+		"gsfc13ev"|"gsfc15ev"|"gsfc15evs"|"jpl15ev"|"jpl15evs"|
+		"o4"|"o6"|"p11a"|"sha"|"u17ev"|"v117ev"|"none"	
+	CartesianIn : bool
+		If True (default) the inputs to the model will be expected to be 
+		in Cartesian right-handed System III coordinates. If False, then
+		the inputs should be in spherical polar coordinates.
+	CartesianOut : bool
+		If True (default) the output magnetic field will be in Cartesian
+		right-handed System III coordinates. Otherwise, the magnetic 
+		field components produced will be radial, meridional and 
+		azimuthal.		
 	'''
 
 	#list the default arguments here

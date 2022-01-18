@@ -11,13 +11,16 @@ def Field(p0,p1,p2,MaxDeg=None):
 	======
 	p0 : float
 		Array/scalar containing x or r right-handed System III 
-		coordinate (depending on PolIn)
+		coordinate 
 	p1 : float
 		Array/scalar containing y or theta right-handed System III 
 		coordinate
 	p2 : float
 		Array/scalar containing z or phi right-handed System III 
 		coordinate
+	MaxDeg : None|int
+		Maximum model degree to use. If None then the default value
+		(model dependant) will be used.
 
 	Returns
 	=======
