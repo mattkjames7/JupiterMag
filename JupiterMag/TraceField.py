@@ -17,7 +17,7 @@ class TraceField(object):
 	
 	'''
 	
-	def __init__(self,x0,y0,z0,IntModel='jrm09',ExtModel='Con2020', 
+	def __init__(self,x0,y0,z0,IntModel='jrm33',ExtModel='Con2020', 
 				FlattenSingleTraces=True,**kwargs):
 		'''
 		Traces along the magnetic field given a starting set of 
@@ -35,10 +35,21 @@ class TraceField(object):
 		z0 : float
 			scalar or array containing the z component of the starting 
 			point(s).
-
+		InternalModel : str
+			Name of the internal field model to use, current models 
+			available include:
+			"jrm33" (default)|"jrm09"|"vip4"|"vit4"|"vipal"|"isaac"|
+			"gsfc13ev"|"gsfc15ev"|"gsfc15evs"|"jpl15ev"|"jpl15evs"|
+			"o4"|"o6"|"p11a"|"sha"|"u17ev"|"v117ev"|"none"
+		ExtModel : str
+			External field model, currently only:
+			"Con2020"|"none"		
 		FlattenSingleTraces	: bool
 			When set to True and if performing only a single trace to 
 			flatten all of the arrays (position, magnetic field, etc.)
+
+		Keyword arguments
+		=================
 		Verbose	: bool
 			Boolean, if True will display an indication of the progress 
 			made during traces.
@@ -47,13 +58,65 @@ class TraceField(object):
 			directions. Set to 1 to trace along the field direction
 			(from south to north), or set to -1 to trace in the opposite
 			direction to the magnetic field (north to south).
+		MaxLen : int
+			Maximum total number of trace steps
+		MaxStep : float
+			Length of maximum step size in planetary radii.
+		InitStep : float
+			Initial step size in planetary radii
+		MinStep : float
+			Minimum step size in planetary radii
+		ErrMax : float
+			Maximum allowed error in Runge-Kutta algorithm.
+		alpha : float
+			Array-like list of polarization angles for which to 
+			calculate h_alpha (see Singer et al., 1981,
+			doi: 10.1029/JA086iA06p04589)
+		Delta : This is the separation between the equatorial footprints
+			of the field lines used to calculate h_alpha.
+			
+		Member Functions
+		================
+		PlotXY()		Plots the field traces in the X-Y plane
+		PlotXZ()		Plots the field traces in the X-Z plane
+		PlotRhoZ()		Plots the field traces in the Rho-Z plane
+		PlotHalpha()	Plots h_alpha along a field line
+		PlotPigtail()	Fails to plot the pigtail plots.
 		
-		Keyword arguments
-		=================
+		Member Variables
+		================
+		nstep 			Number of steps for each trace
 
+		The following variables either have shape (n,MaxLen) or 
+		(MaxLen,) if a single trace has been flattened. The elements of
+		each trace past nstep[i] are filled with NANs.
+
+		x				Trace x position 
+		y				Trace y position
+		z				Trace z position
+		Bx				Trace field
+		By				Trace field
+		Bz				Trace field
+		R				Radial distance along field line
+		Rnorm			R/Rmax
+		s				Distance along field line 
+		
+		These variables describe things such as footprints
+		
+		LatN			Latitude of northern footprints (degrees)
+		LonN			Longitude of northern footprints (degrees)
+		LatS			Latitude of southern foorprints (degrees)
+		LonS			Longitude of southern footprints (degrees)
+		LonEq			Longitude of magnetic equatorial footprint 
+						(degrees)
+		Rmax			Radial distance of the furthest point along the
+						field line (planetary radii)
+		FlLen			Length of field lines (planetary radii)
+		
 		
 		Model Fields
 		============
+		
 
 				
 		'''
@@ -178,7 +241,26 @@ class TraceField(object):
 
 	def PlotXZ(self,ind='all',fig=None,maps=[1,1,0,0],label=None,color='black'):
 		'''
-		plot field lines in the X-Z plane
+		Plot field lines in the X-Z plane
+		
+		Inputs
+		======
+		ind : int|str
+			Index of trace to plot. Can be scalar or an array. If set 
+			ind='all' then all traces will be plotted.
+		fig : None|pyplot|pyplot.Axes instance
+			None - new figure will be created
+			pyplot - new subplot will be created on existing figure
+			pyplot.Axes - existing subplot will be used
+		maps : list
+			4-element array-like to determine the subplot position,
+			ignored when fig=pyplot.Axes.
+			maps = [xmaps,ymaps,xmap,ymap]
+			xmaps - number of subplots in x-direction
+			ymaps - number of subplots in y-direction
+			xmap - x position of this subplot
+			ymap - y position of this subplot
+		label : None|str
 		
 		'''
 		
