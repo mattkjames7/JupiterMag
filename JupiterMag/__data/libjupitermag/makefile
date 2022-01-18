@@ -22,7 +22,9 @@ lib:
 	$(CC) -shared libjupitermag.cc *.o \
 			con2020/*.o \
 			spline/*.o \
-			-o libjupitermag.so -Wl,-rpath='$$ORIGIN/libinternalfield' -L ./libinternalfield -linternalfield
+			libinternalfield/libinternalfield.a \
+			-o libjupitermag.so 
+			#-o libjupitermag.so -Wl,-rpath='$$ORIGIN/libinternalfield' -L ./libinternalfield -linternalfield
 
 test:
 	$(CC) test.cc *.o \
