@@ -41,6 +41,10 @@ def _GetCFG():
 	return cfg
 
 def _SetCFG(cfg):
+	'''
+	Set the model config using a dictionary.
+	
+	'''
 	
 	eqtype = ct.c_char_p(cfg['equation_type'].encode('utf-8'))
 	mui = np.array([cfg['mu_i']],dtype='float64')
@@ -62,6 +66,50 @@ def _SetCFG(cfg):
 def Config(*args,**kwargs):
 	'''
 	Set and return the Con2020 model configuration
+	
+	Input Arguments
+	===============
+	The only accepted argument here is the string "default", i.e.
+	Config("default") which sets the model to default settings.
+	
+	Keywords (shorthand keywords in brackets)
+	=========================================
+	mu_i_div2__current_density_nT (mu_i): float
+		mu0i0/2 term (current sheet current density), in nT
+	i_rho__radial_current_density_nT (i_rho) : float
+		radial current term from Connerney et al., 2020
+		NOTE: The default value (16.7 nT) is the average value from
+		Connerney et al 2020. This value was shown to vary from one 
+		pass to the next, where Table 2 provides radial current 
+		density values for 23 of the first 24
+		perijoves.
+	r0__inner_rj (r0) : float
+		Inner edge of current disk in Rj
+	r1__outer_rj (r1) : float
+		Outer edge of current disk in Rj
+	d__cs_half_thickness_rj (d) : float
+		Current sheet half thickness in Rj
+	xt__cs_tilt_degs (xt) : float
+		Current sheet tilt in degrees
+	xp__cs_rhs_azimuthal_angle_of_tilt_degs (xp) : float
+		Current sheet tilt longitude (right handed) in degrees
+	Edwards : bool
+		Use Edwards et al equations.
+	equation_type: str
+		Define method for calculating the current sheet field, may be 
+		one of the following: 'hybrid'|'analytic'|'integral'
+		See notes below for more information.
+	error_check : bool
+		If True (default) then inputs will be checked for potential errors.		
+	CartesianIn : bool
+		If True (default) the inputs to the model will be expected to be 
+		in Cartesian right-handed System III coordinates. If False, then
+		the inputs should be in spherical polar coordinates.
+	CartesianOut : bool
+		If True (default) the output magnetic field will be in Cartesian
+		right-handed System III coordinates. Otherwise, the magnetic 
+		field components produced will be radial, meridional and 
+		azimuthal.	
 	
 	'''
 

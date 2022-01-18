@@ -11,7 +11,7 @@ def Field(p0,p1,p2):
 	======
 	p0 : float
 		Array/scalar containing x or r right-handed System III 
-		coordinate (depending on PolIn)
+		coordinate (depending on model config)
 	p1 : float
 		Array/scalar containing y or theta right-handed System III 
 		coordinate
