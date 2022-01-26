@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 from .Tools.PlotJupiter import PlotJupiterXY,PlotJupiterXZ
 from .Tools.GetLegendHandLab import GetLegendHandLab
 from . import Internal		
+import DateTimeTools as TT
+from scipy.interpolate import interp1d
+from .Tools.JupiterOval import JupiterOvalNorth,JupiterOvalSouth
 
 class TraceField(object):
 	'''
@@ -137,10 +140,16 @@ class TraceField(object):
 		#make sure models are in Cartesian
 		Models = [IntModel.lower(),ExtModel]
 
-		
 		if ExtModel == "Con2020":
 			Con2020.Config(CartesianIn=True,CartesianOut=True)
 			
+		#check if time has been supplied
+		self.Time = False
+		if 'Time' in kwargs:
+			self._StoreTime(kwargs['Time'])
+		elif 'Date' in kwargs and 'ut' in kwargs:
+			self._StoreTime((kwargs['Date'],kwargs['ut']))
+
 
 		#kwargs
 		defargs = {	'MaxLen'	:		1000,
@@ -518,7 +527,74 @@ class TraceField(object):
 
 		return ax
 		
+		
+	def _HourPos(self,lon,lat):
+		'''
+		Interpolate the positions each hour in the time range.
+		
+		'''
+		if not self.Time:
+			return None,None,None
+		
+		#get hours
+		utch = np.unique(np.int32(self.utc)).astype('float64')
+		use = np.where((utch >= self.utc[0]) & (utch <= self.utc[-1]))[0]
+		utch = utch[use]
+				
+			
+		#convert to Cartesian
+		r = 90 - np.abs(lat)
+		t = lon*np.pi/180.0
+		x = r*np.cos(t)
+		y = r*np.sin(t)
+				
+		#create interpolation objects
+		fx = interp1d(self.utc,x)
+		fy = interp1d(self.utc,y)
+		
+		#work out the position at those times
+		xh = fx(utch)
+		yh = fy(utch)
+		
+		rh = 90 - np.sqrt(xh**2 + yh**2)
+		th = np.arctan2(yh,xh)
+		
+	
+		return utch % 24,th,rh
+		
+	def StoreTime(self,**kwargs):
+		'''
+		Store time on the TraceField object (used for plotting)
+		
+		'''
+		self.Time = False
+		if 'Time' in kwargs:
+			self._StoreTime(kwargs['Time'])
+		elif 'Date' in kwargs and 'ut' in kwargs:
+			self._StoreTime((kwargs['Date'],kwargs['ut']))
+
+		
+	def _StoreTime(self,Time):
+		'''
+		Store the time array in this object.
+		
+		'''
+		if Time is None:
+			#do nothing
+			pass
+		elif len(Time) == 2:
+			#given Date and ut
+			self.Date,self.ut = Time
+			self.utc = TT.ContUT(self.Date,self.ut)
+			self.Time = True
+		else:
+			#assume continuous time
+			self.utc = Time
+			self.Date,self.ut = TT.ContUTtoDate(self.utc)
+			self.Time = True
+		
 	def PlotPigtail(self,Proj='normal',ShowLabels=True,Time=None,
+					Date=None,ut=None,
 					Hemisphere='both',colatlim=None,
 					fig=None,maps=[1,1,0,0],**kwargs):
 		'''
@@ -573,6 +649,11 @@ class TraceField(object):
 			rlim = [90.0,colatlim]
 		else:
 			rlim = [0.0,1.0]
+			
+		if not Time is None:
+			self._StoreTime(Time)
+		elif not Date is None and not ut is None:
+			self._StoreTime((Date,ut))
 		
 		if fig is None:
 			fig = plt
@@ -581,13 +662,30 @@ class TraceField(object):
 			ax = fig.subplot2grid((maps[1],maps[0]),(maps[3],maps[2]),projection='polar')
 		else:
 			ax = fig		
+		ax.set_rlabel_position(0.0)
+		rpo = ax.get_rlabel_position()
 		ax.set_theta_zero_location("N")
 		ax.set_rlim(rlim)
 		if Hemisphere.lower() in ['both','north']:
 			ax.plot(tn,rn,linewidth=kwargs.get('linewidth',2.0),color=kwargs.get('color','red'),label='North')	
+			lono,lato = JupiterOvalNorth()
+			ax.plot(lono*np.pi/180.0,lato,color='black',linestyle=':')
+			if self.Time:
+				uth,th,rh = self._HourPos(self.LonN,self.LatN)
+				ax.scatter(th,rh,color=kwargs.get('color','red'),marker='o')
+				for i in range(0,uth.size):
+					ax.text(th[i],rh[i],'{:02d}'.format(np.int32(uth[i])),va='bottom',ha='left',color=kwargs.get('color','red'))
 		if Hemisphere.lower() in ['both','south']:
 			ax.plot(ts,rs,linewidth=kwargs.get('linewidth',2.0),color=kwargs.get('color','orange'),label='South')	
-		
+			lono,lato = JupiterOvalSouth()
+			ax.plot(lono*np.pi/180.0,-lato,color='black',linestyle=':')
+			if self.Time:
+				uth,th,rh = self._HourPos(self.LonS,self.LatS)
+				ax.scatter(th,rh,color=kwargs.get('color','orange'),marker='o')
+				for i in range(0,uth.size):
+					ax.text(th[i],rh[i],'{:02d}'.format(np.int32(uth[i])),va='bottom',ha='left',color=kwargs.get('color','orange'))
+		ax.text((rpo+10.0)*np.pi/180.0,np.mean(rlim),'Latitude ($^\circ$)',rotation=rpo+90.0,ha='center',va='center')
+		ax.set_xlabel('Longitude ($^\circ$)')
 		ax.legend()
 		
 		return ax
