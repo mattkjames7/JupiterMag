@@ -135,7 +135,8 @@ class TraceField(object):
 		self.IntModel = IntModel
 		self.IntModelCode = ctypes.c_char_p(IntModel.encode('utf-8'))
 		self.ExtModel = ExtModel
-		self.ExtModelCode = ctypes.c_char_p(ExtModel.encode('utf-8'))
+		#self.ExtModelCode = ctypes.c_char_p(ExtModel.encode('utf-8'))
+		self.nExt,self.ExtModelCode = self._WrapExtFuncs(ExtModel)
 
 		#make sure models are in Cartesian
 		Models = [IntModel.lower(),ExtModel]
@@ -220,7 +221,7 @@ class TraceField(object):
 		
 		#call the C code
 		_CTraceField(	self.n,self.x0,self.y0,self.z0,
-						self.IntModelCode,self.ExtModelCode,
+						self.IntModelCode,self.nExt,self.ExtModelCode,
 						self.MaxLen,self.MaxStep,self.InitStep,
 						self.MinStep,self.ErrMax,self.Delta,
 						self.Verbose,self.TraceDir,
@@ -247,6 +248,42 @@ class TraceField(object):
 			self.halpha = self.halpha.reshape((self.n,self.nalpha,self.MaxLen))
 			for i in range(0,7):
 				setattr(self,fpnames[i],self.FP[:,i])
+
+	def _WrapExtFuncs(self,ExtFuncs):
+		'''
+		This will deal with the string/list of strings denoting the
+		names of the external field functions to be used in the traces.
+		It converts them into a compatible type with char**
+		
+		Inputs
+		======
+		ExtFuncs : str|list
+			Name(s) of external field functions.
+			
+		Returns
+		=======
+		nExt : int32
+			Number of external functions
+		ExtPtr : ctypes.POINTER(ctypes.c_char_p)
+		
+		'''
+		
+		#convert to list if needed
+		if isinstance(ExtFuncs,str):
+			ExtFuncs = [ExtFuncs]
+		
+		#get the length
+		nExt = np.int32(len(ExtFuncs))
+		
+		#create the pointer
+		ExtPtr = (ctypes.c_char_p*nExt)()
+		
+		#encode the strings as bytes
+		for i in range(0,nExt):
+			ExtPtr[i] = ExtFuncs[i].encode('utf-8')
+			
+		return nExt,ExtPtr
+
 
 	def PlotXZ(self,ind='all',fig=None,maps=[1,1,0,0],label=None,color='black'):
 		'''

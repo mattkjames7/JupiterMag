@@ -14,7 +14,7 @@ using namespace std;
 
 extern "C" {
 	bool TraceField(int n, double *x0, double *y0, double *z0,
-					const char *IntFunc, const char *ExtFunc,
+					const char *IntFunc, int nExt, char **ExtFunc,
 					int MaxLen, double MaxStep, double InitStep,
 					double MinStep, double ErrMax, double Delta,
 					bool Verbose, int TraceDir,

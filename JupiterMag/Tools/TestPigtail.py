@@ -7,17 +7,17 @@ def TestPigtail(IntModel='jrm09',ExtModel='Con2020',
 				t0=(302,12,50),t1=(302,21,00)):
 	from ..TraceField import TraceField
 	from ..Con2020 import Config
-	from ..Con2020._ReadTestData import _ReadTestData
+	from ..Internal._ReadTestPos import _ReadTestPos
 	import DateTimeTools as TT
 	
 
 	#read the data
 	print('Reading Data')
-	data = _ReadTestData()
+	data = _ReadTestPos()
 
 	#get the time
 	year = data.Year
-	dayno = data.Day
+	dayno = data.Doy
 	
 
 	
@@ -32,14 +32,10 @@ def TestPigtail(IntModel='jrm09',ExtModel='Con2020',
 	year = year[use]
 	dayno = dayno[use]
 	yr = data.Year[0]
-	r = data.r
-	t = data.t
-	p = data.p
-	rho = r*np.sin(t)
-	z = r*np.cos(t)
-	x = rho*np.cos(p)
-	y = rho*np.sin(p)
-	
+	x = data.x
+	y = data.y
+	z = data.z
+
 	#convert time
 	dn = np.int32(dayno)
 	ut = (dayno-dn)*24.0

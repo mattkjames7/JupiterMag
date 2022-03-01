@@ -44,11 +44,13 @@ _CSetInternalCFG = libjupitermag.SetInternalCFG
 _CSetInternalCFG.restype = None
 _CSetInternalCFG.argtypes = [	c_char_p,
 								c_bool,
-								c_bool 	]
+								c_bool, 	
+								c_int ]
 
 #get internal config
 _CGetInternalCFG = libjupitermag.GetInternalCFG
 _CGetInternalCFG.restype = None
 _CGetInternalCFG.argtypes = [	c_char_p,
 								c_bool_ptr,
-								c_bool_ptr 	]
+								c_bool_ptr,
+								c_int_ptr 	]

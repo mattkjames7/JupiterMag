@@ -6,6 +6,7 @@ void ModelField(double p0, double p1, double p2,
 				double *B0, double *B1, double *B2) {
 
 	/* get the internal field model */
+	int Deg;
 	double Bi0, Bi1, Bi2;
 	if (strcmp(internal,"none") == 0) {
 		/* in this case we set everything to 0*/
@@ -14,7 +15,8 @@ void ModelField(double p0, double p1, double p2,
 		Bi2 = 0.0;
 	} else {
 		/* set new config */
-		SetInternalCFG(internal,CartIn,CartOut);
+		Deg = internalModel.GetDegree();
+		SetInternalCFG(internal,CartIn,CartOut,Deg);
 		
 		/* get model field */
 		InternalField(1,&p0,&p1,&p2,&Bi0,&Bi1,&Bi2);
@@ -44,7 +46,7 @@ void ModelFieldArray(	int n, double *p0, double *p1, double *p2,
 						double *B0, double *B1, double *B2) {
 
 	/* get the internal field model */
-	int i;
+	int i, Deg;
 	double *Bi0 = new double[n];
 	double *Bi1 = new double[n];
 	double *Bi2 = new double[n];
@@ -56,7 +58,8 @@ void ModelFieldArray(	int n, double *p0, double *p1, double *p2,
 		}
 	} else {
 		/* set new config */
-		SetInternalCFG(internal,CartIn,CartOut);
+		Deg = internalModel.GetDegree();
+		SetInternalCFG(internal,CartIn,CartOut,Deg);
 		
 		/* get model field */
 		InternalField(n,p0,p1,p2,Bi0,Bi1,Bi2);		

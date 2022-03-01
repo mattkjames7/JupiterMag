@@ -11,13 +11,15 @@ def _GetCFG():
 	Model = ct.c_char_p("                                ".encode('utf-8'))
 	CartIn = np.zeros(1,dtype='bool')
 	CartOut = np.zeros(1,dtype='bool')
+	Degree = np.zeros(1,dtype='int32')
 
-	_CGetInternalCFG(Model,CartIn,CartOut)
+	_CGetInternalCFG(Model,CartIn,CartOut,Degree)
 	
 	cfg = {}
 	cfg['Model'] = Model.value.decode()
 	cfg['CartesianIn'] = CartIn[0]
 	cfg['CartesianOut'] = CartOut[0]
+	cfg['Degree'] = Degree[0]
 	return cfg
 
 def _SetCFG(cfg):
@@ -25,8 +27,9 @@ def _SetCFG(cfg):
 	Model = ct.c_char_p(cfg['Model'].lower().encode('utf-8'))
 	CartIn = np.array(cfg['CartesianIn'],dtype='bool')
 	CartOut = np.array(cfg['CartesianOut'],dtype='bool')
+	Degree = np.array(cfg['Degree'],dtype='int32')
 	
-	_CSetInternalCFG(Model,CartIn,CartOut)
+	_CSetInternalCFG(Model,CartIn,CartOut,Degree)
 						
 						
 def Config(*args,**kwargs):
@@ -55,12 +58,15 @@ def Config(*args,**kwargs):
 		right-handed System III coordinates. Otherwise, the magnetic 
 		field components produced will be radial, meridional and 
 		azimuthal.		
+	Degree : int
+		Maximum degree to use on the current model.
 	'''
 
 	#list the default arguments here
 	defargs = {	'Model'			: 'jrm09',
 				'CartesianIn'	: True,
-				'CartesianOut'	: True}
+				'CartesianOut'	: True,
+				'Degree'		: 0}
 				
 	
 	if len(args) == 1:

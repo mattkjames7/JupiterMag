@@ -3,6 +3,7 @@ import ctypes as ct
 import os
 from . import Globals
 
+
 # # check that the internal field library exists
 # try:
 	# libinternal = ct.CDLL(Globals.ModulePath+"__data/libjupitermag/internal/libinternal.so")
@@ -41,6 +42,7 @@ except:
 
 #define some dtypes
 c_char_p = ct.c_char_p
+c_char_p_ptr = ct.POINTER(c_char_p) #string array pointer!
 c_bool = ct.c_bool
 c_int = ct.c_int
 c_float = ct.c_float
@@ -68,7 +70,8 @@ _CTraceField.argtypes = [	c_int,				#n
 							c_double_ptr,		#y0
 							c_double_ptr,		#z0
 							c_char_p,			#IntFunc
-							c_char_p,			#ExtFunc
+							c_int,				#Number of external functions
+							c_char_p_ptr,		#ExtFunc
 							c_int,				#MaxLen
 							c_double,			#MaxStep
 							c_double,			#InitStep
