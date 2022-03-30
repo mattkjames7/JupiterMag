@@ -1,6 +1,6 @@
 # JupiterMag
 
-Jupiter magnetic field model
+Jupiter magnetic field models with plenty of bugs.
 
 ## Installation
 
@@ -20,6 +20,8 @@ pip3 install dist/JupiterMag-x.x.x-py3-none-any.whl --user
 ```
 
 I recommend installing `gcc` >= 9.3 (that's what this is tested with, earlier versions may not support the required features of C++).
+
+Windows and MacOS support coming soon...
 
 ## Usage
 
@@ -55,17 +57,39 @@ Bx,By,Bz = jm.Con2020.Field(x,y,z)
 
 ### Tracing
 
-There is an object for field tracing:
+There is an object for field tracing `JupiterMag.TraceField`:
 
 ```python
+import JupiterMag as jm
+import numpy as np
+
 #be sure to configure external field model prior to tracing
 jm.Con2020.Config(equation_type='analytic')
 #this may also become necessary with internal models in future, e.g.
 #setting the model degree
 
-#create trace object, pass starting position(s) x0,y0,z0
-T = jm.TraceField(x0,y0,z0,IntModel='jrm09',ExtModel='Con2020')
+#create some starting positions
+n = 8
+theta = (180.0 - np.linspace(21,35,n))*np.pi/180.0
+r = np.ones(n)
+x0 = r*np.sin(theta)
+y0 = np.zeros(n)
+z0 = r*np.cos(theta)
 
-#plot a trace (ind is the index of the trace to plot)
-T.PlotRhoZ(ind)
+#create trace objects, pass starting position(s) x0,y0,z0
+T0 = jm.TraceField(x0,y0,z0,Verbose=True,IntModel='jrm33',ExtModel='none')
+T1 = jm.TraceField(x0,y0,z0,Verbose=True,IntModel='jrm33',ExtModel='Con2020')
+
+#plot a trace
+ax = T0.PlotRhoZ(label='JRM33',color='black')
+ax = T1.PlotRhoZ(fig=ax,label='JRM33 + Con2020',color='red')
+	
+ax.set_xlim(-2.0,25.0)
+ax.set_ylim(-10.0,10.0)
 ```
+
+The resulting objects `T0` and `T1` store arrays of trace positions and magnetic field vectors along with a bunch of footprints.
+
+The above code produces a plot like this:
+
+![](CompareTrace.png)
