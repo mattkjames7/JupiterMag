@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def TestTrace(IntModel='JRM09',ExtModel='Con2020',fig=None,maps=[1,1,0,0],color='green'):
+def TestTrace(IntModel='jrm33',ExtModel='Con2020',fig=None,maps=[1,1,0,0],color='green'):
 	from ..TraceField import TraceField
 	from ..Con2020 import Config
 	
@@ -32,4 +32,32 @@ def TestTrace(IntModel='JRM09',ExtModel='Con2020',fig=None,maps=[1,1,0,0],color=
 	ax = T.PlotXZ(fig=fig,maps=maps,label=lab,color=color)
 
 
+	return ax
+
+
+def CompareTrace():
+	from ..TraceField import TraceField
+	from ..Con2020 import Config
+		
+
+	#get some starting coords
+	n = 8
+	theta = (180.0 - np.linspace(21,35,n))*np.pi/180.0
+	r = np.ones(n)
+	x = r*np.sin(theta)
+	y = np.zeros(n)
+	z = r*np.cos(theta)
+	
+	#get traces with and without the external field
+	cfg = Config()
+	Config(equation_type='analytic')	
+	T0 = TraceField(x,y,z,Verbose=True,IntModel='jrm33',ExtModel='none')
+	T1 = TraceField(x,y,z,Verbose=True,IntModel='jrm33',ExtModel='Con2020')
+	Config(cfg)
+	
+	#plot them
+	ax = T0.PlotRhoZ(label='JRM33',color='black')
+	ax = T1.PlotRhoZ(fig=ax,label='JRM33 + Con2020',color='red')
+	
+	
 	return ax
