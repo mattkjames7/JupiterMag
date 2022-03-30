@@ -20,8 +20,7 @@ class TraceField(object):
 	
 	'''
 	
-	def __init__(self,x0,y0,z0,IntModel='jrm33',ExtModel='Con2020', 
-				FlattenSingleTraces=True,**kwargs):
+	def __init__(self,x0,y0,z0,IntModel='jrm33',ExtModel='Con2020',**kwargs):
 		'''
 		Traces along the magnetic field given a starting set of 
 		coordinates (or for multiple traces, arrays of starting 
@@ -47,9 +46,6 @@ class TraceField(object):
 		ExtModel : str
 			External field model, currently only:
 			"Con2020"|"none"		
-		FlattenSingleTraces	: bool
-			When set to True and if performing only a single trace to 
-			flatten all of the arrays (position, magnetic field, etc.)
 
 		Keyword arguments
 		=================
@@ -135,7 +131,6 @@ class TraceField(object):
 		self.IntModel = IntModel
 		self.IntModelCode = ctypes.c_char_p(IntModel.encode('utf-8'))
 		self.ExtModel = ExtModel
-		#self.ExtModelCode = ctypes.c_char_p(ExtModel.encode('utf-8'))
 		self.nExt,self.ExtModelCode = self._WrapExtFuncs(ExtModel)
 
 		#make sure models are in Cartesian
@@ -236,18 +231,10 @@ class TraceField(object):
 
 
 		
-		#flatten things and unpack footprints
-		if self.n == 1 and FlattenSingleTraces:
-			flat = ['nstep','x','y','z','Bx','By','Bz','s','R','Rnorm']
-			for f in flat:
-				self.__dict__[f] = self.__dict__[f][0]
-			self.halpha = (self.halpha.reshape((self.n,self.nalpha,self.MaxLen)))[0]
-			for i in range(0,7):
-				setattr(self,fpnames[i],self.FP[0,i])
-		else:
-			self.halpha = self.halpha.reshape((self.n,self.nalpha,self.MaxLen))
-			for i in range(0,7):
-				setattr(self,fpnames[i],self.FP[:,i])
+		#unpack footprints
+		self.halpha = self.halpha.reshape((self.n,self.nalpha,self.MaxLen))
+		for i in range(0,7):
+			setattr(self,fpnames[i],self.FP[:,i])
 
 	def _WrapExtFuncs(self,ExtFuncs):
 		'''
@@ -328,13 +315,9 @@ class TraceField(object):
 		else:
 			ax = fig
 		
-		if np.size(np.shape(self.x)) == 2:
-			x = self.x[ind].T
-			z = self.z[ind].T
-		else:
-			x = self.x
-			z = self.z
-			
+		x = self.x[ind].T
+		z = self.z[ind].T
+		
 
 		ln = ax.plot(x,z,color=color)
 		if not label is None:
@@ -400,13 +383,9 @@ class TraceField(object):
 		else:
 			ax = fig
 		
-		if np.size(np.shape(self.x)) == 2:
-			x = self.x[ind].T
-			y = self.y[ind].T
-		else:
-			x = self.x
-			y = self.y
-			
+		x = self.x[ind].T
+		y = self.y[ind].T
+
 		ln = ax.plot(y,x,color=color)
 		if not label is None:
 			hs,ls = GetLegendHandLab(ax)
@@ -473,14 +452,10 @@ class TraceField(object):
 		else:
 			ax = fig
 		
-		if np.size(np.shape(self.x)) == 2:
-			x = self.x[ind].T
-			y = self.y[ind].T
-			z = self.z[ind].T
-		else:
-			x = self.x
-			y = self.y
-			z = self.z
+		x = self.x[ind].T
+		y = self.y[ind].T
+		z = self.z[ind].T
+	
 		
 		r = np.sqrt(x**2 + y**2)
 		ln = ax.plot(r,z,color=color)
@@ -550,13 +525,8 @@ class TraceField(object):
 			ax = fig		
 			
 		for t in TI:
-			if np.size(np.shape(self.x)) == 1:
-				#trace arrays have been flattened 
-				for a in AI:
-					ax.plot(self.s,self.halpha[a],label=r'$\alpha=${:5.1f}'.format(self.alpha[a]))
-			else:
-				for a in AI:
-					ax.plot(self.s[t],self.halpha[t,a],label=r'Trace {:d} $\alpha=${:5.1f}'.format(t,self.alpha[a]))
+			for a in AI:
+				ax.plot(self.s[t],self.halpha[t,a],label=r'Trace {:d} $\alpha=${:5.1f}'.format(t,self.alpha[a]))
 
 		ax.legend()
 		ax.set_xlabel(r'$s$ (R$_J$)')
