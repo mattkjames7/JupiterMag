@@ -4,24 +4,6 @@ import os
 from . import Globals
 
 
-# # check that the internal field library exists
-# try:
-	# libinternal = ct.CDLL(Globals.ModulePath+"__data/libjupitermag/internal/libinternal.so")
-# except:
-	# print('importing libinternal.so failed, attempting to recompile')
-	# path = Globals.ModulePath
-	# if '/usr/local/' in path:
-		# sudo = 'sudo '
-	# else:
-		# sudo = ''
-
-	# CWD = os.getcwd()
-	# os.chdir(Globals.ModulePath+"__data/libjupitermag/internal/")
-	# os.system(sudo+'make clean')
-	# os.system(sudo+'make')
-	# os.chdir(CWD)	
-	# libinternal = ct.CDLL(Globals.ModulePath+"__data/libjupitermag/internal/libinternal.so")
-
 # check that the jupiter mag field library exists
 try:
 	libjupitermag = ct.CDLL(Globals.ModulePath+"__data/libjupitermag/libjupitermag.so")

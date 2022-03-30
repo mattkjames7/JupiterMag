@@ -19,6 +19,8 @@ python3 setup.py bdist_wheel
 pip3 install dist/JupiterMag-x.x.x-py3-none-any.whl --user
 ```
 
+I recommend installing `gcc` >= 9.3 (that's what this is tested with, earlier versions may not support the required features of C++).
+
 ## Usage
 
 ### Internal Field
