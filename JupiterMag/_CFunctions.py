@@ -1,48 +1,14 @@
 import numpy as np
-import ctypes as ct
 import os
 from . import Globals
+from .ct import c_char_p,c_char_p_ptr
+from .ct import c_bool,c_bool_ptr
+from .ct import c_int,c_int_ptr
+from .ct import c_float,c_float_ptr
+from .ct import c_double,c_double_ptr,c_double_ptr_ptr
+from ._CppLib import _GetLib
 
-
-# check that the jupiter mag field library exists
-try:
-	libjupitermag = ct.CDLL(Globals.ModulePath+"__data/libjupitermag/libjupitermag.so")
-except:
-	print('importing libjupitermag.so failed, attempting to recompile')
-	path = Globals.ModulePath
-	if '/usr/local/' in path:
-		sudo = 'sudo '
-	else:
-		sudo = ''
-
-	CWD = os.getcwd()
-	os.chdir(Globals.ModulePath+"__data/libjupitermag/")
-	os.system(sudo+'make clean')
-	os.system(sudo+'make')
-	os.chdir(CWD)	
-	libjupitermag = ct.CDLL(Globals.ModulePath+"__data/libjupitermag/libjupitermag.so")
-
-#define some dtypes
-c_char_p = ct.c_char_p
-c_char_p_ptr = ct.POINTER(c_char_p) #string array pointer!
-c_bool = ct.c_bool
-c_int = ct.c_int
-c_float = ct.c_float
-c_double = ct.c_double
-c_float_ptr = np.ctypeslib.ndpointer(ct.c_float,flags="C_CONTIGUOUS")
-c_int_ptr = np.ctypeslib.ndpointer(ct.c_int,flags="C_CONTIGUOUS")
-c_bool_ptr = np.ctypeslib.ndpointer(ct.c_bool,flags="C_CONTIGUOUS")
-#this one is a hack found at: https://stackoverflow.com/a/32138619/15482422
-#it allows us to send None instead of an array which is treated as NULL
-c_double_ptr_base = np.ctypeslib.ndpointer(ct.c_double,flags="C_CONTIGUOUS")
-def _from_param(cls, obj):
-		if obj is None:
-			return obj
-		return c_double_ptr_base.from_param(obj)
-c_double_ptr = type('c_double_ptr',(c_double_ptr_base,),{'from_param':classmethod(_from_param)})
-
-c_double_ptr_ptr = np.ctypeslib.ndpointer(np.uintp,ndim=1,flags="C_CONTIGUOUS")
-
+libjupitermag = _GetLib()
 
 #field tracing routine
 _CTraceField = libjupitermag.TraceField

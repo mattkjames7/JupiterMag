@@ -1,19 +1,13 @@
 import numpy as np
-import ctypes as ct
 import os
 from .. import Globals
 from .._CFunctions import libjupitermag
 
-#define some dtypes
-c_char_p = ct.c_char_p
-c_bool = ct.c_bool
-c_int = ct.c_int
-c_float = ct.c_float
-c_double = ct.c_double
-c_float_ptr = np.ctypeslib.ndpointer(ct.c_float,flags="C_CONTIGUOUS")
-c_double_ptr = np.ctypeslib.ndpointer(ct.c_double,flags="C_CONTIGUOUS")
-c_int_ptr = np.ctypeslib.ndpointer(ct.c_int,flags="C_CONTIGUOUS")
-c_bool_ptr = np.ctypeslib.ndpointer(ct.c_bool,flags="C_CONTIGUOUS")
+from ..ct import c_char_p,c_char_p_ptr
+from ..ct import c_bool,c_bool_ptr
+from ..ct import c_int,c_int_ptr
+from ..ct import c_float,c_float_ptr
+from ..ct import c_double,c_double_ptr,c_double_ptr_ptr
 
 #internal model wrapper function
 _CInternalField = libjupitermag.InternalField
