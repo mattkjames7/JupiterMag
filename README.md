@@ -10,12 +10,15 @@ Jupiter magnetic field models with plenty of bugs.
 pip3 install JupiterMag --user
 ```
 
-Or using this repo:
+Or using this repo (replace "x.x.x" with the current version number):
 
 ```bash
 git clone https://github.com/mattkjames7/JupiterMag.git
 cd JupiterMag
 python3 setup.py bdist_wheel
+#the output of the previous command should give some indication of 
+#the current version number. If it's not obvious then do
+# $ls dist/ to see what the latest version is
 pip3 install dist/JupiterMag-x.x.x-py3-none-any.whl --user
 ```
 
@@ -83,7 +86,7 @@ T1 = jm.TraceField(x0,y0,z0,Verbose=True,IntModel='jrm33',ExtModel='Con2020')
 #plot a trace
 ax = T0.PlotRhoZ(label='JRM33',color='black')
 ax = T1.PlotRhoZ(fig=ax,label='JRM33 + Con2020',color='red')
-	
+
 ax.set_xlim(-2.0,25.0)
 ax.set_ylim(-10.0,10.0)
 ```
