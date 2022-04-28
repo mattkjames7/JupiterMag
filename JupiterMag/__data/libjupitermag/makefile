@@ -11,7 +11,7 @@ all: obj lib test
 obj:
 	cd con2020;	make all
 	cd spline; make all
-
+	cd libinternalfield; make all
 	
 	$(CCo) model.cc -o model.o
 	$(CCo) trace.cc -o trace.o
@@ -36,6 +36,7 @@ test:
 clean:
 	cd con2020; make clean
 	cd spline; make clean
+	cd libinternalfield; make clean
 	rm *.o
 	rm -v  *.so
 	rm -v test
