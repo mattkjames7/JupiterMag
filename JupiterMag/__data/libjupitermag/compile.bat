@@ -18,4 +18,4 @@ g++ -fPIC -c -lm -std=c++17 -Wextra -g interptraceclosestpos.cc -o interptracecl
 
 	
 
-g++ -fPIC -lm -std=c++17 -Wextra -g -shared libjupitermag.cc *.o con2020/*.o spline/*.o "libinternalfield/libinternalfield/libinternalfield.dll" -o libjupitermag.dll
+g++ -fPIC -lm -std=c++17 -Wextra -g -shared libjupitermag.cc *.o con2020/*.o spline/*.o libinternalfield/libinternalfield/*.o -o libjupitermag.dll
