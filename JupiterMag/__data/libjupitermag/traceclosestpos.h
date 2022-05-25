@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "spline/spline.h"
+#define _USE_MATH_DEFINES
 #include <math.h>
 #endif
 
