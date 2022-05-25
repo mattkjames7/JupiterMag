@@ -68,7 +68,9 @@ def _GetLib():
 	fname = _LibName(True)
 	
 	try:
+		print('Importing Library')
 		lib = ctypes.CDLL(fname)
+		print('done')
 	except:
 		print("Importing C++ library failed. Attempting recompilation...")
 		_CompileSource()

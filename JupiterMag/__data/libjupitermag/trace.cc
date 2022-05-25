@@ -417,6 +417,7 @@ void Trace::Field(	double x, double y, double z,
 	Bz[0] = 0.0;
 	for (i=0;i<nf_;i++) {
 		Funcs_[i](x,y,z,&bx,&by,&bz);
+		//printf("%f %f %f \n",bx,by,bz);
 		Bx[0] += bx;
 		By[0] += by;
 		Bz[0] += bz;
@@ -582,6 +583,7 @@ void Trace::RKMTrace(	double x0, double y0, double z0,
 	y[0] = y0;
 	z[0] = z0;
 	Field(x0,y0,z0,&Bx[0],&By[0],&Bz[0]);
+
 	double step;
 	bool cont = ContinueTrace(x[0],y[0],z[0],&R[0]);
 	
