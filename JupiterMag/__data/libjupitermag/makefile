@@ -6,7 +6,7 @@ CCo=g++ -fPIC -c $(CFLAGS)
 CC=g++ -fPIC $(CFLAGS)
 
 
-all: obj lib test
+all: obj lib
 
 obj:
 	cd con2020;	make all
@@ -37,6 +37,6 @@ clean:
 	cd con2020; make clean
 	cd spline; make clean
 	cd libinternalfield; make clean
-	rm *.o
-	rm -v  *.so
-	rm -v test
+	rm -f *.o
+	rm -vf *.so
+	rm -vf test

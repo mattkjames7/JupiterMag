@@ -95,6 +95,7 @@ def _CompileSource():
 
 		CWD = os.getcwd()
 		os.chdir(os.path.dirname(__file__)+"/__data/libjupitermag/")
+		os.system(sudo+'make clean')
 		os.system(sudo+'make')
 		os.chdir(CWD)
 	elif(os.name=='nt'):
