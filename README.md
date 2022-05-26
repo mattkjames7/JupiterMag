@@ -10,21 +10,41 @@ Jupiter magnetic field models with plenty of bugs.
 pip3 install JupiterMag --user
 ```
 
-Or using this repo (replace "x.x.x" with the current version number):
+Download the latest release (on the right -> if you're viewing this on GitHub), then from within the directory where it was saved:
 
 ```bash
+pip3 install JupiterMag-0.1.1-py3-none-any.whl --user
+```
+
+Or using this repo (replace "0.1.1" with the current version number):
+
+```bash
+#pull this repo
 git clone https://github.com/mattkjames7/JupiterMag.git
 cd JupiterMag
+
+#update the submodule
+git submodule upate --init --recursive
+
+#build the wheel file
 python3 setup.py bdist_wheel
 #the output of the previous command should give some indication of 
 #the current version number. If it's not obvious then do
 # $ls dist/ to see what the latest version is
-pip3 install dist/JupiterMag-x.x.x-py3-none-any.whl --user
+pip3 install dist/JupiterMag-0.1.1-py3-none-any.whl --user
 ```
 
 I recommend installing `gcc` >= 9.3 (that's what this is tested with, earlier versions may not support the required features of C++).
 
-Windows and MacOS support coming soon...
+This module should now work with both Windows and MacOS
+
+### Windows
+
+This has been tested on Windows 10 (64-bit), other versions may also work. Requires g++, make, ld to work (mine were provided by TDM-GCC). When it is imported for the first time, it may try to recompile the C++ code.
+
+### MacOS
+
+This module has been tested on MacOS 11 Big Sur. It requires g++, make and libtool to work (provided by Xcode I think).
 
 ## Usage
 
