@@ -94,14 +94,21 @@ def Config(*args,**kwargs):
 	#short and long name keys
 	dkeys = list(defargs.keys())
 
-		
+	#check if the model has changed
+	ChangeModel = False
+	if 'Model' in ikeys and 'Model' in ikeys:
+		if cfg['Model'] != kwargs['Model']:
+			ChangeModel=True
+
 	#loop through each one		
 	for k in ckeys:
 		if k in ikeys:
 			#short name found in kwargs - add to this object
 			cfg[k] = kwargs[k]
 		else:
-			#key not found, use existing parameter
+			#key not found, use existing parameter or default if model has changed
+			if ChangeModel:
+				cfg[k] = defargs[k]
 			pass
 		
 	#check for additional keys and issue a warning
