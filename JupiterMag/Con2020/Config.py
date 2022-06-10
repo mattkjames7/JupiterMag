@@ -56,7 +56,7 @@ def _SetCFG(cfg):
 	xp = np.array([cfg['xp']],dtype='float64')
 	Edwards = np.array([cfg['Edwards']],dtype='bool')
 	ErrChk = np.array([cfg['error_check']],dtype='bool')
-	CartIn = np.array([cfg['CartesianOut']],dtype='bool')
+	CartIn = np.array([cfg['CartesianIn']],dtype='bool')
 	CartOut = np.array([cfg['CartesianOut']],dtype='bool')
 	
 	_CSetCon2020Params(mui,irho,r0,r1,d,xt,xp,eqtype,Edwards,ErrChk,
