@@ -246,7 +246,7 @@ void Con2020::_BMag2PolSysIII(int n, double *x1, double *y1, double *rho1,
 		
 		/* convert to polar */
 		Br0[i] =  Bx2*sint[i]*cosp[i] + By2*sint[i]*sinp[i] + Bz*cost[i];
-		Bt0[i] =  Bx2*cost[i]*cosp[i] + By2*cost[i]*sinp[i] + Bz*sint[i];
+		Bt0[i] =  Bx2*cost[i]*cosp[i] + By2*cost[i]*sinp[i] - Bz*sint[i];
 		Bp0[i] = -Bx2*sinp[i] + By2*cosp[i];
 		
 	}
