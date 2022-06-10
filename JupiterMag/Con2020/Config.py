@@ -120,7 +120,7 @@ def Config(*args,**kwargs):
 				'r1'			: 51.4,
 				'd'				: 3.6,
 				'xt'			: 9.3,
-				'xp'			: -24.2,
+				'xp'			: 155.8,
 				'equation_type'	: 'hybrid',
 				'Edwards'		: True,
 				'error_check'	: True,

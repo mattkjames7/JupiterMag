@@ -10,7 +10,7 @@ Con2020::Con2020() {
 	r1sq_ = r1_*r1_;
 	d_ = 3.6;
 	xt_ = 9.3;
-	xp_ = -24.2;
+	xp_ = 155.8;
 	strcpy(eqtype_,"hybrid");
 	Edwards_ = true;
 	ErrChk_ = true;
@@ -19,7 +19,7 @@ Con2020::Con2020() {
 	
 	
 	/* some other values which will only need calculating once */
-	discshift_ = xp_*deg2rad;
+	discshift_ = (xp_-180.0)*deg2rad;
 	disctilt_ = xt_*deg2rad;
 	cosxp_ = cos(discshift_);
 	sinxp_ = sin(discshift_);
@@ -47,7 +47,7 @@ Con2020::Con2020(double mui, double irho, double r0, double r1,
 	r1sq_ = r1_*r1_;
 	d_ = 3.6;
 	xt_ = 9.3;
-	xp_ = -24.2;
+	xp_ = 155.8;
 	strcpy(eqtype_,"hybrid");
 	Edwards_ = Edwards;
 	ErrChk_ = ErrChk;
@@ -65,7 +65,7 @@ Con2020::Con2020(double mui, double irho, double r0, double r1,
 	
 	
 	/* some other values which will only need calculating once */
-	discshift_ = xp_*deg2rad;
+	discshift_ = (xp_-180.0)*deg2rad;
 	disctilt_ = xt_*deg2rad;
 
 	/* initialize some things used for integration */
@@ -1014,7 +1014,7 @@ void Con2020::SetCSTiltAzimuth(double xp) {
 	if (isfinite(xp)) {
 		/* good value (hopefully) */
 		xp_ = xp;
-		discshift_ = xp_*deg2rad;
+		discshift_ = (xp_ - 180.0)*deg2rad;
 		cosxp_ = cos(discshift_);
 		sinxp_ = sin(discshift_);
 	} else {
