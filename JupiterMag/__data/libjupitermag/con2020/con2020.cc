@@ -103,8 +103,8 @@ void Con2020::_SetModelFunctions() {
 		_LargeRho = &Con2020::_LargeRhoEdwards;
 		_SmallRho = &Con2020::_SmallRhoEdwards;
 	} else {
-		_LargeRho = &Con2020::_LargeRhoEdwards;
-		_SmallRho = &Con2020::_SmallRhoEdwards;
+		_LargeRho = &Con2020::_LargeRhoConnerney;
+		_SmallRho = &Con2020::_SmallRhoConnerney;
 	}
 	
 	/* now we need to set which model functions we will use
