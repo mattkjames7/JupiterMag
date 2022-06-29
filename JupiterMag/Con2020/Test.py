@@ -61,7 +61,7 @@ def Test():
 
 	#call the model code
 	print('Calling Model')
-	cfg = Config('default',CartesianIn=False,CartesianOut=False)
+	cfg = Config('default',CartesianIn=False,CartesianOut=False,Edwards=False)
 	Br,Bt,Bp = Field(data.r,data.t,data.p)
 	
 	#get the r0/r1 crossings

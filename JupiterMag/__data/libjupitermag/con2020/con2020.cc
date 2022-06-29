@@ -403,7 +403,7 @@ void Con2020::_AnalyticOuter(	double rho, double z,
 void Con2020::_LargeRhoConnerney(double rho, double z, double zmd, 
 					double zpd, double a2, double *Brho, double *Bz) {
 
-	
+	printf("Large rho - Connerney\n");
 	/* some common variables */
 	double zmd2 = zmd*zmd;
 	double zpd2 = zpd*zpd;
@@ -428,7 +428,7 @@ void Con2020::_LargeRhoConnerney(double rho, double z, double zmd,
 void Con2020::_SmallRhoConnerney(double rho, double z, double zmd, double zpd, 
 								double a2, double *Brho, double *Bz) {
 
-	
+	printf("Small rho - Connerney\n");
 	double zmd2 = zmd*zmd;
 	double zpd2 = zpd*zpd;
 	double f1 = sqrt(zmd2 + a2);
@@ -448,7 +448,7 @@ void Con2020::_SmallRhoConnerney(double rho, double z, double zmd, double zpd,
 void Con2020::_LargeRhoEdwards(double rho, double z, double zmd,
 					double zpd, double a2,double *Brho, double *Bz) {
 	
-	
+	printf("Large rho - Edwards\n");
 	/* some common variables */
 	double zmd2 = zmd*zmd;
 	double zpd2 = zpd*zpd;
@@ -473,7 +473,7 @@ void Con2020::_LargeRhoEdwards(double rho, double z, double zmd,
 
 void Con2020::_SmallRhoEdwards(double rho, double z, double zmd, double zpd, 
 					double a2, double *Brho, double *Bz) { 
-	
+	printf("Small rho - Edwards\n");
 	double zmd2 = zmd*zmd;
 	double zpd2 = zpd*zpd;
 	double f1 = sqrt(zmd2 + a2);

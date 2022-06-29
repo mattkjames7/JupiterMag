@@ -4,6 +4,8 @@ CFLAGS=-lm -fPIC -std=c++17 -Wextra -g
 # Compiler
 CCo=g++ -c $(CFLAGS)
 CC=g++ $(CFLAGS)
+CCWo=x86_64-w64-mingw32-g++-win32 -c $(CFLAGS)
+CCW=x86_64-w64-mingw32-g++-win32 $(CFLAGS)
 
 all: obj lib 
 
@@ -16,6 +18,12 @@ obj:
 lib:
 	$(CC) *.o -shared -o libcon2020.so
 	
+windows:
+	$(CCWo) con2020.cc -o ../build/windows/con2020.o 
+	$(CCWo) bessel.cc -o ../build/windows/bessel.o 
+	$(CCWo) trap.cc -o ../build/windows/trap.o 
+	$(CCWo) libcon2020.cc -o ../build/windows/libcon2020.o
+
 test:
 	$(CC) test.cc *.o -o test
 
