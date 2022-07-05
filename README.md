@@ -93,7 +93,7 @@ jm.Con2020.Config(equation_type='analytic')
 
 #create some starting positions
 n = 8
-theta = (180.0 - np.linspace(21,35,n))*np.pi/180.0
+theta = (180.0 - np.linspace(22.5,35,n))*np.pi/180.0
 r = np.ones(n)
 x0 = r*np.sin(theta)
 y0 = np.zeros(n)

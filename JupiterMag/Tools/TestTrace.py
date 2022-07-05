@@ -42,7 +42,7 @@ def CompareTrace():
 
 	#get some starting coords
 	n = 8
-	theta = (180.0 - np.linspace(21,35,n))*np.pi/180.0
+	theta = (180.0 - np.linspace(22.5,35,n))*np.pi/180.0
 	r = np.ones(n)
 	x = r*np.sin(theta)
 	y = np.zeros(n)
