@@ -1,6 +1,6 @@
 # JupiterMag
 
-Jupiter magnetic field models with plenty of bugs.
+Python wrapper for a collection of Jovian magnetic field models.
 
 ## Installation
 
@@ -40,11 +40,11 @@ This module should now work with both Windows and MacOS
 
 ### Windows
 
-This has been tested on Windows 10 (64-bit), other versions may also work. Requires g++, make, ld to work (mine were provided by TDM-GCC). When it is imported for the first time, it may try to recompile the C++ code.
+This has been tested on Windows 10 (64-bit), other versions may also work. Requires `g++`, `make` and `ld` to work (these can be provided by TDM-GCC). When it is imported for the first time, it may try to recompile the C++ code.
 
 ### MacOS
 
-This module has been tested on MacOS 11 Big Sur. It requires g++, make and libtool to work (provided by Xcode I think).
+This module has been tested on MacOS 11 Big Sur. It requires `g++`, `make` and `libtool` to work (provided by Xcode).
 
 ## Usage
 
