@@ -51,6 +51,7 @@ setuptools.setup(
 		'DateTimeTools',
 		'RecarrayTools',
 		'PyFileIO',
+		'scipy',
 	],
 	include_package_data=True,
 )

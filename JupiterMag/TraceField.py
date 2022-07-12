@@ -10,6 +10,7 @@ from . import Internal
 import DateTimeTools as TT
 from scipy.interpolate import interp1d
 from .Tools.JupiterOval import JupiterOvalNorth,JupiterOvalSouth
+import PyFileIO as pf
 
 class TraceField(object):
 	'''
@@ -738,3 +739,20 @@ class TraceField(object):
 			out = self.__dict__
 		return out
 	
+	def Save(self,fname,RemoveNAN=True):
+		'''
+		Save the data in this object to file.
+		
+		Inputs
+		======
+		fname : str
+			Path to the file where this trace will be save on disk.
+		RemoveNAN : bool
+			If True then arrays will be shortened by removing nans.
+			
+		'''
+		out = TraceDict(RemoveNAN)
+		
+		print('Saving file: {:s}'.format(fname))
+		
+		pf.SaveObject(out,fname)
