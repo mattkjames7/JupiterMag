@@ -20,8 +20,36 @@ class TraceField(object):
 	
 	
 	'''
+	def __init__(self,*args,**kwargs):
+		
+		#check if we are loading from file, or creating new traces
+		if len(args) == 1:
+			#read from file or dict
+			if isinstance(args[0],dict):
+				#assume that the dictionary provided is a TraceField dict
+				self.__dict__ = args[0]
+			else:
+				#load from file
+				self._Load(*args)
+		elif len(args) == 3:
+			#new traces
+			self._Trace(*args,**kwargs)
+		else:
+			#something's wrong
+			print('TraceField was supplied with {:d} arguments...'.format(len(args)))
+			print('Either use 1 string (file name), or')
+			print('use 3 inputs (x,y,z)')
+			return None
+		
 	
-	def __init__(self,x0,y0,z0,IntModel='jrm33',ExtModel='Con2020',**kwargs):
+	
+	
+	def _Load(self,fname):
+		self.__dict__ = pf.LoadObject(fname)
+	
+	
+	
+	def _Trace(self,x0,y0,z0,IntModel='jrm33',ExtModel='Con2020',**kwargs):
 		'''
 		Traces along the magnetic field given a starting set of 
 		coordinates (or for multiple traces, arrays of starting 
@@ -316,11 +344,14 @@ class TraceField(object):
 		else:
 			ax = fig
 		
-		x = self.x[ind].T
-		z = self.z[ind].T
-		
-
-		ln = ax.plot(x,z,color=color)
+		x = self.x[ind]
+		z = self.z[ind]
+	
+		mx = 1.5
+		for i in range(0,ind.size):
+			ln = ax.plot(x[i],z[i],color=color)
+			mx = np.nanmax([mx,np.abs(x[i]).max(),np.abs(z[i]).max()])
+			
 		if not label is None:
 			hs,ls = GetLegendHandLab(ax)
 			hs.append(ln[0])
@@ -330,9 +361,8 @@ class TraceField(object):
 		ax.set_ylabel('$z_{SIII}$ (R$_J$)')
 		ax.set_xlabel('$x_{SIII}$ (R$_J$)')
 
-		mxx = np.nanmax(x)
-		mxz = np.nanmax(z)
-		mx = 1.1*np.nanmax([mxx,mxz])		
+
+		mx = 1.1*mx	
 		ax.set_xlim(-mx,mx)
 		ax.set_ylim(-mx,mx)
 		
@@ -384,10 +414,14 @@ class TraceField(object):
 		else:
 			ax = fig
 		
-		x = self.x[ind].T
-		y = self.y[ind].T
+		x = self.x[ind]
+		y = self.y[ind]
 
-		ln = ax.plot(y,x,color=color)
+			
+		mx = 1.5
+		for i in range(0,ind.size):
+			ln = ax.plot(y[i],x[i],color=color)
+			mx = np.nanmax([mx,np.abs(x[i]).max(),np.abs(y[i]).max()])
 		if not label is None:
 			hs,ls = GetLegendHandLab(ax)
 			hs.append(ln[0])
@@ -399,9 +433,7 @@ class TraceField(object):
 		ax.set_xlabel('$y_{SIII}$ (R$_J$)')
 		ax.set_ylabel('$x_{SIII}$ (R$_J$)')
 
-		mxx = np.nanmax(x)
-		mxy = np.nanmax(y)
-		mx = 1.1*np.nanmax([mxx,mxy])		
+		mx = 1.1*mx	
 		ax.set_xlim(mx,-mx)
 		ax.set_ylim(-mx,mx)
 		
@@ -452,14 +484,16 @@ class TraceField(object):
 			ax = fig.subplot2grid((maps[1],maps[0]),(maps[3],maps[2]))
 		else:
 			ax = fig
+		x = self.x[ind]
+		y = self.y[ind]
+		z = self.z[ind]
+
 		
-		x = self.x[ind].T
-		y = self.y[ind].T
-		z = self.z[ind].T
-	
-		
-		r = np.sqrt(x**2 + y**2)
-		ln = ax.plot(r,z,color=color)
+		r = np.array([np.sqrt(x[i]**2 + y[i]**2) for i in range(0,x.shape[0])],dtype='object')
+		mx = 1.5
+		for i in range(0,ind.size):
+			ln = ax.plot(r[i],z[i],color=color)
+			mx = np.nanmax([mx,np.abs(r[i]).max(),np.abs(z[i]).max()])
 		if not label is None:
 			hs,ls = GetLegendHandLab(ax)
 			hs.append(ln[0])
@@ -469,9 +503,7 @@ class TraceField(object):
 		ax.set_ylabel('$z_{SIII}$ (R$_J$)')
 		ax.set_xlabel(r'$\rho_{SIII}$ (R$_J$)')
 
-		mxr = np.nanmax(r)
-		mxz = np.nanmax(z)
-		mx = 1.1*np.nanmax([mxr,mxz])		
+		mx = 1.1*mx				
 		ax.set_xlim(-mx,mx)
 		ax.set_ylim(-mx,mx)
 		
@@ -737,6 +769,11 @@ class TraceField(object):
 					out[k] = self.__dict__[k]
 		else:
 			out = self.__dict__
+			
+		#remove ctypes references
+		out.pop('IntModelCode')
+		out.pop('ExtModelCode')
+			
 		return out
 	
 	def Save(self,fname,RemoveNAN=True):
@@ -751,7 +788,7 @@ class TraceField(object):
 			If True then arrays will be shortened by removing nans.
 			
 		'''
-		out = TraceDict(RemoveNAN)
+		out = self.TraceDict(RemoveNAN)
 		
 		print('Saving file: {:s}'.format(fname))
 		
