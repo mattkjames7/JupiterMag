@@ -697,3 +697,44 @@ class TraceField(object):
 		
 		return ax
 		
+	def TraceDict(self,RemoveNAN=True):
+		'''
+		Return a dictionary with all of the outputs of the field trace.
+		
+		Inputs
+		======
+		RemoveNAN : bool
+			If True then arrays will be shortened by removing nans.
+			
+		Returns
+		=======
+		out : dict
+			Contains the field traces coordinates, field components etc.
+		
+		'''
+		#we could save a fair bit of space by removing NANs - this will
+		#mean that simple 2D arrays will become arrays of objects
+		if RemoveNAN:
+			ptrs = ['x','y','z','Bx','By','Bz','s','R','Rnorm']
+			out = {}
+			keys = list(self.__dict__.keys())
+			for k in keys:
+				if k in ptrs:
+					#2D
+					tmp = np.zeros(self.n,dtype='object')
+					for i in range(0,self.n):
+						tmp[i] = self.__dict__[k][i,:self.nstep[i]]
+					out[k] = tmp
+				elif k == 'halpha':
+					#3D
+					tmp = np.zeros(self.halpha.shape[:2],dtype='object')
+					for i in range(0,self.n):
+						for j in range(0,self.nalpha):
+							tmp[i,j] = self.halpha[i,j,:self.nstep[i]]
+					out[k] = tmp
+				else:
+					out[k] = self.__dict__[k]
+		else:
+			out = self.__dict__
+		return out
+	
