@@ -39,7 +39,7 @@ windows:
 	-rm -v build/windows/*.o
 	cd con2020;	make windows
 	cd spline; make windows
-	cd libinternalfield; make windows
+	cd libinternalfield; make winobj
 	cp -v libinternalfield/libinternalfield/build/windows/*.o build/windows/
 	$(CCWo) model.cc -o build/windows/model.o
 	$(CCWo) trace.cc -o build/windows/trace.o
