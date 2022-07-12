@@ -1,5 +1,7 @@
 # JupiterMag
 
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.6822191.svg)](https://doi.org/10.5281/zenodo.6822191)
+
 Python wrapper for a collection of Jovian magnetic field models.
 
 This is part of a community code project : 
@@ -17,10 +19,6 @@ This is part of a community code project :
 - Marissa Vogt - Boston University
 
 - Rob Wilson - LASP
-
-#### 
-
-[![DOI](https://zenodo.org/badge/375402784.svg)](https://zenodo.org/badge/latestdoi/375402784)
 
 ## Requirements
 
@@ -133,7 +131,6 @@ jm.Con2020.Config(equation_type='analytic')
 
 #trace the field in both directions from a starting position
 T = jm.TraceField(5.0,0.0,0.0,IntModel='jrm09',ExtModel='Con2020')
-
 ```
 
 The above example will trace the field line from the Cartesian SIII position (5.0,0.0,0.0) (R<sub>j</sub>) in both directions until it reaches the planet using the JRM09 internal field model with the Con2020 external field model. The object  returned, `T`, is an instance of the `TraceField` class which contains the positions and magnetic field vectors at each step along the trace, along with some footprint coordinates and member functions which can be used for plotting.
