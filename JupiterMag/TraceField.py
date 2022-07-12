@@ -756,3 +756,52 @@ class TraceField(object):
 		print('Saving file: {:s}'.format(fname))
 		
 		pf.SaveObject(out,fname)
+
+
+	def GetTrace(self,i):
+		'''
+		Return a trace.
+		
+		Inputs
+		======
+		i : int
+			Index of the trace to be returned.
+
+		
+		Returns
+		=======
+		x : float
+			x-coordinate (R_j)
+		y : float
+			y-coordinate (R_j)
+		z : float
+			z-coordinate (R_j)
+		bx : float
+			x-component of the magnetic field (nT)
+		by : float
+			y-component of the magnetic field (nT)
+		bz : float
+			z-component of the magnetic field (nT)
+		r : float
+			radial distance (R_E)
+		rnorm : float
+			Normalised radial distance (Rnorm = 1.0 at Rmax)
+		s : float
+			Distance along the field line trace (R_j)
+		h : float
+			H_alpha array.
+		
+		'''
+
+		x = self.x[i][:self.nstep[i]]
+		y = self.y[i][:self.nstep[i]]
+		z = self.z[i][:self.nstep[i]]
+		bx = self.Bx[i][:self.nstep[i]]
+		by = self.By[i][:self.nstep[i]]
+		bz = self.Bz[i][:self.nstep[i]]
+		r = self.R[i][:self.nstep[i]]
+		rnorm = self.Rnorm[i][:self.nstep[i]]
+		s = self.s[i][:self.nstep[i]]
+		h = self.halpha[i,:][:self.nstep[i]]
+			
+		return (x,y,z,bx,by,bz,r,rnorm,s,h)
