@@ -18,7 +18,9 @@ This is part of a community code project :
 
 - Rob Wilson - LASP
 
+#### 
 
+[![DOI](https://zenodo.org/badge/375402784.svg)](https://zenodo.org/badge/latestdoi/375402784)
 
 ## Requirements
 
