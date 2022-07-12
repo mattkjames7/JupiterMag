@@ -18,6 +18,38 @@ This is part of a community code project :
 
 - Rob Wilson - LASP
 
+
+
+## Requirements
+
+For the Python code to run (without rebuilding the C++ backend), the following Python packages would be required:
+
+- NumPy
+
+- Matplotlib
+
+- DateTimeTools
+
+- RecarrayTools
+
+- PyFileIO
+
+all of which would be installed automatically if using `pip`.
+
+On some systems, the shared object files would need rebuilding before they can be loaded and accessed using Python. Upon the first import of the `JupiterMag` module, if the shared object/DLL fails to load then it will attempt to use a local C++ compiler to rebuild the binaries.
+
+### Linux
+
+JupiterMag was built and tested primarily using Linux Mint 20.3 (based on Ubuntu 20.04/Debian). To rebuild the code, ensure that `g++`, `make` and `ld` are installed.
+
+### Windows
+
+This has been tested on Windows 10 (64-bit), other versions may also work. Requires `g++`, `make` and `ld` to work (these can be provided by TDM-GCC). 
+
+### MacOS
+
+This module has been tested on MacOS 11 Big Sur. It requires `g++`, `make` and `libtool` to recompile (provided by Xcode).
+
 ## Installation
 
 Install using `pip3`:
@@ -53,14 +85,6 @@ pip3 install dist/JupiterMag-1.0.0-py3-none-any.whl --user
 I recommend installing `gcc` >= 9.3 (that's what this is tested with, earlier versions may not support the required features of C++).
 
 This module should now work with both Windows and MacOS
-
-### Windows
-
-This has been tested on Windows 10 (64-bit), other versions may also work. Requires `g++`, `make` and `ld` to work (these can be provided by TDM-GCC). When it is imported for the first time, it may try to recompile the C++ code.
-
-### MacOS
-
-This module has been tested on MacOS 11 Big Sur. It requires `g++`, `make` and `libtool` to work (provided by Xcode).
 
 ## Usage
 
