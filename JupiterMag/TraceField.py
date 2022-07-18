@@ -350,7 +350,7 @@ class TraceField(object):
 		mx = 1.5
 		for i in range(0,ind.size):
 			ln = ax.plot(x[i],z[i],color=color)
-			mx = np.nanmax([mx,np.abs(x[i]).max(),np.abs(z[i]).max()])
+			mx = np.nanmax([mx,np.nanmax(np.abs(x[i])),np.nanmax(np.abs(z[i]))])
 			
 		if not label is None:
 			hs,ls = GetLegendHandLab(ax)
@@ -421,7 +421,7 @@ class TraceField(object):
 		mx = 1.5
 		for i in range(0,ind.size):
 			ln = ax.plot(y[i],x[i],color=color)
-			mx = np.nanmax([mx,np.abs(x[i]).max(),np.abs(y[i]).max()])
+			mx = np.nanmax([mx,np.nanmax(np.abs(x[i])),np.nanmax(np.abs(y[i]))])
 		if not label is None:
 			hs,ls = GetLegendHandLab(ax)
 			hs.append(ln[0])
@@ -493,7 +493,7 @@ class TraceField(object):
 		mx = 1.5
 		for i in range(0,ind.size):
 			ln = ax.plot(r[i],z[i],color=color)
-			mx = np.nanmax([mx,np.abs(r[i]).max(),np.abs(z[i]).max()])
+			mx = np.nanmax([mx,np.nanmax(np.abs(r[i])),np.nanmax(np.abs(z[i]))])
 		if not label is None:
 			hs,ls = GetLegendHandLab(ax)
 			hs.append(ln[0])
