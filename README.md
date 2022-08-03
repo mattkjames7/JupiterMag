@@ -44,7 +44,7 @@ JupiterMag was built and tested primarily using Linux Mint 20.3 (based on Ubuntu
 
 ### Windows
 
-This has been tested on Windows 10 (64-bit), other versions may also work. Requires `g++`, `make` and `ld` to work (these can be provided by TDM-GCC). 
+This has been tested on Windows 10 (64-bit), other versions may also work. Requires `g++` and `ld` to work (these can be provided by TDM-GCC). This may or may not work with other compilers installed.
 
 ### MacOS
 
@@ -72,7 +72,7 @@ git clone https://github.com/mattkjames7/JupiterMag.git
 cd JupiterMag
 
 #update the submodule
-git submodule upate --init --recursive
+git submodule update --init --recursive
 
 #build the wheel file
 python3 setup.py bdist_wheel
