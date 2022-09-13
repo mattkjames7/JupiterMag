@@ -1,18 +1,21 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
 cff-version: 1.2.0
-title: 'JupiterMag'
+title: JupiterMag
 message: >-
   If you use this software, please cite it using the
   metadata from this file.
 type: software
 authors:
- - affiliation: >-
-      Department of Physics and Astronomy, University
-      of Leicester, Leicester, UK
-    given-names: M.K.
+  - given-names: M. K.
     family-names: James
     email: mkj13@leicester.ac.uk
+    affiliation: >-
+      School of Physics and Astronomy, University of
+      Leicester, Leicester, UK
     orcid: 'https://orcid.org/0000-0002-5699-6121'
-  - given-names: R.J.
+  - given-names: R. J.
     family-names: Wilson
     email: rob.wilson@lasp.colorado.edu
     affiliation: >-
@@ -20,44 +23,42 @@ authors:
       University of Colorado Boulder, Boulder,
       Colorado, USA
     orcid: 'https://orcid.org/0000-0001-9276-2368'
-  - given-names: 'M.F. '
+  - given-names: M. F.
     family-names: Vogt
-    orcid: 'https://orcid.org/0000-0003-4885-8615'
+    email: mvogt@bu.edu
     affiliation: >-
       Center for Space Physics, Boston University,
       Boston, MA, USA
-    email: mvogt@bu.edu
+    orcid: 'https://orcid.org/0000-0003-4885-8615'
   - given-names: G.
     family-names: Provan
     email: gp31@le.ac.uk
     affiliation: >-
-      Department of Physics and Astronomy, University
-      of Leicester, Leicester, UK
+      School of Physics and Astronomy, University of
+      Leicester, Leicester, UK
     orcid: 'https://orcid.org/0000-0001-7442-4154'
   - given-names: A.
     family-names: Kamran
     email: ak741@leicester.ac.uk
     affiliation: >-
-      Department of Physics and Astronomy, University
-      of Leicester, Leicester, UK
-  - given-names: M.J.
+      School of Physics and Astronomy, University of
+      Leicester, Leicester, UK
+  - given-names: M. J.
     family-names: Brennan
     email: martin.brennan@jpl.nasa.gov
-    orcid: 'https://orcid.org/0000-0003-0796-4251'
     affiliation: >-
       Jet Propulsion Laboratory, California Institute
       of Technology, Pasadena, CA, USA
-  - affiliation: >-
-      Department of Physics and Astronomy, University
-      of Leicester, Leicester, UK
-    orcid: 'https://orcid.org/0000-0002-4041-0034'
-    email: swhc1@ion.le.ac.uk
+    orcid: 'https://orcid.org/0000-0003-0796-4251'
+  - given-names: S. W. H.
     family-names: Cowley
-    given-names: S.W.H.
+    email: swhc1@leicester.ac.uk
+    affiliation: >-
+      School of Physics and Astronomy, University of
+      Leicester, Leicester, UK
+    orcid: 'https://orcid.org/0000-0002-4041-0034'
 identifiers:
   - type: doi
     value: 10.5281/zenodo.6822191
-    description: >-
-      This DOI represents all software versions, and
-      will always resolve to the latest one. 
-repository-code: 'https://github.com/mattkjames7/JupiterMag.git'
+  - type: url
+    value: 'https://github.com/mattkjames7/JupiterMag.git'
