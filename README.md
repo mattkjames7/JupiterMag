@@ -10,15 +10,17 @@ This is part of a community code project :
 
 **Authors**
 
-- Marty Brennan - NASA JPL
-
 - Matt James - University of Leicester
 
-- Gabby Provan - University of Leicester
+- Rob Wilson - LASP
 
 - Marissa Vogt - Boston University
 
-- Rob Wilson - LASP
+- Gabby Provan - University of Leicester
+
+- Stan Cowley - University of Leicester
+
+- Marty Brennan - NASA JPL
 
 ## Requirements
 
@@ -162,8 +164,8 @@ T1 = jm.TraceField(x0,y0,z0,Verbose=True,IntModel='jrm33',ExtModel='Con2020')
 ax = T0.PlotRhoZ(label='JRM33',color='black')
 ax = T1.PlotRhoZ(fig=ax,label='JRM33 + Con2020',color='red')
 
-ax.set_xlim(-2.0,25.0)
-ax.set_ylim(-10.0,10.0)
+ax.set_xlim(-2.0,15.0)
+ax.set_ylim(-6.0,6.0)
 ```
 
 The resulting objects T0 and T1 store arrays of trace positions and magnetic field vectors along with a bunch of footprints.The above code produces a plot like this:
