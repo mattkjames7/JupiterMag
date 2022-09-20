@@ -10,6 +10,7 @@ from . import Internal
 import DateTimeTools as TT
 from scipy.interpolate import interp1d
 from .Tools.JupiterOval import JupiterOvalNorth,JupiterOvalSouth
+import PyFileIO as pf
 
 class TraceField(object):
 	'''
@@ -19,8 +20,36 @@ class TraceField(object):
 	
 	
 	'''
+	def __init__(self,*args,**kwargs):
+		
+		#check if we are loading from file, or creating new traces
+		if len(args) == 1:
+			#read from file or dict
+			if isinstance(args[0],dict):
+				#assume that the dictionary provided is a TraceField dict
+				self.__dict__ = args[0]
+			else:
+				#load from file
+				self._Load(*args)
+		elif len(args) == 3:
+			#new traces
+			self._Trace(*args,**kwargs)
+		else:
+			#something's wrong
+			print('TraceField was supplied with {:d} arguments...'.format(len(args)))
+			print('Either use 1 string (file name), or')
+			print('use 3 inputs (x,y,z)')
+			return None
+		
 	
-	def __init__(self,x0,y0,z0,IntModel='jrm33',ExtModel='Con2020',**kwargs):
+	
+	
+	def _Load(self,fname):
+		self.__dict__ = pf.LoadObject(fname)
+	
+	
+	
+	def _Trace(self,x0,y0,z0,IntModel='jrm33',ExtModel='Con2020',**kwargs):
 		'''
 		Traces along the magnetic field given a starting set of 
 		coordinates (or for multiple traces, arrays of starting 
@@ -315,11 +344,14 @@ class TraceField(object):
 		else:
 			ax = fig
 		
-		x = self.x[ind].T
-		z = self.z[ind].T
-		
-
-		ln = ax.plot(x,z,color=color)
+		x = self.x[ind]
+		z = self.z[ind]
+	
+		mx = 1.5
+		for i in range(0,ind.size):
+			ln = ax.plot(x[i],z[i],color=color)
+			mx = np.nanmax([mx,np.nanmax(np.abs(x[i])),np.nanmax(np.abs(z[i]))])
+			
 		if not label is None:
 			hs,ls = GetLegendHandLab(ax)
 			hs.append(ln[0])
@@ -329,9 +361,8 @@ class TraceField(object):
 		ax.set_ylabel('$z_{SIII}$ (R$_J$)')
 		ax.set_xlabel('$x_{SIII}$ (R$_J$)')
 
-		mxx = np.nanmax(x)
-		mxz = np.nanmax(z)
-		mx = 1.1*np.nanmax([mxx,mxz])		
+
+		mx = 1.1*mx	
 		ax.set_xlim(-mx,mx)
 		ax.set_ylim(-mx,mx)
 		
@@ -383,10 +414,14 @@ class TraceField(object):
 		else:
 			ax = fig
 		
-		x = self.x[ind].T
-		y = self.y[ind].T
+		x = self.x[ind]
+		y = self.y[ind]
 
-		ln = ax.plot(y,x,color=color)
+			
+		mx = 1.5
+		for i in range(0,ind.size):
+			ln = ax.plot(y[i],x[i],color=color)
+			mx = np.nanmax([mx,np.nanmax(np.abs(x[i])),np.nanmax(np.abs(y[i]))])
 		if not label is None:
 			hs,ls = GetLegendHandLab(ax)
 			hs.append(ln[0])
@@ -398,9 +433,7 @@ class TraceField(object):
 		ax.set_xlabel('$y_{SIII}$ (R$_J$)')
 		ax.set_ylabel('$x_{SIII}$ (R$_J$)')
 
-		mxx = np.nanmax(x)
-		mxy = np.nanmax(y)
-		mx = 1.1*np.nanmax([mxx,mxy])		
+		mx = 1.1*mx	
 		ax.set_xlim(mx,-mx)
 		ax.set_ylim(-mx,mx)
 		
@@ -451,14 +484,16 @@ class TraceField(object):
 			ax = fig.subplot2grid((maps[1],maps[0]),(maps[3],maps[2]))
 		else:
 			ax = fig
+		x = self.x[ind]
+		y = self.y[ind]
+		z = self.z[ind]
+
 		
-		x = self.x[ind].T
-		y = self.y[ind].T
-		z = self.z[ind].T
-	
-		
-		r = np.sqrt(x**2 + y**2)
-		ln = ax.plot(r,z,color=color)
+		r = np.array([np.sqrt(x[i]**2 + y[i]**2) for i in range(0,x.shape[0])],dtype='object')
+		mx = 1.5
+		for i in range(0,ind.size):
+			ln = ax.plot(r[i],z[i],color=color)
+			mx = np.nanmax([mx,np.nanmax(np.abs(r[i])),np.nanmax(np.abs(z[i]))])
 		if not label is None:
 			hs,ls = GetLegendHandLab(ax)
 			hs.append(ln[0])
@@ -468,9 +503,7 @@ class TraceField(object):
 		ax.set_ylabel('$z_{SIII}$ (R$_J$)')
 		ax.set_xlabel(r'$\rho_{SIII}$ (R$_J$)')
 
-		mxr = np.nanmax(r)
-		mxz = np.nanmax(z)
-		mx = 1.1*np.nanmax([mxr,mxz])		
+		mx = 1.1*mx				
 		ax.set_xlim(-mx,mx)
 		ax.set_ylim(-mx,mx)
 		
@@ -697,3 +730,115 @@ class TraceField(object):
 		
 		return ax
 		
+	def TraceDict(self,RemoveNAN=True):
+		'''
+		Return a dictionary with all of the outputs of the field trace.
+		
+		Inputs
+		======
+		RemoveNAN : bool
+			If True then arrays will be shortened by removing nans.
+			
+		Returns
+		=======
+		out : dict
+			Contains the field traces coordinates, field components etc.
+		
+		'''
+		#we could save a fair bit of space by removing NANs - this will
+		#mean that simple 2D arrays will become arrays of objects
+		if RemoveNAN:
+			ptrs = ['x','y','z','Bx','By','Bz','s','R','Rnorm']
+			out = {}
+			keys = list(self.__dict__.keys())
+			for k in keys:
+				if k in ptrs:
+					#2D
+					tmp = np.zeros(self.n,dtype='object')
+					for i in range(0,self.n):
+						tmp[i] = self.__dict__[k][i,:self.nstep[i]]
+					out[k] = tmp
+				elif k == 'halpha':
+					#3D
+					tmp = np.zeros(self.halpha.shape[:2],dtype='object')
+					for i in range(0,self.n):
+						for j in range(0,self.nalpha):
+							tmp[i,j] = self.halpha[i,j,:self.nstep[i]]
+					out[k] = tmp
+				else:
+					out[k] = self.__dict__[k]
+		else:
+			out = self.__dict__
+			
+		#remove ctypes references
+		out.pop('IntModelCode')
+		out.pop('ExtModelCode')
+			
+		return out
+	
+	def Save(self,fname,RemoveNAN=True):
+		'''
+		Save the data in this object to file.
+		
+		Inputs
+		======
+		fname : str
+			Path to the file where this trace will be save on disk.
+		RemoveNAN : bool
+			If True then arrays will be shortened by removing nans.
+			
+		'''
+		out = self.TraceDict(RemoveNAN)
+		
+		print('Saving file: {:s}'.format(fname))
+		
+		pf.SaveObject(out,fname)
+
+
+	def GetTrace(self,i):
+		'''
+		Return a trace.
+		
+		Inputs
+		======
+		i : int
+			Index of the trace to be returned.
+
+		
+		Returns
+		=======
+		x : float
+			x-coordinate (R_j)
+		y : float
+			y-coordinate (R_j)
+		z : float
+			z-coordinate (R_j)
+		bx : float
+			x-component of the magnetic field (nT)
+		by : float
+			y-component of the magnetic field (nT)
+		bz : float
+			z-component of the magnetic field (nT)
+		r : float
+			radial distance (R_E)
+		rnorm : float
+			Normalised radial distance (Rnorm = 1.0 at Rmax)
+		s : float
+			Distance along the field line trace (R_j)
+		h : float
+			H_alpha array.
+		
+		'''
+
+		x = self.x[i][:self.nstep[i]]
+		y = self.y[i][:self.nstep[i]]
+		z = self.z[i][:self.nstep[i]]
+		bx = self.Bx[i][:self.nstep[i]]
+		by = self.By[i][:self.nstep[i]]
+		bz = self.Bz[i][:self.nstep[i]]
+		r = self.R[i][:self.nstep[i]]
+		rnorm = self.Rnorm[i][:self.nstep[i]]
+		s = self.s[i][:self.nstep[i]]
+		h = self.halpha[i,:][:self.nstep[i]]
+			
+		return (x,y,z,bx,by,bz,r,rnorm,s,h)

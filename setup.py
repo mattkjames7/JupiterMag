@@ -48,6 +48,10 @@ setuptools.setup(
     install_requires=[
 		'numpy',
 		'matplotlib',
+		'DateTimeTools',
+		'RecarrayTools',
+		'PyFileIO',
+		'scipy',
 	],
 	include_package_data=True,
 )

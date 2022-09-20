@@ -42,7 +42,7 @@ def CompareTrace():
 
 	#get some starting coords
 	n = 8
-	theta = (180.0 - np.linspace(21,35,n))*np.pi/180.0
+	theta = (180.0 - np.linspace(22.5,35,n))*np.pi/180.0
 	r = np.ones(n)
 	x = r*np.sin(theta)
 	y = np.zeros(n)
@@ -59,7 +59,7 @@ def CompareTrace():
 	ax = T0.PlotRhoZ(label='JRM33',color='black')
 	ax = T1.PlotRhoZ(fig=ax,label='JRM33 + Con2020',color='red')
 	
-	ax.set_xlim(-2.0,25.0)
-	ax.set_ylim(-10.0,10.0)
+	ax.set_xlim(-2.0,15.0)
+	ax.set_ylim(-6.0,6.0)
 	
 	return ax

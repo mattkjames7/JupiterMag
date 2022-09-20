@@ -6,7 +6,7 @@ from ..Con2020._ReadTestData import _ReadTestData
 import matplotlib.pyplot as plt
 
 def Test(Model='JRM09',R=0.85,MaxDeg=None,Comp='r',scale = [-60.0,60.0],
-			levels=np.linspace(-50,50,11)):
+			levels=np.linspace(-50,50,11),fig=None,maps=[1,1,0,0]):
 	'''
 	This is a simple function to test the model by recreating a plot in 
 	Connerney et al 2018 (figure 4, sort of).
@@ -71,10 +71,14 @@ def Test(Model='JRM09',R=0.85,MaxDeg=None,Comp='r',scale = [-60.0,60.0],
 	#set norm
 	norm = colors.Normalize(vmin=scale[0],vmax=scale[1])	
 		
-	maps = [1,1,0,0]
-	fig = plt
-	fig.figure()
-	ax = fig.subplot2grid((maps[1],maps[0]),(maps[3],maps[2]))
+	if fig is None:
+		fig = plt
+		fig.figure()
+	if hasattr(fig,'Axes'):	
+		ax = fig.subplot2grid((maps[1],maps[0]),(maps[3],maps[2]))
+	else:
+		ax = fig
+
 	ax.set_aspect(1.0)
 	ax.set_xlabel('SIII East Longitude ($^\circ$)')
 	ax.set_ylabel('SIII Latitude ($^\circ$)')
@@ -180,10 +184,10 @@ def TestOutput(fname=None,Model='VIP4',MaxDeg=None):
 		f.close()
 
 
-def JRM33Fig5(MaxDeg=13):
-	Test('JRM33',MaxDeg=MaxDeg,Comp='B',scale=[0,20],levels=np.linspace(0,20,11),R=1.0)
+def JRM33Fig5(MaxDeg=13,fig=None,maps=[1,1,0,0]):
+	Test('JRM33',MaxDeg=MaxDeg,Comp='B',scale=[0,20],levels=np.linspace(0,20,11),R=1.0,fig=fig,maps=maps)
 	plt.savefig('JRM33-Fig5-Deg{:d}.png'.format(MaxDeg))
 
-def JRM33Fig7(MaxDeg=13):
-	Test('JRM33',MaxDeg=MaxDeg,Comp='r',scale=[-80,80],levels=np.linspace(-80,80,17),R=0.85)
+def JRM33Fig7(MaxDeg=13,fig=None,maps=[1,1,0,0]):
+	Test('JRM33',MaxDeg=MaxDeg,Comp='r',scale=[-80,80],levels=np.linspace(-80,80,17),R=0.85,fig=fig,maps=maps)
 	plt.savefig('JRM33-Fig7-Deg{:d}.png'.format(MaxDeg))

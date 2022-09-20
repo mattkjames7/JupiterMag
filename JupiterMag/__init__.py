@@ -1,4 +1,4 @@
-__version__ = '0.1.5'
+__version__ = '1.0.5'
 
 from . import Globals
 from . import Con2020

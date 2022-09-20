@@ -34,18 +34,9 @@ def Field(p0,p1,p2,MaxDeg=None):
 	'''
 
 	#make sure that the inputs are the correct type
-	if (hasattr(p0,'__iter__') == False):
-		_p0 = np.array([p0]).astype('float64')
-	else:
-		_p0 = np.array(p0).astype('float64')
-	if (hasattr(p1,'__iter__') == False):
-		_p1 = np.array([p1]).astype('float64')
-	else:
-		_p1 = np.array(p1).astype('float64')
-	if (hasattr(p2,'__iter__') == False):
-		_p2 = np.array([p2]).astype('float64')
-	else:
-		_p2 = np.array(p2).astype('float64')
+	_p0 = np.array(p0,dtype='float64')
+	_p1 = np.array(p1,dtype='float64')
+	_p2 = np.array(p2,dtype='float64')
 	_l = np.int32(np.size(_p0))
 
 	_B0 = np.zeros(_l,dtype='float64')

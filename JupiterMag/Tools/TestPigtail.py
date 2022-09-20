@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 
 def TestPigtail(IntModel='jrm09',ExtModel='Con2020',
-				t0=(302,12,50),t1=(302,21,00)):
+				t0=(302,12,50),t1=(302,20,30)):
 	from ..TraceField import TraceField
 	from ..Con2020 import Config
 	from ..Internal._ReadTestPos import _ReadTestPos
