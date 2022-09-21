@@ -20,9 +20,11 @@ This is part of a community code project :
 
 - Aneesah Kamran - University of Leicester
 
-- Stan Cowley - University of Leicester
+- 
 
 - Marty Brennan - NASA JPL
+
+- Stan Cowley - University of Leicester
 
 ## 1 Requirements
 
