@@ -24,7 +24,7 @@ This is part of a community code project :
 
 - Marty Brennan - NASA JPL
 
-## Requirements
+## 1 Requirements
 
 For the Python code to run (without rebuilding the C++ backend), the following Python packages would be required:
 
@@ -42,19 +42,19 @@ all of which would be installed automatically if using `pip`.
 
 On some systems, the shared object files would need rebuilding before they can be loaded and accessed using Python. Upon the first import of the `JupiterMag` module, if the shared object/DLL fails to load then it will attempt to use a local C++ compiler to rebuild the binaries.
 
-### Linux
+### 1.1 Linux
 
 JupiterMag was built and tested primarily using Linux Mint 20.3 (based on Ubuntu 20.04/Debian). To rebuild the code, ensure that `g++`, `make` and `ld` are installed.
 
-### Windows
+### 1.2 Windows
 
 This has been tested on Windows 10 (64-bit), other versions may also work. Requires `g++` and `ld` to work (these can be provided by TDM-GCC). This may or may not work with other compilers installed.
 
-### MacOS
+### 1.3 MacOS
 
 This module has been tested on MacOS 11 Big Sur. It requires `g++`, `make` and `libtool` to recompile (provided by Xcode).
 
-## Installation
+## 2 Installation
 
 Install using `pip3`:
 
@@ -90,9 +90,24 @@ I recommend installing `gcc` >= 9.3 (that's what this is tested with, earlier ve
 
 This module should now work with both Windows and MacOS
 
-## Usage
+### 2.1 Update an Existing Installation
 
-### Internal Field
+To update an existing installation:
+
+```bash
+pip3 install JupiterMag --upgrade --user
+```
+
+Alternatively, uninstall then reinstall, e.g.:
+
+```bash
+pip3 uninstall JupiterMag
+pip3 install JupiterMag --user
+```
+
+## 3 Usage
+
+### 3.1 Internal Field
 
 A number of internal field models are included (see [here](https://github.com/mattkjames7/libinternalfield/blob/main/README.md) for more information) and can be accessed via the ```JupiterMag.Internal``` submodule, e.g.:
 
@@ -110,7 +125,7 @@ Bx,By,Bz = jm.Internal.Field(x,y,z)
 
 All coordinates are either in planetary radii (`x,y,z,r`) or radians (`t,p`). All Jovian models here use _R<sub>j</sub>_=71,492 km.
 
-### External Field
+### 3.2 External Field
 
 Currently the only external field source included is the Con2020 field (see [here](https://github.com/mattkjames7/Con2020)), other models could be added in future.
 
@@ -122,7 +137,7 @@ jm.Con2020.Config(equation_type='analytic')
 Bx,By,Bz = jm.Con2020.Field(x,y,z)
 ```
 
-### Tracing
+### 3.3 Tracing
 
 Field line tracing can be done using the `TraceField` object, e.g.
 
