@@ -8,6 +8,7 @@
 #include "bessel.h"
 #include "sgn.h"
 #include "clip.h"
+#include "smoothd.h"
 #include "trap.h"
 #define deg2rad M_PI/180.0;
 #endif
@@ -53,6 +54,7 @@ class Con2020 {
 		void SetErrCheck(bool);
 		void SetCartIn(bool);
 		void SetCartOut(bool);
+		void SetSmooth(bool);
 		
 		/* these mamber functions will be the "getter" version of the
 		 * above setters */
@@ -68,6 +70,7 @@ class Con2020 {
 		bool GetErrCheck();
 		bool GetCartIn();
 		bool GetCartOut();
+		bool GetSmooth();
 		
 		/* This function will be used to call the model, it is overloaded
 		 * so that we have one for arrays, one for scalars */
@@ -82,6 +85,8 @@ class Con2020 {
 		char eqtype_[9];
 		bool Edwards_, ErrChk_;
 		bool CartIn_,CartOut_;
+		double deltaz_,deltarho_;
+		bool smooth_;
 		
 		/* Bessel function arrays - arrays prefixed with r and z are
 		 * to be used for integrals which calcualte Brho and Bz,
@@ -149,14 +154,18 @@ class Con2020 {
 		
 		/* analytic equations */
 		void _Analytic(double,double,double,double*,double*,double*);
+		void _AnalyticSmooth(double,double,double,double*,double*,double*);
 		void _SolveAnalytic(int,double*,double*,double,double*,double*);
 		Approx _LargeRho;
 		Approx _SmallRho;
 		void _AnalyticInner(double,double,double*,double*);
 		void _AnalyticOuter(double,double,double*,double*);
+		void _AnalyticInnerSmooth(double,double,double*,double*);
+		void _AnalyticOuterSmooth(double,double,double*,double*);
 		void _LargeRhoConnerney(double,double,double,double,double,double*,double*);
 		void _SmallRhoConnerney(double,double,double,double,double,double*,double*);
 		void _LargeRhoEdwards(double,double,double,double,double,double*,double*);
+		void _LargeRhoEdwardsSmooth(double,double,double,double,double,double*,double*);
 		void _SmallRhoEdwards(double,double,double,double,double,double*,double*);
 		
 		/* integral-related functions */

@@ -16,6 +16,9 @@ Con2020::Con2020() {
 	ErrChk_ = true;
 	CartIn_ = true;
 	CartOut_ = true;
+	deltarho_ = 0.1;
+	deltaz_ = 0.1;
+	smooth_ = false;
 	
 	
 	/* some other values which will only need calculating once */
@@ -53,7 +56,10 @@ Con2020::Con2020(double mui, double irho, double r0, double r1,
 	ErrChk_ = ErrChk;
 	CartIn_ = CartIn;
 	CartOut_ = CartOut;
-	
+	deltarho_ = 0.1;
+	deltaz_ = 0.1;
+	smooth_ = false;
+		
 	/* apply custom values if they are valid */
 	SetCurrentDensity(mui);
 	SetRadCurrentDensity(irho);
@@ -100,7 +106,11 @@ void Con2020::_SetModelFunctions() {
 	/* firstly set whether we are using the Edwards or Connerney 
 	 * analytical functions */
 	if (Edwards_) {
-		_LargeRho = &Con2020::_LargeRhoEdwards;
+		if (smooth_) {
+			_LargeRho = &Con2020::_LargeRhoEdwardsSmooth;
+		} else {
+			_LargeRho = &Con2020::_LargeRhoEdwards;
+		}
 		_SmallRho = &Con2020::_SmallRhoEdwards;
 	} else {
 		_LargeRho = &Con2020::_LargeRhoConnerney;
@@ -110,7 +120,11 @@ void Con2020::_SetModelFunctions() {
 	/* now we need to set which model functions we will use
 	 * (analytic, intergral or hybrid) */
 	if (strcmp(eqtype_,"analytic") == 0) {
-		_Model = &Con2020::_Analytic;
+		if (smooth_) {
+			_Model = &Con2020::_AnalyticSmooth;
+		} else {
+			_Model = &Con2020::_Analytic;
+		}
 	} else if (strcmp(eqtype_,"integral") == 0) {
 		_Model = &Con2020::_Integral;
 	} else if (strcmp(eqtype_,"hybrid") == 0) {
@@ -369,6 +383,25 @@ void Con2020::_Analytic(double rho, double absz, double z,
 	
 }
 
+void Con2020::_AnalyticSmooth(double rho, double absz, double z, 
+						double *Brho, double *Bphi, double *Bz) {
+	
+	/* calculate the inner contribution to Brho and Bz */
+	_AnalyticInnerSmooth(rho,z,Brho,Bz);
+	
+	/* also the azimuthal field */
+	_AzimuthalField(rho,absz,z,Bphi);
+	
+	/* we need to calculate the outer edge contribution */
+	double oBrho, oBz;
+	_AnalyticOuterSmooth(rho,z,&oBrho,&oBz);
+	
+	/*subtract it */
+	Brho[0] -= oBrho;
+	Bz[0] -= oBz;
+	
+}
+
 void Con2020::_AnalyticInner(	double rho, double z, 
 								double *Brho, double *Bz) {
 	
@@ -384,6 +417,34 @@ void Con2020::_AnalyticInner(	double rho, double z,
 									
 }
 
+void Con2020::_AnalyticInnerSmooth(	double rho, double z, 
+									double *Brho, double *Bz) {
+	
+	/* define a few required variables */
+	double zpd = z + d_;
+	double zmd = z - d_;
+	
+	/* define some temporary variables */
+	double Brho0, Brho1, Bz0, Bz1;
+	double tanhrho, C0, C1; 
+	
+	/* calculate small and large rho approximations
+	 * NOTE: Add smoothed functions for small and large rho */
+	(this->*_LargeRho)(rho,z,zmd,zpd,r0sq_,&Brho1,&Bz1);
+	(this->*_SmallRho)(rho,z,zmd,zpd,r0sq_,&Brho0,&Bz0);
+	
+	/* calculate the tanh smoothing parameters */
+	tanhrho = tanh((rho-r0_)/deltarho_);
+	C0 = (1-tanhrho)/2.0;
+	C1 = (1+tanhrho)/2.0;
+	
+	/* splice together as suggested by Stan */
+	*Brho = Brho0*C0 + Brho1*C0;
+	*Bz = Bz0*C0 + Bz1*C0;
+	
+									
+}
+
 void Con2020::_AnalyticOuter(	double rho, double z, 
 								double *Brho, double *Bz) {
 	
@@ -396,6 +457,35 @@ void Con2020::_AnalyticOuter(	double rho, double z,
 	} else {
 		(this->*_SmallRho)(rho,z,zmd,zpd,r1sq_,Brho,Bz);
 	}
+									
+}
+
+
+void Con2020::_AnalyticOuterSmooth(	double rho, double z, 
+									double *Brho, double *Bz) {
+	
+	/* define a few required variables */
+	double zpd = z + d_;
+	double zmd = z - d_;
+	
+	/* define some temporary variables */
+	double Brho0, Brho1, Bz0, Bz1;
+	double tanhrho, C0, C1; 
+	
+	/* calculate small and large rho approximations
+	 * NOTE: Add smoothed functions for small and large rho */
+	(this->*_LargeRho)(rho,z,zmd,zpd,r1sq_,&Brho1,&Bz1);
+	(this->*_SmallRho)(rho,z,zmd,zpd,r1sq_,&Brho0,&Bz0);
+	
+	/* calculate the tanh smoothing parameters */
+	tanhrho = tanh((rho-r1_)/deltarho_);
+	C0 = (1-tanhrho)/2.0;
+	C1 = (1+tanhrho)/2.0;
+	
+	/* splice together as suggested by Stan */
+	*Brho = Brho0*C0 + Brho1*C0;
+	*Bz = Bz0*C0 + Bz1*C0;
+	
 									
 }
 
@@ -459,6 +549,30 @@ void Con2020::_LargeRhoEdwards(double rho, double z, double zmd,
 	double terma0 = (1.0/rho)*(f1 - f2);
 	double terma1 = (rho*a2/4)*(1.0/f2cubed - 1.0/f1cubed);
 	double terma2 = (2.0/rho)*clip(z,-d_,d_);
+	Brho[0] = mui_*(terma0 + terma1 + terma2);
+
+	/* equation 13b */
+	double termb0 = log((zpd + f2)/(zmd + f1));
+	double termb1 = (a2/4.0)*(zpd/f2cubed - zmd/f1cubed);
+	Bz[0] = mui_*(termb0 + termb1);
+}
+
+void Con2020::_LargeRhoEdwardsSmooth(double rho, double z, double zmd,
+					double zpd, double a2,double *Brho, double *Bz) {
+	
+	/* some common variables */
+	double zmd2 = zmd*zmd;
+	double zpd2 = zpd*zpd;
+	double rho2 = rho*rho;
+	double f1 = sqrt(zmd2 + rho2);
+	double f2 = sqrt(zpd2 + rho2);
+	double f1cubed = f1*f1*f1;
+	double f2cubed = f2*f2*f2;
+	
+	/* equation 13a */
+	double terma0 = (1.0/rho)*(f1 - f2);
+	double terma1 = (rho*a2/4)*(1.0/f2cubed - 1.0/f1cubed);
+	double terma2 = (2.0/rho)*smoothd(z,deltaz_,d_);
 	Brho[0] = mui_*(terma0 + terma1 + terma2);
 
 	/* equation 13b */
@@ -910,6 +1024,17 @@ void Con2020::SetEqType(const char *eqtype) {
 	}
 
 }
+
+void Con2020::SetSmooth(bool smooth) {
+	smooth_ = smooth;
+	_SetModelFunctions();
+}
+
+bool Con2020::GetSmooth() {
+	
+	return smooth_;
+}
+	
 
 void Con2020::GetEqType(char *eqtype) {
 	strcpy(eqtype,eqtype_);

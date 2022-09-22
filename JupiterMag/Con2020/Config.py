@@ -20,9 +20,10 @@ def _GetCFG():
 	ErrChk = np.zeros(1,dtype='bool')
 	CartIn = np.zeros(1,dtype='bool')
 	CartOut = np.zeros(1,dtype='bool')
+	Smooth = np.zeros(1,dtype='bool')
 
 	_CGetCon2020Params(mui,irho,r0,r1,d,xt,xp,eqtype,Edwards,ErrChk,
-						CartIn,CartOut)
+						CartIn,CartOut,Smooth)
 	
 	cfg = {}
 	cfg['mu_i'] = mui[0]
@@ -37,6 +38,7 @@ def _GetCFG():
 	cfg['CartesianIn'] = CartIn[0]
 	cfg['CartesianOut'] = CartOut[0]
 	cfg['equation_type'] = eqtype.value.decode()
+	cfg['Smooth'] = Smooth[0]
 
 	return cfg
 
@@ -58,9 +60,10 @@ def _SetCFG(cfg):
 	ErrChk = np.array([cfg['error_check']],dtype='bool')
 	CartIn = np.array([cfg['CartesianIn']],dtype='bool')
 	CartOut = np.array([cfg['CartesianOut']],dtype='bool')
+	Smooth = np.array([cfg['Smooth']],dtype='bool')
 	
 	_CSetCon2020Params(mui,irho,r0,r1,d,xt,xp,eqtype,Edwards,ErrChk,
-						CartIn,CartOut)
+						CartIn,CartOut,Smooth)
 						
 						
 def Config(*args,**kwargs):
@@ -110,6 +113,9 @@ def Config(*args,**kwargs):
 		right-handed System III coordinates. Otherwise, the magnetic 
 		field components produced will be radial, meridional and 
 		azimuthal.	
+	Smooth : bool
+		If True, then smooth transitions are used about r0 and r1
+		(currently Edwards only).
 	
 	'''
 
@@ -125,7 +131,8 @@ def Config(*args,**kwargs):
 				'Edwards'		: True,
 				'error_check'	: True,
 				'CartesianIn'	: True,
-				'CartesianOut'	: True}
+				'CartesianOut'	: True,
+				'Smooth'		: False}
 				
 	
 	if len(args) == 1:

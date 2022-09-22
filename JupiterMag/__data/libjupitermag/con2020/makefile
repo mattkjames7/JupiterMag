@@ -14,6 +14,7 @@ obj:
 	$(CCo) bessel.cc -o bessel.o 
 	$(CCo) polyeval.cc -o polyeval.o 
 	$(CCo) trap.cc -o trap.o 
+	$(CCo) smoothd.cc -o smoothd.o 
 	$(CCo) libcon2020.cc -o libcon2020.o
 
 lib:
@@ -24,6 +25,7 @@ windows:
 	$(CCWo) bessel.cc -o ../build/windows/bessel.o 
 	$(CCWo) polyeval.cc -o ../build/windows/polyeval.o 
 	$(CCWo) trap.cc -o ../build/windows/trap.o 
+	$(CCWo) smoothd.cc -o ../build/windows/smoothd.o 
 	$(CCWo) libcon2020.cc -o ../build/windows/libcon2020.o
 
 test:

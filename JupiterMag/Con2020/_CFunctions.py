@@ -44,7 +44,8 @@ _CGetCon2020Params.argtypes = [	c_double_ptr,		#mui
 								c_bool_ptr,			#Edwards
 								c_bool_ptr,			#ErrChk
 								c_bool_ptr,			#CartIn
-								c_bool_ptr ]		#CartOut
+								c_bool_ptr,			#CartOut
+								c_bool_ptr ]		#Smooth
 #con2020 set parameters
 _CSetCon2020Params = libjupitermag.SetCon2020Params
 _CSetCon2020Params.restype = None
@@ -59,4 +60,5 @@ _CSetCon2020Params.argtypes = [	c_double,		#mui
 								c_bool,			#Edwards
 								c_bool,			#ErrChk
 								c_bool,			#CartIn
-								c_bool ]		#CartOut
+								c_bool,			#CartOut
+								c_bool ]		#Smooth

@@ -22,12 +22,12 @@ extern "C" {
 
 	void GetCon2020Params(double *mui, double *irho, double *r0, double *r1,
 					double *d, double *xt, double *xp, char *eqtype,
-					bool *Edwards, bool *ErrChk, bool *CartIn, bool *CartOut);
+					bool *Edwards, bool *ErrChk, bool *CartIn, bool *CartOut, bool *smooth);
 						
 	
 	void SetCon2020Params(double mui, double irho, double r0, double r1,
 					double d, double xt, double xp, const char *eqtype,
-					bool Edwards, bool ErrChk, bool CartIn, bool CartOut);
+					bool Edwards, bool ErrChk, bool CartIn, bool CartOut, bool smooth);
 
 }
 #endif

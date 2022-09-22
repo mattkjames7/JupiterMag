@@ -20,7 +20,7 @@ void Con2020Field(double p0, double p1, double p2,
 
 void GetCon2020Params(double *mui, double *irho, double *r0, double *r1,
 				double *d, double *xt, double *xp, char *eqtype,
-				bool *Edwards, bool *ErrChk, bool *CartIn, bool *CartOut) {
+				bool *Edwards, bool *ErrChk, bool *CartIn, bool *CartOut, bool  *smooth) {
 
 	mui[0] = con2020.GetCurrentDensity();
 	irho[0] = con2020.GetRadCurrentDensity();
@@ -34,10 +34,12 @@ void GetCon2020Params(double *mui, double *irho, double *r0, double *r1,
 	CartIn[0] = con2020.GetCartIn();
 	CartOut[0] = con2020.GetCartOut();
 	con2020.GetEqType(eqtype);	
+	smooth[0] = con2020.GetSmooth();
+	
 }
 void SetCon2020Params(double mui, double irho, double r0, double r1,
 				double d, double xt, double xp, const char *eqtype,
-				bool Edwards, bool ErrChk, bool CartIn, bool CartOut) {
+				bool Edwards, bool ErrChk, bool CartIn, bool CartOut, bool smooth) {
 
 	con2020.SetCurrentDensity(mui);
 	con2020.SetRadCurrentDensity(irho);
@@ -51,4 +53,5 @@ void SetCon2020Params(double mui, double irho, double r0, double r1,
 	con2020.SetCartIn(CartIn);
 	con2020.SetCartOut(CartOut);
 	con2020.SetEqType(eqtype);
+	con2020.SetSmooth(smooth);
 }
