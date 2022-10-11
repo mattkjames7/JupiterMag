@@ -16,8 +16,8 @@ Con2020::Con2020() {
 	ErrChk_ = true;
 	CartIn_ = true;
 	CartOut_ = true;
-	deltarho_ = 0.1;
-	deltaz_ = 0.1;
+	deltarho_ = 1.0;
+	deltaz_ = 0.01;
 	smooth_ = false;
 	
 	
@@ -56,8 +56,8 @@ Con2020::Con2020(double mui, double irho, double r0, double r1,
 	ErrChk_ = ErrChk;
 	CartIn_ = CartIn;
 	CartOut_ = CartOut;
-	deltarho_ = 0.1;
-	deltaz_ = 0.1;
+	deltarho_ = 1.0;
+	deltaz_ = 0.01;
 	smooth_ = false;
 		
 	/* apply custom values if they are valid */
@@ -439,8 +439,8 @@ void Con2020::_AnalyticInnerSmooth(	double rho, double z,
 	C1 = (1+tanhrho)/2.0;
 	
 	/* splice together as suggested by Stan */
-	*Brho = Brho0*C0 + Brho1*C0;
-	*Bz = Bz0*C0 + Bz1*C0;
+	*Brho = Brho0*C0 + Brho1*C1;
+	*Bz = Bz0*C0 + Bz1*C1;
 	
 									
 }
@@ -483,8 +483,8 @@ void Con2020::_AnalyticOuterSmooth(	double rho, double z,
 	C1 = (1+tanhrho)/2.0;
 	
 	/* splice together as suggested by Stan */
-	*Brho = Brho0*C0 + Brho1*C0;
-	*Bz = Bz0*C0 + Bz1*C0;
+	*Brho = Brho0*C0 + Brho1*C1;
+	*Bz = Bz0*C0 + Bz1*C1;
 	
 									
 }
