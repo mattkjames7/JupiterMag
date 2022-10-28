@@ -21,9 +21,11 @@ def _GetCFG():
 	CartIn = np.zeros(1,dtype='bool')
 	CartOut = np.zeros(1,dtype='bool')
 	Smooth = np.zeros(1,dtype='bool')
+	DeltaRho = np.zeros(1,dtype='float64')
+	DeltaZ = np.zeros(1,dtype='float64')
 
 	_CGetCon2020Params(mui,irho,r0,r1,d,xt,xp,eqtype,Edwards,ErrChk,
-						CartIn,CartOut,Smooth)
+						CartIn,CartOut,Smooth,DeltaRho,DeltaZ)
 	
 	cfg = {}
 	cfg['mu_i'] = mui[0]
@@ -39,6 +41,8 @@ def _GetCFG():
 	cfg['CartesianOut'] = CartOut[0]
 	cfg['equation_type'] = eqtype.value.decode()
 	cfg['Smooth'] = Smooth[0]
+	cfg['DeltaRho'] = DeltaRho[0]
+	cfg['DeltaZ'] = DeltaZ[0]
 
 	return cfg
 
@@ -61,9 +65,11 @@ def _SetCFG(cfg):
 	CartIn = np.array([cfg['CartesianIn']],dtype='bool')
 	CartOut = np.array([cfg['CartesianOut']],dtype='bool')
 	Smooth = np.array([cfg['Smooth']],dtype='bool')
+	DeltaRho = np.array([cfg['DeltaRho']],dtype='float64')
+	DeltaZ = np.array([cfg['DeltaZ']],dtype='float64')
 	
 	_CSetCon2020Params(mui,irho,r0,r1,d,xt,xp,eqtype,Edwards,ErrChk,
-						CartIn,CartOut,Smooth)
+						CartIn,CartOut,Smooth,DeltaRho,DeltaZ)
 						
 						
 def Config(*args,**kwargs):
@@ -132,7 +138,9 @@ def Config(*args,**kwargs):
 				'error_check'	: True,
 				'CartesianIn'	: True,
 				'CartesianOut'	: True,
-				'Smooth'		: False}
+				'Smooth'		: False,
+				'DeltaRho'		: 1.0,
+				'DeltaZ'		: 0.1}
 				
 	
 	if len(args) == 1:

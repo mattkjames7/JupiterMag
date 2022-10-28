@@ -1173,3 +1173,19 @@ void Con2020::SetCartOut(bool CartOut) {
 bool Con2020::GetCartOut() {
 	return CartOut_;
 }
+
+void Con2020::SetDeltaRho(double DeltaRho) {
+	deltarho_ = DeltaRho;
+}
+
+double Con2020::GetDeltaRho() {
+	return deltarho_;
+}
+
+void Con2020::SetDeltaZ(double DeltaZ) {
+	deltaz_ = DeltaZ;
+}
+
+double Con2020::GetDeltaZ() {
+	return deltaz_;
+}

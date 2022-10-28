@@ -55,6 +55,8 @@ class Con2020 {
 		void SetCartIn(bool);
 		void SetCartOut(bool);
 		void SetSmooth(bool);
+		void SetDeltaRho(double);
+		void SetDeltaZ(double);
 		
 		/* these mamber functions will be the "getter" version of the
 		 * above setters */
@@ -71,6 +73,8 @@ class Con2020 {
 		bool GetCartIn();
 		bool GetCartOut();
 		bool GetSmooth();
+		double GetDeltaRho();
+		double GetDeltaZ();
 		
 		/* This function will be used to call the model, it is overloaded
 		 * so that we have one for arrays, one for scalars */
