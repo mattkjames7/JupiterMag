@@ -34,7 +34,7 @@ def SIIItoMag(x,y,z,xt,xp):
 	#some sines and cosines
 	dtor = np.pi/180.0
 	xtr = dtor*xt
-	xpr = dtor*xp
+	xpr = dtor*(xp-180.0)
 	cosxt = np.cos(xtr)
 	sinxt = np.sin(xtr)
 	cosxp = np.cos(xpr)
