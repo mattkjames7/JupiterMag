@@ -152,7 +152,7 @@ def Config(*args,**kwargs):
 	
 	#return the current configuration
 	cfg = _GetCFG()
-		
+
 	#list the long names
 	longnames = {	'mu_i'	: 'mu_i_div2__current_density_nT',
 					'r0'	: 'r0__inner_rj',

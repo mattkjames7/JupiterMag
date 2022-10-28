@@ -64,5 +64,5 @@ _CSetCon2020Params.argtypes = [	c_double,		#mui
 								c_bool,			#CartIn
 								c_bool,			#CartOut
 								c_bool, 		#Smooth
-								c_double_ptr,	#DeltaRho
-								c_double_ptr]	#DeltaZ
+								c_double,	#DeltaRho
+								c_double]	#DeltaZ
