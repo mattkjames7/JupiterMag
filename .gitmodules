@@ -1,0 +1,3 @@
+[submodule "JupiterMag/__data/libjupitermag"]
+	path = JupiterMag/__data/libjupitermag
+	url = git@github.com:mattkjames7/libjupitermag
