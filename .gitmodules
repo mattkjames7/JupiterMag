@@ -1,3 +1,0 @@
-[submodule "JupiterMag/__data/libjupitermag/libinternalfield"]
-	path = JupiterMag/__data/libjupitermag/libinternalfield
-	url = git@github.com:mattkjames7/libinternalfield
