@@ -13,7 +13,7 @@ def _LibPath():
 		path to the library file.
 	
 	'''
-	return os.path.dirname(__file__)+"/__data/libjupitermag/"
+	return os.path.dirname(__file__)+"/__data/libjupitermag/lib/libjupitermag/"
 
 def _LibName(WithPath=False):
 	'''
