@@ -83,11 +83,11 @@ def Config(*args,**kwargs):
 	
 	Keywords (shorthand keywords in brackets)
 	=========================================
-	mu_i_div2__current_density_nT (mu_i): float
-		mu0i0/2 term (current sheet current density), in nT
-	i_rho__radial_current_density_nT (i_rho) : float
+	mu_i_div2__current_parameter_nT (mu_i): float
+		mu0i0/2 term (azimuthal current sheet parameter), in nT
+	i_rho__radial_current_MA (i_rho) : float
 		radial current term from Connerney et al., 2020
-		NOTE: The default value (16.7 nT) is the average value from
+		NOTE: The default value (16.7 MA) is the average value from
 		Connerney et al 2020. This value was shown to vary from one 
 		pass to the next, where Table 2 provides radial current 
 		density values for 23 of the first 24
@@ -154,13 +154,13 @@ def Config(*args,**kwargs):
 	cfg = _GetCFG()
 
 	#list the long names
-	longnames = {	'mu_i'	: 'mu_i_div2__current_density_nT',
+	longnames = {	'mu_i'	: 'mu_i_div2__current_parameter_nT',
 					'r0'	: 'r0__inner_rj',
 					'r1'	: 'r1__outer_rj',
 					'd'		: 'd__cs_half_thickness_rj',
 					'xt'	: 'xt__cs_tilt_degs',
 					'xp'	: 'xp__cs_rhs_azimuthal_angle_of_tilt_degs',
-					'i_rho'	: 'i_rho__radial_current_density_nT'		  }
+					'i_rho'	: 'i_rho__radial_current_MA'		  }
 						
 	#check input kwargs
 	#for those which exist (either in long or short name form) add
