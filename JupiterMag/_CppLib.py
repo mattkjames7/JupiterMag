@@ -2,6 +2,7 @@ import numpy as np
 import os
 import subprocess
 import ctypes
+import platform
 
 def _LibPath():
 	'''
@@ -34,13 +35,16 @@ def _LibName(WithPath=False):
 		path = _LibPath()
 	else:
 		path = ''
-		
-	if(os.name == 'posix'):
-		ext = "so"
-	elif(os.name == 'nt'):
-		ext = "dll"
-	else:
-		raise Exception("The Operating System is not supported")
+
+	osname = platform.uname().system
+	libexts = {	'Linux':'so',
+				'Windows':'dll',
+				'Darwin':'dylib'}	
+	
+	ext = libexts[osname]
+
+	if ext is None:
+		raise Exception("The Operating System ({:s}) is not supported".format(osname))
 	
 	return path + 'libjupitermag.' + ext
 
