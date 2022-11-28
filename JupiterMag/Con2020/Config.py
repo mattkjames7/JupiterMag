@@ -24,8 +24,19 @@ def _GetCFG():
 	DeltaRho = np.zeros(1,dtype='float64')
 	DeltaZ = np.zeros(1,dtype='float64')
 
+	g = np.zeros(1,dtype='float64')
+	azfunc = ct.c_char_p("          ".encode('utf-8'))
+	wO_open = np.zeros(1,dtype='float64')
+	wO_om = np.zeros(1,dtype='float64')
+	thetamm = np.zeros(1,dtype='float64')
+	dthetamm = np.zeros(1,dtype='float64')
+	thetaoc = np.zeros(1,dtype='float64')
+	dthetaoc = np.zeros(1,dtype='float64')
+
+
 	_CGetCon2020Params(mui,irho,r0,r1,d,xt,xp,eqtype,Edwards,ErrChk,
-						CartIn,CartOut,Smooth,DeltaRho,DeltaZ)
+						CartIn,CartOut,Smooth,DeltaRho,DeltaZ,g,azfunc,
+						wO_open,wO_om,thetamm,dthetamm,thetaoc,dthetaoc)
 	
 	cfg = {}
 	cfg['mu_i'] = mui[0]
@@ -43,6 +54,15 @@ def _GetCFG():
 	cfg['Smooth'] = Smooth[0]
 	cfg['DeltaRho'] = DeltaRho[0]
 	cfg['DeltaZ'] = DeltaZ[0]
+
+	cfg['g'] = g[0]
+	cfg['azfunc'] = azfunc.value.decode()
+	cfg['wO_open'] = wO_open[0]
+	cfg['wO_om'] = wO_om[0]
+	cfg['thetamm'] = thetamm[0]
+	cfg['dthetamm'] = dthetamm[0]
+	cfg['thetaoc'] = thetaoc[0]
+	cfg['dthetaoc'] = dthetaoc[0]
 
 	return cfg
 
@@ -67,9 +87,22 @@ def _SetCFG(cfg):
 	Smooth = np.array([cfg['Smooth']],dtype='bool')
 	DeltaRho = np.array([cfg['DeltaRho']],dtype='float64')
 	DeltaZ = np.array([cfg['DeltaZ']],dtype='float64')
+
+	g = np.array([cfg['g']],dtype='float64')
+	azfunc = ct.c_char_p(cfg['azfunc'].encode('utf-8'))
+	wO_open = np.array([cfg['wO_open']],dtype='float64')
+	wO_om = np.array([cfg['wO_om']],dtype='float64')
+	thetamm = np.array([cfg['thetamm']],dtype='float64')
+	dthetamm = np.array([cfg['dthetamm']],dtype='float64')
+	thetaoc = np.array([cfg['thetaoc']],dtype='float64')
+	dthetaoc = np.array([cfg['dthetaoc']],dtype='float64')
+
+
+
 	
 	_CSetCon2020Params(mui,irho,r0,r1,d,xt,xp,eqtype,Edwards,ErrChk,
-						CartIn,CartOut,Smooth,DeltaRho,DeltaZ)
+						CartIn,CartOut,Smooth,DeltaRho,DeltaZ,g,azfunc,
+						wO_open,wO_om,thetamm,dthetamm,thetaoc,dthetaoc)
 						
 						
 def Config(*args,**kwargs):
@@ -91,7 +124,7 @@ def Config(*args,**kwargs):
 		Connerney et al 2020. This value was shown to vary from one 
 		pass to the next, where Table 2 provides radial current 
 		density values for 23 of the first 24
-		perijoves.
+		perijoves. (Only used for Connerney model for the azimuthal field)
 	r0__inner_rj (r0) : float
 		Inner edge of current disk in Rj
 	r1__outer_rj (r1) : float
@@ -122,6 +155,28 @@ def Config(*args,**kwargs):
 	Smooth : bool
 		If True, then smooth transitions are used about r0 and r1
 		(currently Edwards only).
+	g : float
+		Dipole coefficient, nT. (Used for L-MIC model)
+	azfunc : str
+		"connerney" - uses the Connerney et al 2020 method for calculating
+					azimuthal component of the magnetic field.
+		or
+		"lmic" - uses the Leicester Magnetosphere-Ionosphere Coupling model
+					(e.g. Cowley et al 2005, 2008) to provide the azimuthal
+					component of the magnetic field.
+	wO_open	: float
+			angular velocity ratio of open flux to planetary spin
+	wO_om : float
+		angular velocity ratio of outer magnetosphere to planetary spin
+	thetamm : float
+		ionospheric footprint latitude of the middle magnetosphere (where plasma 
+		goes from rigid corotation to subcorotation) in radians.
+	dthetamm : float
+		width of the middle magnetosphere in radians.
+	thetaoc	: float
+		ionospheric latitude of the open-closed field line boundary, in radians.
+	dthetaoc : float
+		width of the open-closed field line boundary, in radians.
 	
 	'''
 
@@ -140,7 +195,15 @@ def Config(*args,**kwargs):
 				'CartesianOut'	: True,
 				'Smooth'		: False,
 				'DeltaRho'		: 1.0,
-				'DeltaZ'		: 0.1}
+				'DeltaZ'		: 0.1,
+				'g'				: 417659.3836476442,
+				'azfunc'		: "connerney",
+				'wO_open'		: 0.1,
+				'wO_oc'			: 0.35,
+				'thetamm'		: 16.1,
+				'dthetamm'		: 0.5,
+				'thetaoc'		: 10.716,
+				'dthetaoc'		: 0.125,}
 				
 	
 	if len(args) == 1:
