@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.6822191.svg)](https://doi.org/10.5281/zenodo.6822191)
 
-Python wrapper for a collection of Jovian magnetic field models.
+Python wrapper for a collection of Jovian magnetic field models written in C++ (see [libjupitermag](https://github.com/mattkjames7/libjupitermag.git)).
 
 This is part of a community code project : 
 
@@ -12,13 +12,13 @@ This is part of a community code project :
 
 - Matt James - University of Leicester
 
-- Rob Wilson - LASP
-
-- Marissa Vogt - Boston University
-
 - Gabby Provan - University of Leicester
 
 - Aneesah Kamran - University of Leicester
+
+- Rob Wilson - LASP
+
+- Marissa Vogt - Boston University
 
 - Marty Brennan - NASA JPL
 
@@ -127,7 +127,7 @@ All coordinates are either in planetary radii (`x,y,z,r`) or radians (`t,p`). Al
 
 ### 3.2 External Field
 
-Currently the only external field source included is the Con2020 field (see [here](https://github.com/mattkjames7/Con2020)), other models could be added in future.
+Currently the only external field source included is the Con2020 field (see [here](https://github.com/gabbyprovan/con2020.git) for the standalone Python code and [here](https://github.com/mattkjames7/libcon2020.git) for more information on the C++ code used here as part of libjupitermag), other models could be added in future.
 
 This works in a similar way to the internal field, e.g.:
 

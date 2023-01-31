@@ -15,6 +15,19 @@ authors:
       School of Physics and Astronomy, University of
       Leicester, Leicester, UK
     orcid: 'https://orcid.org/0000-0002-5699-6121'
+  - given-names: G.
+    family-names: Provan
+    email: gp31@le.ac.uk
+    affiliation: >-
+      School of Physics and Astronomy, University of
+      Leicester, Leicester, UK
+    orcid: 'https://orcid.org/0000-0001-7442-4154'
+  - given-names: A.
+    family-names: Kamran
+    email: ak741@leicester.ac.uk
+    affiliation: >-
+      School of Physics and Astronomy, University of
+      Leicester, Leicester, UK
   - given-names: R. J.
     family-names: Wilson
     email: rob.wilson@lasp.colorado.edu
@@ -30,19 +43,6 @@ authors:
       Center for Space Physics, Boston University,
       Boston, MA, USA
     orcid: 'https://orcid.org/0000-0003-4885-8615'
-  - given-names: G.
-    family-names: Provan
-    email: gp31@le.ac.uk
-    affiliation: >-
-      School of Physics and Astronomy, University of
-      Leicester, Leicester, UK
-    orcid: 'https://orcid.org/0000-0001-7442-4154'
-  - given-names: A.
-    family-names: Kamran
-    email: ak741@leicester.ac.uk
-    affiliation: >-
-      School of Physics and Astronomy, University of
-      Leicester, Leicester, UK
   - given-names: M. J.
     family-names: Brennan
     email: martin.brennan@jpl.nasa.gov
