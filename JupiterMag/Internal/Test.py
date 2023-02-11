@@ -94,7 +94,7 @@ def Test(Model='JRM09',R=0.85,MaxDeg=None,Comp='r',scale = [-60.0,60.0],
 	cax = divider.append_axes("right", size="5%", pad=0.05)
 
 	cbar = plt.colorbar(sm,cax=cax) 
-	cbar.set_label('{:s} (Gauss) at $r$ = {:4.2f}'.format(Blab,R) + ' R$_{j}$')
+	cbar.set_label('{:s} (Gauss) at $r$ = {:4.2f}'.format(Blab,R) + ' R$_{J}$')
 	
 	return ax
 
