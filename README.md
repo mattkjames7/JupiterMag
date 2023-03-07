@@ -8,6 +8,9 @@ This is part of a community code project :
 
 [Magnetospheres of the Outer Planets Group Community Code](https://lasp.colorado.edu/home/mop/missions/juno/community-code/)
 
+**Journal Paper DOI**: [https://doi.org/10.1007/s11214-023-00961-3](https://doi.org/10.1007/s11214-023-00961-3)
+(PDF via DOI, or [https://rdcu.be/c5I71](https://rdcu.be/c5I71), see [Journal Publication](README.md#journal-publication).)
+
 **Authors**
 
 - Matt James - University of Leicester
@@ -124,6 +127,10 @@ Bx,By,Bz = jm.Internal.Field(x,y,z)
 ```
 
 All coordinates are either in planetary radii (`x,y,z,r`) or radians (`t,p`). All Jovian models here use _R<sub>j</sub>_=71,492 km.
+
+NOTE: figure 1 of the paper, which presents the radial components of the JRM33 model using degrees of 13 and 18 is corrupted, here is a clean version created using this code:
+
+![](paper-fig1.png)
 
 ### 3.2 External Field
 

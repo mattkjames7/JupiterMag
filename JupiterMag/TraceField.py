@@ -227,7 +227,7 @@ class TraceField(object):
 		self.nalpha = np.int32(np.size(alpha))
 		self.alpha = np.array(alpha).astype('float64')
 		self.halpha = np.zeros((self.n*self.MaxLen*self.nalpha,),dtype="float64") + np.nan #hopefully this will be reshaped to (n,nalpha,MaxLen)
-		self.FP = np.zeros((self.n,7),dtype="float64")
+		self.FP = np.zeros((self.n,49),dtype="float64")
 
 		_x = _ptr2D(self.x)
 		_y = _ptr2D(self.y)
@@ -256,14 +256,70 @@ class TraceField(object):
 						self.nalpha,self.alpha,self.halpha)
 
 		#reshape the footprints
-		fpnames = ['LatN','LonN','LatS','LonS','LonEq','Rmax','FlLen']
+		#fpnames = ['LatN','LonN','LatS','LonS','LonEq','Rmax','FlLen']
 
 
 		
 		#unpack footprints
+		self._UnpackFootprints()
+
+		#reshape h alpha
 		self.halpha = self.halpha.reshape((self.n,self.nalpha,self.MaxLen))
-		for i in range(0,7):
-			setattr(self,fpnames[i],self.FP[:,i])
+		#for i in range(0,7):
+			#setattr(self,fpnames[i],self.FP[:,i])
+
+
+	def _UnpackFootprints(self):
+
+		dtype = [	('xn3','float64'),
+	    			('yn3','float64'),
+					('zn3','float64'),
+					('xs3','float64'),
+	    			('ys3','float64'),
+					('zs3','float64'),
+					('xnm','float64'),
+	    			('ynm','float64'),
+					('znm','float64'),
+					('xsm','float64'),
+	    			('ysm','float64'),
+					('zsm','float64'),
+					('lonn','float64'),
+					('latn','float64'),
+					('mlonn','float64'),
+					('mlatn','float64'),
+					('lons','float64'),
+					('lats','float64'),
+					('mlons','float64'),
+					('mlats','float64')]
+		
+		edtype = [	('x3','float64'),
+	    			('y3','float64'),
+					('z3','float64'),
+					('xm','float64'),
+	    			('ym','float64'),
+					('zm','float64'),
+					('lshell','float64'),
+					('mlone','float64'),
+					('fllen','float64')]
+
+		iinds = np.array([0,1,2,3,4,5,6,7,8,9,10,11,30,31,32,33,34,35,36,37])
+		sinds = np.array([12,13,14,15,16,17,18,19,20,21,22,23,38,39,40,41,42,43,44,45])
+		einds = np.array([24,25,26,27,28,29,46,47,48])
+
+		self.ionosphere = np.recarray(self.n,dtype=dtype)
+		self.surface = np.recarray(self.n,dtype=dtype)
+		self.equator = np.recarray(self.n,dtype=edtype)
+
+		for i,f in enumerate(self.ionosphere.dtype.names):
+			self.ionosphere[f] = self.FP[:,iinds[i]]
+
+
+		for i,f in enumerate(self.surface.dtype.names):
+			self.surface[f] = self.FP[:,sinds[i]]
+
+
+		for i,f in enumerate(self.equator.dtype.names):
+			self.equator[f] = self.FP[:,einds[i]]
 
 	def _WrapExtFuncs(self,ExtFuncs):
 		'''
