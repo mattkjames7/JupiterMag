@@ -196,7 +196,7 @@ class TraceField(object):
 				cfg[k] = defargs[k]
 				
 		
-		self.Verbose = np.bool(cfg['Verbose'])
+		self.Verbose = np.bool8(cfg['Verbose'])
 		self.MaxLen = np.int32(cfg['MaxLen'])
 		self.MaxStep = np.float64(cfg['MaxStep'])
 		self.InitStep = np.float64(cfg['InitStep'])
