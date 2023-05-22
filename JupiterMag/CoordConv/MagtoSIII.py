@@ -34,16 +34,22 @@ def MagtoSIII(x,y,z,xt,xp):
 	#some sines and cosines
 	dtor = np.pi/180.0
 	xtr = dtor*xt
-	xpr = dtor*(xp-180.0)
+	#xpr = dtor*(xp-180.0)
+	xpr = dtor*xp
 	cosxt = np.cos(xtr)
 	sinxt = np.sin(xtr)
 	cosxp = np.cos(xpr)
 	sinxp = np.sin(xpr)
 	
-	xtmp = x*cosxt - z*sinxt
+	#xtmp = x*cosxt - z*sinxt
+	#ox = xtmp*cosxp - y*sinxp
+	#oy = y*cosxp + xtmp*sinxp
+	#oz = x*sinxt + z*cosxt
+	xtmp = x*cosxt + z*sinxt
 	ox = xtmp*cosxp - y*sinxp
-	oy = y*cosxp + xtmp*sinxp
-	oz = x*sinxt + z*cosxt
-	
+	oy = xtmp*sinxp + y*cosxp
+	oz = -x*sinxt + z*cosxt
+
+
 	return ox,oy,oz
 	
