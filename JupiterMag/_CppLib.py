@@ -76,44 +76,8 @@ def _GetLib():
 		lib = ctypes.CDLL(fname)
 		print('done')
 	except:
-		print("Importing C++ library failed. Attempting recompilation...")
-		_CompileSource()
-		lib = ctypes.CDLL(fname)
+		print("Importing C++ library failed. Please reinstall...")
+		raise SystemExit
 		
 	return lib
 
-
-def _CompileSource():
-	'''
-	Attempt to recompile the library if needed.
-	
-	'''
-	
-	if(os.name=='posix'):
-		#check if we need root or not!
-		path = os.path.dirname(__file__)
-		if '/usr/local/' in path:
-			sudo = 'sudo '
-		else:
-			sudo = ''
-
-		CWD = os.getcwd()
-		os.chdir(os.path.dirname(__file__)+"/__data/libjupitermag/")
-		os.system(sudo+'make clean')
-		os.system(sudo+'make')
-		os.chdir(CWD)
-	elif(os.name=='nt'):
-		CWD = os.getcwd()
-		os.chdir(os.path.dirname(__file__)+"/__data/libjupitermag/")
-		compile = subprocess.Popen("compile.bat")
-		compile.communicate()
-		comperr = compile.returncode
-		if(comperr==6):
-			raise Exception("There is no GCC compiler in PATH. Unable to compile C source files.")
-		if(comperr==7):
-			raise Exception("There is no GFORTRAN compiler in PATH. Unable to compile FORTRAN source files.")
-		if(comperr==8):
-			raise Exception("An error occurred during compilation.")
-		os.chdir(CWD)
-	else:
-		raise Exception("The Operating System is not supported")	
