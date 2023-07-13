@@ -4,7 +4,10 @@ __pycache__/
 *$py.class
 
 # C extensions
-
+*.o
+*.so
+*.dll
+*.dylib
 
 # Distribution / packaging
 .Python
