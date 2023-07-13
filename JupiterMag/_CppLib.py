@@ -3,6 +3,8 @@ import os
 import subprocess
 import ctypes
 import platform
+import fnmatch
+from . import Globals
 
 def _LibPath():
 	'''
@@ -23,7 +25,7 @@ def _LibName(WithPath=False):
 	Inputs
 	======
 	WithPath : bool
-		If True then the fuull path to the library will be included.
+		If True then the full path to the library will be included.
 		
 	Returns
 	=======
@@ -60,6 +62,35 @@ def _LibExists():
 	'''
 	return os.path.isfile(_LibName(True))
 	
+
+def getWindowsSearchPaths():
+    '''Scan the directories within PATH and look for std C++ libs'''
+    paths = os.getenv('PATH')
+    paths = paths.split(';')
+
+    pattern = 'libstdc++*.dll'
+
+    out = []
+    for p in paths:
+        if os.path.isdir(p):
+            files = os.listdir(p)
+            mch = any(fnmatch.fnmatch(f,pattern) for f in files)
+            if mch:
+                out.append(p)
+    
+    return out
+
+def addWindowsSearchPaths():
+
+    paths = getWindowsSearchPaths()
+    for p in paths:
+        if os.path.isdir(p):
+            os.add_dll_directory(p)
+
+    
+
+
+
 def _GetLib():
 	'''	
 	Return an instance of the C++ library
@@ -74,6 +105,18 @@ def _GetLib():
 	try:
 		print('Importing Library')
 		lib = ctypes.CDLL(fname)
+		
+
+		if platform.system() == 'Darwin':
+			cwd = os.getcwd()
+			os.chdir(Globals.ModulePath + '__data/libjupitermag/lib/')
+			lib = ctypes.CDLL(_LibName(False))
+			os.chdir(cwd)
+		elif platform.system() == 'Windows':
+			addWindowsSearchPaths()
+			lib = ctypes.CDLL(_LibName(True))
+		else:
+			lib = ctypes.CDLL(_LibName(True))
 		print('done')
 	except:
 		print("Importing C++ library failed. Please reinstall...")

@@ -29,7 +29,7 @@ This is part of a community code project :
 
 ## 1 Requirements
 
-For the Python code to run (without rebuilding the C++ backend), the following Python packages would be required:
+For the Python code to run, the following Python packages would be required:
 
 - NumPy
 
@@ -43,7 +43,7 @@ For the Python code to run (without rebuilding the C++ backend), the following P
 
 all of which would be installed automatically if using `pip`.
 
-On some systems, the shared object files would need rebuilding before they can be loaded and accessed using Python. Upon the first import of the `JupiterMag` module, if the shared object/DLL fails to load then it will attempt to use a local C++ compiler to rebuild the binaries.
+During installation, the C++ library which this module uses will be compiled.
 
 ### 1.1 Linux
 
@@ -68,10 +68,10 @@ pip3 install JupiterMag --user
 Download the latest release (on the right -> if you're viewing this on GitHub), then from within the directory where it was saved:
 
 ```bash
-pip3 install JupiterMag-1.0.0-py3-none-any.whl --user
+pip3 install JupiterMag-1.2.0.tar.gz --user
 ```
 
-Or using this repo (replace "1.0.0" with the current version number):
+Or using this repo (replace "1.2.0" with the current version number):
 
 ```bash
 #pull this repo
@@ -81,12 +81,12 @@ cd JupiterMag
 #update the submodule
 git submodule update --init --recursive
 
-#build the wheel file
-python3 setup.py bdist_wheel
+#build the source distribution file
+python3 setup.py sdist
 #the output of the previous command should give some indication of 
 #the current version number. If it's not obvious then do
 # $ls dist/ to see what the latest version is
-pip3 install dist/JupiterMag-1.0.0-py3-none-any.whl --user
+pip3 install dist/JupiterMag-1.2.0.tar.gz --user
 ```
 
 I recommend installing `gcc` >= 9.3 (that's what this is tested with, earlier versions may not support the required features of C++).
