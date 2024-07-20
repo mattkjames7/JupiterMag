@@ -298,7 +298,7 @@ class TraceField(object):
 					('xm','float64'),
 	    			('ym','float64'),
 					('zm','float64'),
-					('lshell','float64'),
+					('mshell','float64'),
 					('mlone','float64'),
 					('fllen','float64')]
 
