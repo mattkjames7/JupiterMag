@@ -159,7 +159,7 @@ jm.Con2020.Config(equation_type='analytic')
 T = jm.TraceField(5.0,0.0,0.0,IntModel='jrm09',ExtModel='Con2020')
 ```
 
-The above example will trace the field line from the Cartesian SIII position (5.0,0.0,0.0) (R<sub>j</sub>) in both directions until it reaches the planet using the JRM09 internal field model with the Con2020 external field model. The object  returned, `T`, is an instance of the `TraceField` class which contains the positions and magnetic field vectors at each step along the trace, along with some footprint coordinates and member functions which can be used for plotting.
+The above example will trace the field line from the Cartesian SIII position (5.0,0.0,0.0) (R<sub>j</sub>) in both directions until it reaches the planet using the JRM09 internal field model with the Con2020 external field model. The exact point at which the trace stops is either the surface of the planet or the radius L-MIC ionosphere, whichever has the shortest radial distance to the centre of Jupiter (see 3.3.2). The object  returned, `T`, is an instance of the `TraceField` class which contains the positions and magnetic field vectors at each step along the trace, along with some footprint coordinates and member functions which can be used for plotting.
 
 #### 3.3.1 Plotting
 
