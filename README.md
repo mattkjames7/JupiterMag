@@ -161,7 +161,14 @@ T = jm.TraceField(5.0,0.0,0.0,IntModel='jrm09',ExtModel='Con2020')
 
 The above example will trace the field line from the Cartesian SIII position (5.0,0.0,0.0) (R<sub>j</sub>) in both directions until it reaches the planet using the JRM09 internal field model with the Con2020 external field model. The object  returned, `T`, is an instance of the `TraceField` class which contains the positions and magnetic field vectors at each step along the trace, along with some footprint coordinates and member functions which can be used for plotting.
 
-A longer example below can be used to compare field traces using just an internal field model (JRM33) with both internal and external field models (JRM33  + Con2020):
+#### 3.3.1 Plotting
+
+The `TraceField` class has a few methods  which will create some simple plots of the traced field lines:
+1. `PlotXZ()` - plot the field traces in the X-Z plane (SIII)
+2. `PlotXY()` - plot the traces projected in the X-Y plane (SIII)
+3. `PlotRhoZ()` - plot the field traces in ρ-Z plane, where ρ<sup>2</sup> = x<sup>2</sup> + y<sup>2</sup>
+
+The example below can be used to compare field traces using just an internal field model (JRM33) with both internal and external field models (JRM33  + Con2020):
 
 ```python
 import JupiterMag as jm
@@ -195,3 +202,43 @@ ax.set_ylim(-6.0,6.0)
 The resulting objects T0 and T1 store arrays of trace positions and magnetic field vectors along with a bunch of footprints.The above code produces a plot like this:
 
 ![](CompareTrace.png)
+
+
+#### 3.3.2 Trace Footprints
+
+The field traces each have an associated set of "footprints" which are stored
+within the `TraceField` instance as a set of three `numpy.recarray`s called:
+
+- `TraceField.surface` - locations where the field line intersects the
+"surface" of Jupiter (oblate spheroid, equatorial radius = 71,492 km and polar 
+radius = 66,854 km).
+- `TraceField.ionosphere` - where the field lines map to the ionosphere as 
+used by th L-MIC model (sphere of radius 67,354 km, 500 km above polar radius).
+- `TraceField.equator` - location of the farthest point of the field trace from
+the planet (unless the field line is open).
+
+Every trace has an element of each of the above footprint arrays, but if the 
+field is open, then some of the elements will be filled with `NAN`, indicating 
+the absence of a footprint.
+
+The `surface` and `ionosphere` arrays have the following fields:
+
+- `xn3`, `yn3`, `zn3` - north footprint, SIII coords (R<sub>j</sub>)
+- `xs3`, `ys3`, `zs3` - south footprint, SIII coords (R<sub>j</sub>)
+- `xnm`, `ynm`, `znm` - north footprint, dipole coords (R<sub>j</sub>)
+- `xsm`, `ysm`, `zsm` - south footprint, dipole coords (R<sub>j</sub>)
+- `latn`, `lonn` - latitude and longitude, north footprint, SIII coords (°)
+- `lats`, `lons` - latitude and longitude, south footprint, SIII coords (°)
+- `mlatn`, `mlonn` - latitude and longitude, north footprint, dipole coords (°)
+- `mlats`, `mlons` - latitude and longitude, south footprint, dipole coords (°)
+
+The `equator` array has these fields:
+
+- `x3`, `y3`, `z3` - SIII coords (R<sub>j</sub>)
+- `xm`, `ym`, `zm` - dipole coords (R<sub>j</sub>)
+- `mlone` - longitude in dipole coords (°)
+- `fllen` - length of the field line (R<sub>j</sub>)
+- `mshell` - distance from the centre of the planet to the farthest point along
+the field trace (R<sub>j</sub>)
+
+
