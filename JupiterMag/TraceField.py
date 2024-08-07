@@ -215,7 +215,7 @@ class TraceField(object):
 			self.ai = np.float64(kwargs.get("ri",0.94212)) # polar radius + 500km
 			self.bi = np.float64(kwargs.get("ri",0.94212)) # polar radius + 500km
 		else:
-			self.ai = np.float64(kwargs.get("ai",0.94212)) # polar radius + 500km
+			self.ai = np.float64(kwargs.get("ai",1.00699)) # polar radius + 500km
 			self.bi = np.float64(kwargs.get("bi",0.94212)) # equatorial radius + 500km
 		if self.surfaceShape == "sphere":
 			self.ap = np.float64(kwargs.get("rp",1.0)) # equatorial radius + 500km
