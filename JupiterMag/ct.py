@@ -44,7 +44,7 @@ def ctBool(x):
 	Convert python Boolean to C
 	
 	'''
-	return np.array([x]).flatten().astype('bool8')[0]
+	return np.array([x]).flatten().astype('bool')[0]
 	
 	
 def ctBoolPtr(x):
@@ -52,7 +52,7 @@ def ctBoolPtr(x):
 	Convert python Boolean pointer to C
 	
 	'''
-	return np.array([x]).flatten().astype('bool8')
+	return np.array([x]).flatten().astype('bool')
 	
 def ctBoolPtrPtr(x):
 	'''
