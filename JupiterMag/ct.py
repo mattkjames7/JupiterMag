@@ -20,6 +20,7 @@ c_double_ptr = type('c_double_ptr',(c_double_ptr_base,),{'from_param':classmetho
 
 c_double_ptr_ptr = np.ctypeslib.ndpointer(np.uintp,ndim=1,flags="C_CONTIGUOUS")
 c_int_ptr = np.ctypeslib.ndpointer(ctypes.c_int,flags="C_CONTIGUOUS")
+c_int_ptr_ptr = np.ctypeslib.ndpointer(np.uintp,ndim=1,flags="C_CONTIGUOUS")
 c_bool_ptr = np.ctypeslib.ndpointer(ctypes.c_bool,flags="C_CONTIGUOUS")
 c_char_p_ptr = ctypes.POINTER(c_char_p) #string array pointer!
 
@@ -43,7 +44,7 @@ def ctBool(x):
 	Convert python Boolean to C
 	
 	'''
-	return np.array([x]).flatten().astype('bool8')[0]
+	return np.array([x]).flatten().astype('bool')[0]
 	
 	
 def ctBoolPtr(x):
@@ -51,7 +52,7 @@ def ctBoolPtr(x):
 	Convert python Boolean pointer to C
 	
 	'''
-	return np.array([x]).flatten().astype('bool8')
+	return np.array([x]).flatten().astype('bool')
 	
 def ctBoolPtrPtr(x):
 	'''

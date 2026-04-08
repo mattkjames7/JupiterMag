@@ -196,7 +196,7 @@ class TraceField(object):
 				cfg[k] = defargs[k]
 				
 		
-		self.Verbose = np.bool8(cfg['Verbose'])
+		self.Verbose = np.bool(cfg['Verbose'])
 		self.MaxLen = np.int32(cfg['MaxLen'])
 		self.MaxStep = np.float64(cfg['MaxStep'])
 		self.InitStep = np.float64(cfg['InitStep'])
@@ -208,6 +208,21 @@ class TraceField(object):
 			TraceDir = 0
 		self.TraceDir = np.int32(TraceDir)
 
+		# surface settings
+		self.ionosphereShape = kwargs.get("ionosphereShape","sphere")
+		self.surfaceShape = kwargs.get("surfaceShape","spheroid")
+		if self.ionosphereShape == "sphere":
+			self.ai = np.float64(kwargs.get("ri",0.94212)) # polar radius + 500km
+			self.bi = np.float64(kwargs.get("ri",0.94212)) # polar radius + 500km
+		else:
+			self.ai = np.float64(kwargs.get("ai",1.00699)) # polar radius + 500km
+			self.bi = np.float64(kwargs.get("bi",0.94212)) # equatorial radius + 500km
+		if self.surfaceShape == "sphere":
+			self.ap = np.float64(kwargs.get("rp",1.0)) # equatorial radius + 500km
+			self.bp = np.float64(kwargs.get("rp",1.0)) # equatorial radius + 500km
+		else:
+			self.ap = np.float64(kwargs.get("ap",1.0)) # polar radius
+			self.bp = np.float64(kwargs.get("bp",0.93513)) # equatorial radius
 
 
 		self.x = np.zeros((self.n,self.MaxLen),dtype="float64") + np.nan
@@ -216,9 +231,10 @@ class TraceField(object):
 		self.Bx = np.zeros((self.n,self.MaxLen),dtype="float64") + np.nan
 		self.By = np.zeros((self.n,self.MaxLen),dtype="float64") + np.nan
 		self.Bz = np.zeros((self.n,self.MaxLen),dtype="float64") + np.nan
-
+		
 		self.nstep = np.zeros(self.n,dtype="int32")
 
+		self.traceRegion = np.zeros((self.n,self.MaxLen),dtype="int32") - 2
 		self.s = np.zeros((self.n,self.MaxLen),dtype="float64") + np.nan
 		self.R = np.zeros((self.n,self.MaxLen),dtype="float64") + np.nan
 		self.Rnorm = np.zeros((self.n,self.MaxLen),dtype="float64") + np.nan
@@ -237,7 +253,7 @@ class TraceField(object):
 		_By = _ptr2D(self.By)
 		_Bz = _ptr2D(self.Bz)
 	
-		
+		_traceRegion = _ptr2D(self.traceRegion)
 		_s = _ptr2D(self.s)
 		_R = _ptr2D(self.R)
 		_Rnorm = _ptr2D(self.Rnorm)		
@@ -249,10 +265,11 @@ class TraceField(object):
 						self.MaxLen,self.MaxStep,self.InitStep,
 						self.MinStep,self.ErrMax,self.Delta,
 						self.Verbose,self.TraceDir,
+						self.ap,self.bp,self.ai,self.bi,
 						self.nstep,
 						_x,_y,_z,
 						_Bx,_By,_Bz,
-						_R,_s,_Rnorm,_FP,
+						_R,_s,_Rnorm,_traceRegion,_FP,
 						self.nalpha,self.alpha,self.halpha)
 
 		#reshape the footprints

@@ -3,7 +3,7 @@ import os
 from . import Globals
 from .ct import c_char_p,c_char_p_ptr
 from .ct import c_bool,c_bool_ptr
-from .ct import c_int,c_int_ptr
+from .ct import c_int,c_int_ptr,c_int_ptr_ptr
 from .ct import c_float,c_float_ptr
 from .ct import c_double,c_double_ptr,c_double_ptr_ptr
 from ._CppLib import _GetLib
@@ -28,6 +28,10 @@ _CTraceField.argtypes = [	c_int,				#n
 							c_double,			#Delta
 							c_bool,				#Verbose
 							c_int,				#TraceDir
+							c_double,			#as
+							c_double,			#bs
+							c_double,			#ai
+							c_double,			#bi
 							c_int_ptr,			#nstep
 							c_double_ptr_ptr,	#x
 							c_double_ptr_ptr,	#y
@@ -38,6 +42,7 @@ _CTraceField.argtypes = [	c_int,				#n
 							c_double_ptr_ptr,	#R
 							c_double_ptr_ptr,	#S
 							c_double_ptr_ptr,	#Rnorm
+							c_int_ptr_ptr,		#traceRegion
 							c_double_ptr_ptr,	#FP
 							c_int,				#nalpha
 							c_double_ptr,		#alpha
