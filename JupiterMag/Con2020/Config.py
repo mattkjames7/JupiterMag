@@ -73,30 +73,29 @@ def _SetCFG(cfg):
 	'''
 	
 	eqtype = ct.c_char_p(cfg['equation_type'].encode('utf-8'))
-	mui = np.array([cfg['mu_i']],dtype='float64')
-	irho = np.array([cfg['i_rho']],dtype='float64')
-	r0 = np.array([cfg['r0']],dtype='float64')
-	r1 = np.array([cfg['r1']],dtype='float64')
-	d = np.array([cfg['d']],dtype='float64')
-	xt = np.array([cfg['xt']],dtype='float64')
-	xp = np.array([cfg['xp']],dtype='float64')
-	Edwards = np.array([cfg['Edwards']],dtype='bool')
-	ErrChk = np.array([cfg['error_check']],dtype='bool')
-	CartIn = np.array([cfg['CartesianIn']],dtype='bool')
-	CartOut = np.array([cfg['CartesianOut']],dtype='bool')
-	Smooth = np.array([cfg['Smooth']],dtype='bool')
-	DeltaRho = np.array([cfg['DeltaRho']],dtype='float64')
-	DeltaZ = np.array([cfg['DeltaZ']],dtype='float64')
+	mui = np.array([cfg['mu_i']],dtype='float64')[0]
+	irho = np.array([cfg['i_rho']],dtype='float64')[0]
+	r0 = np.array([cfg['r0']],dtype='float64')[0]
+	r1 = np.array([cfg['r1']],dtype='float64')[0]
+	d = np.array([cfg['d']],dtype='float64')[0]
+	xt = np.array([cfg['xt']],dtype='float64')[0]
+	xp = np.array([cfg['xp']],dtype='float64')[0]
+	Edwards = np.array([cfg['Edwards']],dtype='bool')[0]
+	ErrChk = np.array([cfg['error_check']],dtype='bool')[0]
+	CartIn = np.array([cfg['CartesianIn']],dtype='bool')[0]
+	CartOut = np.array([cfg['CartesianOut']],dtype='bool')[0]
+	Smooth = np.array([cfg['Smooth']],dtype='bool')[0]
+	DeltaRho = np.array([cfg['DeltaRho']],dtype='float64')[0]
+	DeltaZ = np.array([cfg['DeltaZ']],dtype='float64')[0]
 
-	g = np.array([cfg['g']],dtype='float64')
+	g = np.array([cfg['g']],dtype='float64')[0]
 	azfunc = ct.c_char_p(cfg['azfunc'].encode('utf-8'))
-	wO_open = np.array([cfg['wO_open']],dtype='float64')
-	wO_om = np.array([cfg['wO_om']],dtype='float64')
-	thetamm = np.array([cfg['thetamm']],dtype='float64')
-	dthetamm = np.array([cfg['dthetamm']],dtype='float64')
-	thetaoc = np.array([cfg['thetaoc']],dtype='float64')
-	dthetaoc = np.array([cfg['dthetaoc']],dtype='float64')
-
+	wO_open = np.array([cfg['wO_open']],dtype='float64')[0]
+	wO_om = np.array([cfg['wO_om']],dtype='float64')[0]
+	thetamm = np.array([cfg['thetamm']],dtype='float64')[0]
+	dthetamm = np.array([cfg['dthetamm']],dtype='float64')[0]
+	thetaoc = np.array([cfg['thetaoc']],dtype='float64')[0]
+	dthetaoc = np.array([cfg['dthetaoc']],dtype='float64')[0]
 
 
 	
@@ -199,7 +198,7 @@ def Config(*args,**kwargs):
 				'g'				: 417659.3836476442,
 				'azfunc'		: "connerney",
 				'wO_open'		: 0.1,
-				'wO_oc'			: 0.35,
+				'wO_om'			: 0.35,
 				'thetamm'		: 16.1,
 				'dthetamm'		: 0.5,
 				'thetaoc'		: 10.716,
