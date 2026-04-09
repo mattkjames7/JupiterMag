@@ -2,6 +2,7 @@ import numpy as np
 import JupiterMag as jm
 import json
 import sys
+import os
 
 sys.path.append("..")
 from common import get_internal_field
@@ -106,7 +107,11 @@ model_configs = {
 }
 
 
-def save_internal_field_data(filename):
+def save_internal_field_data(filename, overwrite=False):
+    if not overwrite and os.path.exists(filename):
+        print(f"File {filename} already exists. Use --overwrite to overwrite it.")
+        return
+
     print(f"Saving internal field test data to {filename}...")
 
     data = []

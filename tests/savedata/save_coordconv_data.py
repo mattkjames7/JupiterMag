@@ -1,6 +1,7 @@
 import numpy as np
 import JupiterMag as jm
 import json
+import os
 
 
 # 10 cartesian points in System III
@@ -14,7 +15,11 @@ xt = np.array([0, 5.0, 10.0, 20.0, 45.0, 90.0, 135.0])
 xp = np.array([0, 5.0, 10.0, 20.0, 45.0, 90.0, 135., 180.0, 270.0])
 
 
-def save_coordconv_data(filename):
+def save_coordconv_data(filename, overwrite=False):
+    if not overwrite and os.path.exists(filename):
+        print(f"File {filename} already exists. Use --overwrite to overwrite it.")
+        return
+
     print(f"Saving coordinate conversion test data to {filename}...")
 
     functions = {

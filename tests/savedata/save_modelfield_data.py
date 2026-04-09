@@ -1,6 +1,7 @@
 import numpy as np
 import json
 import sys
+import os
 
 sys.path.append("..")
 from common import get_model_field
@@ -180,7 +181,11 @@ test_input_data = [
 ]
 
 
-def save_modelfield_data(filename):
+def save_modelfield_data(filename, overwrite=False):
+    if not overwrite and os.path.exists(filename):
+        print(f"File {filename} already exists. Use --overwrite to overwrite it.")
+        return
+
     print(f"Saving ModelField test data to {filename}...")
 
     for test_case in test_input_data:

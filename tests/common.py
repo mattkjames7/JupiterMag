@@ -34,3 +34,10 @@ def get_internal_field(p0, p1, p2, model, CartIn=True, CartOut=True, MaxDeg=None
     jm.Internal.Config(**cfg)
 
     return jm.Internal.Field(p0, p1, p2)
+
+
+def get_con2020_field(p0, p1, p2, cfg):
+
+    jm.Con2020.Config(**cfg)
+
+    return jm.Con2020.Field(p0, p1, p2)
