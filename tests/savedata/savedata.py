@@ -7,6 +7,7 @@ from save_modelfield_data import save_modelfield_data
 from save_coordconv_data import save_coordconv_data
 from save_internal_data import save_internal_field_data
 from save_con2020_data import save_con2020_data
+from save_trace_data import save_trace_data
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 TEST_DATA_DIR = os.path.join(SCRIPT_DIR, "../data")
@@ -38,6 +39,7 @@ def main():
     save_coordconv_data(os.path.join(TEST_DATA_DIR, "coordconv_data.json"), overwrite=args.overwrite)
     save_internal_field_data(os.path.join(TEST_DATA_DIR, "internal_field_data.json"), overwrite=args.overwrite)
     save_con2020_data(os.path.join(TEST_DATA_DIR, "con2020_field_data.json"), overwrite=args.overwrite)
+    save_trace_data(os.path.join(TEST_DATA_DIR, "trace_data.json"), overwrite=args.overwrite)
 
 
 if __name__ == "__main__":

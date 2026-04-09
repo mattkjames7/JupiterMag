@@ -41,3 +41,29 @@ def get_con2020_field(p0, p1, p2, cfg):
     jm.Con2020.Config(**cfg)
 
     return jm.Con2020.Field(p0, p1, p2)
+
+# TODO: this looks like something isn't actually working correctly
+def get_trace_footprints(x, y, z, internal_model, external_model, con2020_cfg):
+
+    jm.Internal.Config("default")
+    jm.Internal.Config(Model=internal_model)
+
+    jm.Con2020.Config("default")
+    jm.Con2020.Config(**con2020_cfg)
+
+    T = jm.TraceField(x, y, z, IntModel=internal_model, ExtModel=external_model)
+
+    fp_arrays = {
+        "ionosphere": T.ionosphere,
+        "surface": T.surface,
+        "equator": T.equator
+    }
+
+    out = {}
+    for key, arr in fp_arrays.items():
+        out[key] = {}
+        names = arr.dtype.names
+        for i, name in enumerate(names):
+            out[key][name] = arr[name].tolist()
+
+    return out
