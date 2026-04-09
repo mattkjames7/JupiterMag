@@ -7,3 +7,4 @@ from . import Tools
 from . import Internal
 from . import CoordConv
 from . import _CFunctions
+from .ModelField import ModelField
