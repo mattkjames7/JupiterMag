@@ -21,3 +21,16 @@ def get_model_field(x, y, z, IntModel="jrm09", ExtModel="con2020", CartIn=True, 
     jm.Con2020.Config(**default_con2020_cfg)
 
     return jm.ModelField(x, y, z, IntModel=IntModel, ExtModel=ExtModel, CartIn=CartIn, CartOut=CartOut)
+
+
+def get_internal_field(p0, p1, p2, model, CartIn=True, CartOut=True, MaxDeg=None):
+
+    cfg = {
+        "Model": model,
+        "CartesianIn": CartIn,
+        "CartesianOut": CartOut,
+        "Degree": MaxDeg if MaxDeg is not None else 0  # 0 will be treated as default by the C function
+    }
+    jm.Internal.Config(**cfg)
+
+    return jm.Internal.Field(p0, p1, p2)
