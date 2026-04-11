@@ -912,6 +912,6 @@ class TraceField(object):
 		r = self.R[i][:self.nstep[i]]
 		rnorm = self.Rnorm[i][:self.nstep[i]]
 		s = self.s[i][:self.nstep[i]]
-		h = self.halpha[i,:][:self.nstep[i]]
+		h = self.halpha[i,:,:self.nstep[i]]
 			
 		return (x,y,z,bx,by,bz,r,rnorm,s,h)
