@@ -36,7 +36,7 @@ jobs:
           python -m venv .venv
           . .venv/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install -vv pytest dist/*.tar.gz
+          python -m pip install pytest dist/*.tar.gz
 
       - name: Run pytest from tests directory
         run: |
@@ -74,7 +74,7 @@ jobs:
           python -m venv .venv
           . .venv/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install -vv pytest dist/*.tar.gz
+          python -m pip install pytest dist/*.tar.gz
 
       - name: Run pytest from tests directory
         run: |
@@ -119,63 +119,7 @@ jobs:
           python -m venv .venv
           .\.venv\Scripts\Activate.ps1
           python -m pip install --upgrade pip
-          python -m pip install -vv pytest (Get-ChildItem dist\*.tar.gz | Select-Object -First 1).FullName
-
-          $cachedWheel = Get-ChildItem "$env:LocalAppData\pip\Cache\wheels" -Recurse -Filter "jupitermag-*.whl" -ErrorAction SilentlyContinue |
-            Sort-Object LastWriteTime -Descending |
-            Select-Object -First 1
-
-          if ($null -ne $cachedWheel) {
-            Write-Host "Inspecting cached wheel: $($cachedWheel.FullName)"
-            python -c "import sys, zipfile; z=zipfile.ZipFile(sys.argv[1]); files=[n for n in z.namelist() if n.lower().endswith('.dll') or 'libjupitermag' in n.lower()]; print('Wheel files of interest:'); [print(f) for f in files]" $cachedWheel.FullName
-          } else {
-            Write-Warning "Could not locate cached JupiterMag wheel in pip cache"
-          }
-
-          # debug packaged DLLs and runtime dependencies
-          $pkgRoot = ".\.venv\Lib\site-packages\JupiterMag"
-          $libRoot = Join-Path $pkgRoot "__data\libjupitermag"
-          $mainDll = Join-Path $libRoot "lib\libjupitermag.dll"
-
-          Write-Host "Package root: $pkgRoot"
-          Write-Host "lib root: $libRoot"
-          Write-Host "main dll: $mainDll"
-
-          if (Test-Path $pkgRoot) {
-            Write-Host "JupiterMag package tree (depth 2):"
-            Get-ChildItem $pkgRoot -Depth 2
-          } else {
-            Write-Warning "Package root does not exist: $pkgRoot"
-          }
-
-          if (Test-Path $libRoot) {
-            Write-Host "All packaged DLLs:"
-            Get-ChildItem $libRoot -Recurse -Filter *.dll | Select-Object FullName
-          } else {
-            Write-Warning "Library root does not exist: $libRoot"
-          }
-
-          if (Test-Path $mainDll) {
-            Write-Host "Found libjupitermag.dll"
-          } else {
-            Write-Warning "Missing libjupitermag.dll at expected location"
-          }
-
-          Write-Host "MSYS2 runtime locations:"
-          Get-ChildItem C:\msys64\ucrt64\bin\libstdc++*.dll -ErrorAction SilentlyContinue
-          Get-ChildItem C:\msys64\ucrt64\bin\libgcc_s*.dll -ErrorAction SilentlyContinue
-          Get-ChildItem C:\msys64\ucrt64\bin\libwinpthread*.dll -ErrorAction SilentlyContinue
-
-          Write-Host "where.exe results for runtime DLLs:"
-          foreach ($dll in @("libstdc++-6.dll", "libgcc_s_seh-1.dll", "libwinpthread-1.dll")) {
-            where.exe $dll
-            if ($LASTEXITCODE -ne 0) {
-              Write-Warning "Could not resolve $dll via PATH"
-            }
-          }
-
-          Write-Host "PATH entries containing msys/mingw:"
-          ($env:PATH -split ';') | Where-Object { $_ -match 'msys|mingw|ucrt' }
+          python -m pip install pytest (Get-ChildItem dist\*.tar.gz | Select-Object -First 1).FullName
 
       - name: Run pytest from tests directory
         shell: pwsh
