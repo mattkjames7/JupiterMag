@@ -36,7 +36,7 @@ jobs:
           python -m venv .venv
           . .venv/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install pytest dist/*.tar.gz
+          python -m pip install -vv pytest dist/*.tar.gz
 
       - name: Run pytest from tests directory
         run: |
@@ -74,7 +74,7 @@ jobs:
           python -m venv .venv
           . .venv/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install pytest dist/*.tar.gz
+          python -m pip install -vv pytest dist/*.tar.gz
 
       - name: Run pytest from tests directory
         run: |
@@ -119,7 +119,18 @@ jobs:
           python -m venv .venv
           .\.venv\Scripts\Activate.ps1
           python -m pip install --upgrade pip
-          python -m pip install pytest (Get-ChildItem dist\*.tar.gz | Select-Object -First 1).FullName
+          python -m pip install -vv pytest (Get-ChildItem dist\*.tar.gz | Select-Object -First 1).FullName
+
+          $cachedWheel = Get-ChildItem "$env:LocalAppData\pip\Cache\wheels" -Recurse -Filter "jupitermag-*.whl" -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+
+          if ($null -ne $cachedWheel) {
+            Write-Host "Inspecting cached wheel: $($cachedWheel.FullName)"
+            python -c "import sys, zipfile; z=zipfile.ZipFile(sys.argv[1]); files=[n for n in z.namelist() if n.lower().endswith('.dll') or 'libjupitermag' in n.lower()]; print('Wheel files of interest:'); [print(f) for f in files]" $cachedWheel.FullName
+          } else {
+            Write-Warning "Could not locate cached JupiterMag wheel in pip cache"
+          }
 
           # debug packaged DLLs and runtime dependencies
           $pkgRoot = ".\.venv\Lib\site-packages\JupiterMag"
