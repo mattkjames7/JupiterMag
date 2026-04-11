@@ -101,7 +101,8 @@ def test_internal_config_changes_persist(model, parameter):
         updated_value = _get_modified_value(parameter, default_cfg[parameter])
 
         if parameter == "Model":
-            expected_cfg = dict(_default_config(updated_value))
+            expected_cfg = dict(DEFAULT_INTERNAL_CFG)
+            expected_cfg["Model"] = updated_value
         else:
             expected_cfg = dict(default_cfg)
             expected_cfg[parameter] = updated_value
