@@ -24,28 +24,28 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 def getversion():
-	'''
-	read the version string from __init__
-	
-	'''
-	#get the init file path
-	thispath = os.path.abspath(os.path.dirname(__file__))+'/'
-	initfile = thispath + 'JupiterMag/__init__.py'
-	
-	#read the file in
+    '''
+    read the version string from __init__
+    
+    '''
+    #get the init file path
+    thispath = os.path.abspath(os.path.dirname(__file__))+'/'
+    initfile = thispath + 'JupiterMag/__init__.py'
+    
+    #read the file in
     f = open(initfile,'r',encoding='utf-8')
-	lines = f.readlines()
-	f.close()
-	
-	#search for the version
-	version = 'unknown'
-	for l in lines:
-		if '__version__' in l:
-			s = l.split('=')
-			version = s[-1].strip().strip('"').strip("'")
-			break
-	return version
-	
+    lines = f.readlines()
+    f.close()
+    
+    #search for the version
+    version = 'unknown'
+    for l in lines:
+        if '__version__' in l:
+            s = l.split('=')
+            version = s[-1].strip().strip('"').strip("'")
+            break
+    return version
+    
 version = getversion()
 
 setup(
@@ -66,14 +66,14 @@ setup(
         "Operating System :: POSIX",
     ],
     install_requires=[
-		'numpy',
-		'matplotlib',
-		'DateTimeTools',
-		'RecarrayTools',
-		'PyFileIO',
-		'scipy',
-	],
-	include_package_data=True,
+        'numpy',
+        'matplotlib',
+        'DateTimeTools',
+        'RecarrayTools',
+        'PyFileIO',
+        'scipy',
+    ],
+    include_package_data=True,
 )
 
 
