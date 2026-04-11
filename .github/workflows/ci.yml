@@ -121,6 +121,12 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pytest (Get-ChildItem dist\*.tar.gz | Select-Object -First 1).FullName
 
+          # list the contents of the library directory within venv
+          Get-ChildItem .\.venv\Lib\site-packages\JupiterMag\JupiterMag\__data\libjupitermag\lib
+          Get-ChildItem .\.venv\Lib\site-packages\JupiterMag\JupiterMag\__data\libjupitermag\lib\libinternalfield\lib
+          Get-ChildItem .\.venv\Lib\site-packages\JupiterMag\JupiterMag\__data\libjupitermag\lib\libspline\lib
+          Get-ChildItem .\.venv\Lib\site-packages\JupiterMag\JupiterMag\__data\libjupitermag\lib\libcon2020\lib
+
       - name: Run pytest from tests directory
         shell: pwsh
         run: |
