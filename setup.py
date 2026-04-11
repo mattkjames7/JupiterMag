@@ -20,7 +20,7 @@ class CustomBuild(build_py):
             subprocess.check_call(['make', '-C', 'JupiterMag/__data/libjupitermag'])
 
 
-with open("README.md", "r") as fh:
+with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 def getversion():
@@ -33,7 +33,7 @@ def getversion():
 	initfile = thispath + 'JupiterMag/__init__.py'
 	
 	#read the file in
-	f = open(initfile,'r')
+    f = open(initfile,'r',encoding='utf-8')
 	lines = f.readlines()
 	f.close()
 	
