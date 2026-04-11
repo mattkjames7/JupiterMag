@@ -4,12 +4,13 @@ import json
 import sys
 import os
 
-sys.path.append("..")
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(CURRENT_DIR, ".."))
 from common import get_trace_footprints
 
 
 internal_models = ["jrm09", "vip4"]
-external_models = ["con2020", "none"]
+external_models = ["Con2020", "none"]  # TODO: make model names case-insensitive
 equation_types = ["analytic", "hybrid", "integral"]  # integral is too slow for testing
 
 # start positions in System III
@@ -39,6 +40,11 @@ def generate_inputs():
     test_input_data = []
     for cfg in configs:
         for i in range(len(x)):
+
+            # skip the integral cases for r > 2 to save time, since they are very slow
+            if cfg["equation_type"] == "integral" and r[i] > 2.0:
+                continue
+
             test_input_data.append({
                 "function": "TraceFootprints",
                 "input": {
@@ -63,7 +69,15 @@ def save_trace_data(filename, overwrite=False):
     test_input_data = generate_inputs()
 
     for test_case in test_input_data:
-        print(f"\rProcessing config {test_input_data.index(test_case)+1}/{len(test_input_data)}", end="")
+
+        # calculate r
+        r = float(np.sqrt(test_case["input"]["args"][0]**2 + test_case["input"]["args"][1]**2 + test_case["input"]["args"][2]**2))
+        r_str = f"{r:5.1f}"
+
+        # get equation_type
+        eq_type = test_case["input"]["args"][5]["equation_type"]
+
+        print(f"\rProcessing config {test_input_data.index(test_case)+1}/{len(test_input_data)} r={r_str} equation_type={eq_type:<8}", end="")
         args = test_case["input"]["args"]
         kwargs = test_case["input"]["kwargs"]
         result = get_trace_footprints(*args, **kwargs)

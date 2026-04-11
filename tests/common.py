@@ -42,7 +42,6 @@ def get_con2020_field(p0, p1, p2, cfg):
 
     return jm.Con2020.Field(p0, p1, p2)
 
-# TODO: this looks like something isn't actually working correctly
 def get_trace_footprints(x, y, z, internal_model, external_model, con2020_cfg):
 
     jm.Internal.Config("default")
