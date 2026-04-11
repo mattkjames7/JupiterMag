@@ -22,7 +22,7 @@ test_input_data = [
         "function": "ModelField",
         "input": {
             "args": [x.tolist(), y.tolist(), z.tolist()],
-            "kwargs": {"IntModel": "jrm09", "ExtModel": "con2020", "CartIn": True, "CartOut": True}
+            "kwargs": {"IntModel": "jrm09", "ExtModel": "Con2020", "CartIn": True, "CartOut": True}
         },
         "output": {
             "result": None  # to be filled in with expected result
@@ -32,7 +32,7 @@ test_input_data = [
         "function": "ModelField",
         "input": {
             "args": [x.tolist(), y.tolist(), z.tolist()],
-            "kwargs": {"IntModel": "jrm09", "ExtModel": "con2020", "CartIn": True, "CartOut": False}
+            "kwargs": {"IntModel": "jrm09", "ExtModel": "Con2020", "CartIn": True, "CartOut": False}
         },
         "output": {
             "result": None  # to be filled in with expected result
@@ -42,7 +42,7 @@ test_input_data = [
         "function": "ModelField",
         "input": {
             "args": [x.tolist(), y.tolist(), z.tolist()],
-            "kwargs": {"IntModel": "vip4", "ExtModel": "con2020", "CartIn": True, "CartOut": True}
+            "kwargs": {"IntModel": "vip4", "ExtModel": "Con2020", "CartIn": True, "CartOut": True}
         },
         "output": {
             "result": None  # to be filled in with expected result
@@ -52,7 +52,7 @@ test_input_data = [
         "function": "ModelField",
         "input": {
             "args": [x.tolist(), y.tolist(), z.tolist()],
-            "kwargs": {"IntModel": "vip4", "ExtModel": "con2020", "CartIn": True, "CartOut": False}
+            "kwargs": {"IntModel": "vip4", "ExtModel": "Con2020", "CartIn": True, "CartOut": False}
         },
         "output": {
             "result": None  # to be filled in with expected result
@@ -102,7 +102,7 @@ test_input_data = [
         "function": "ModelField",
         "input": {
             "args": [r.tolist(), theta.tolist(), phi.tolist()],
-            "kwargs": {"IntModel": "jrm09", "ExtModel": "con2020", "CartIn": False, "CartOut": False}
+            "kwargs": {"IntModel": "jrm09", "ExtModel": "Con2020", "CartIn": False, "CartOut": False}
         },
         "output": {
             "result": None  # to be filled in with expected result
@@ -112,7 +112,7 @@ test_input_data = [
         "function": "ModelField",
         "input": {
             "args": [r.tolist(), theta.tolist(), phi.tolist()],
-            "kwargs": {"IntModel": "jrm09", "ExtModel": "con2020", "CartIn": False, "CartOut": True}
+            "kwargs": {"IntModel": "jrm09", "ExtModel": "Con2020", "CartIn": False, "CartOut": True}
         },
         "output": {
             "result": None  # to be filled in with expected result
@@ -122,7 +122,7 @@ test_input_data = [
         "function": "ModelField",
         "input": {
             "args": [r.tolist(), theta.tolist(), phi.tolist()],
-            "kwargs": {"IntModel": "vip4", "ExtModel": "con2020", "CartIn": False, "CartOut": False}
+            "kwargs": {"IntModel": "vip4", "ExtModel": "Con2020", "CartIn": False, "CartOut": False}
         },
         "output": {
             "result": None  # to be filled in with expected result
@@ -132,7 +132,7 @@ test_input_data = [
         "function": "ModelField",
         "input": {
             "args": [r.tolist(), theta.tolist(), phi.tolist()],
-            "kwargs": {"IntModel": "vip4", "ExtModel": "con2020", "CartIn": False, "CartOut": True}
+            "kwargs": {"IntModel": "vip4", "ExtModel": "Con2020", "CartIn": False, "CartOut": True}
         },
         "output": {
             "result": None  # to be filled in with expected result
