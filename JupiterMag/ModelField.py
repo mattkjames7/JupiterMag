@@ -48,7 +48,13 @@ def ModelField(x, y, z, IntModel="jrm09", ExtModel="con2020", CartIn=True, CartO
     Bz = np.zeros(n,dtype=np.float64)
 
     IntModel_c = "none".encode('utf-8') if IntModel is None else IntModel.encode('utf-8')
-    ExtModel_c = "none".encode('utf-8') if ExtModel is None else ExtModel.encode('utf-8')
+
+    if ExtModel is None:
+        ExtModel_c = "none".encode('utf-8')
+    elif ExtModel.lower() == "con2020":
+        ExtModel_c = "Con2020".encode('utf-8')
+    else:
+        ExtModel_c = ExtModel.encode('utf-8')
     
     _CModelFieldArray(
         n,x,y,z,
