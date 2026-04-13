@@ -1,4 +1,4 @@
-__version__ = '1.4.1'
+__version__ = '1.4.2'
 
 from . import Globals
 from . import Con2020
@@ -7,3 +7,4 @@ from . import Tools
 from . import Internal
 from . import CoordConv
 from . import _CFunctions
+from .ModelField import ModelField

@@ -10,6 +10,23 @@ from ._CppLib import _GetLib
 
 libjupitermag = _GetLib()
 
+# combined internal + external model wrapper function
+_CModelFieldArray = libjupitermag.ModelFieldArray
+_CModelFieldArray.restype = None
+_CModelFieldArray.argtypes = [
+	c_int,		 # number of elements
+	c_double_ptr,  # x/r array
+	c_double_ptr,  # y/t array
+	c_double_ptr,  # z/p array
+	c_char_p,	  # internal model name
+	c_char_p,	  # external model name
+	c_bool,		# CartIn
+	c_bool,		# CartOut
+	c_double_ptr,  # Bx/Br output array
+	c_double_ptr,  # By/Bt output array
+	c_double_ptr,  # Bz/Bp output array
+]
+
 #field tracing routine
 _CTraceField = libjupitermag.TraceField
 _CTraceField.restype = None

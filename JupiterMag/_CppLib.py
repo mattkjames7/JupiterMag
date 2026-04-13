@@ -104,22 +104,20 @@ def _GetLib():
 	
 	try:
 		print('Importing Library')
-		lib = ctypes.CDLL(fname)
-		
-
-		if platform.system() == 'Darwin':
+		if platform.system() == 'Windows':
+			addWindowsSearchPaths()
+			lib = ctypes.CDLL(fname)
+		elif platform.system() == 'Darwin':
 			cwd = os.getcwd()
 			os.chdir(Globals.ModulePath + '__data/libjupitermag/lib/')
 			lib = ctypes.CDLL(_LibName(False))
 			os.chdir(cwd)
-		elif platform.system() == 'Windows':
-			addWindowsSearchPaths()
-			lib = ctypes.CDLL(_LibName(True))
 		else:
-			lib = ctypes.CDLL(_LibName(True))
+			lib = ctypes.CDLL(fname)
 		print('done')
-	except:
+	except Exception as e:
 		print("Importing C++ library failed. Please reinstall...")
+		print(e)
 		raise SystemExit
 		
 	return lib
