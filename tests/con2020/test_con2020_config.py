@@ -3,7 +3,6 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 
-
 FIELD_POSITIONS = (
     np.array([10.0, 15.0, -20.0, 30.0]),
     np.array([1.0, -3.0, 5.0, 7.0]),

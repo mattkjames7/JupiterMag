@@ -4,8 +4,7 @@ import sys
 import os
 
 sys.path.append("..")
-from common import get_model_field
-
+from common import get_model_field  # noqa: E402
 
 # 10 cartesian points in System III
 x = np.array([0, 5.0, 10.0, 20.0, 10.0, 10.0, 10.0, 10.0, 20.0, 20.0])
@@ -14,170 +13,218 @@ z = np.array([20.0, 0, 0, 0, 0, 0, 0, 5.0, 10.0, 20.0])
 
 # Spherical points in System III
 r = np.sqrt(x**2 + y**2 + z**2)
-theta = np.arccos(z/r)
-phi = np.arctan2(y,x)
+theta = np.arccos(z / r)
+phi = np.arctan2(y, x)
 
 test_input_data = [
     {
         "function": "ModelField",
         "input": {
             "args": [x.tolist(), y.tolist(), z.tolist()],
-            "kwargs": {"IntModel": "jrm09", "ExtModel": "Con2020", "CartIn": True, "CartOut": True}
+            "kwargs": {
+                "IntModel": "jrm09",
+                "ExtModel": "Con2020",
+                "CartIn": True,
+                "CartOut": True,
+            },
         },
-        "output": {
-            "result": None  # to be filled in with expected result
-        }
+        "output": {"result": None},  # to be filled in with expected result
     },
     {
         "function": "ModelField",
         "input": {
             "args": [x.tolist(), y.tolist(), z.tolist()],
-            "kwargs": {"IntModel": "jrm09", "ExtModel": "Con2020", "CartIn": True, "CartOut": False}
+            "kwargs": {
+                "IntModel": "jrm09",
+                "ExtModel": "Con2020",
+                "CartIn": True,
+                "CartOut": False,
+            },
         },
-        "output": {
-            "result": None  # to be filled in with expected result
-        }
+        "output": {"result": None},  # to be filled in with expected result
     },
     {
         "function": "ModelField",
         "input": {
             "args": [x.tolist(), y.tolist(), z.tolist()],
-            "kwargs": {"IntModel": "vip4", "ExtModel": "Con2020", "CartIn": True, "CartOut": True}
+            "kwargs": {
+                "IntModel": "vip4",
+                "ExtModel": "Con2020",
+                "CartIn": True,
+                "CartOut": True,
+            },
         },
-        "output": {
-            "result": None  # to be filled in with expected result
-        }
+        "output": {"result": None},  # to be filled in with expected result
     },
     {
         "function": "ModelField",
         "input": {
             "args": [x.tolist(), y.tolist(), z.tolist()],
-            "kwargs": {"IntModel": "vip4", "ExtModel": "Con2020", "CartIn": True, "CartOut": False}
+            "kwargs": {
+                "IntModel": "vip4",
+                "ExtModel": "Con2020",
+                "CartIn": True,
+                "CartOut": False,
+            },
         },
-        "output": {
-            "result": None  # to be filled in with expected result
-        }
+        "output": {"result": None},  # to be filled in with expected result
     },
     {
         "function": "ModelField",
         "input": {
             "args": [x.tolist(), y.tolist(), z.tolist()],
-            "kwargs": {"IntModel": "jrm09", "ExtModel": None, "CartIn": True, "CartOut": True}
+            "kwargs": {
+                "IntModel": "jrm09",
+                "ExtModel": None,
+                "CartIn": True,
+                "CartOut": True,
+            },
         },
-        "output": {
-            "result": None  # to be filled in with expected result
-        }
+        "output": {"result": None},  # to be filled in with expected result
     },
     {
         "function": "ModelField",
         "input": {
             "args": [x.tolist(), y.tolist(), z.tolist()],
-            "kwargs": {"IntModel": "jrm09", "ExtModel": None, "CartIn": True, "CartOut": False}
+            "kwargs": {
+                "IntModel": "jrm09",
+                "ExtModel": None,
+                "CartIn": True,
+                "CartOut": False,
+            },
         },
-        "output": {
-            "result": None  # to be filled in with expected result
-        }
+        "output": {"result": None},  # to be filled in with expected result
     },
     {
         "function": "ModelField",
         "input": {
             "args": [x.tolist(), y.tolist(), z.tolist()],
-            "kwargs": {"IntModel": "vip4", "ExtModel": None, "CartIn": True, "CartOut": True}
+            "kwargs": {
+                "IntModel": "vip4",
+                "ExtModel": None,
+                "CartIn": True,
+                "CartOut": True,
+            },
         },
-        "output": {
-            "result": None  # to be filled in with expected result
-        }
+        "output": {"result": None},  # to be filled in with expected result
     },
     {
         "function": "ModelField",
         "input": {
             "args": [x.tolist(), y.tolist(), z.tolist()],
-            "kwargs": {"IntModel": "vip4", "ExtModel": None, "CartIn": True, "CartOut": False}
+            "kwargs": {
+                "IntModel": "vip4",
+                "ExtModel": None,
+                "CartIn": True,
+                "CartOut": False,
+            },
         },
-        "output": {
-            "result": None  # to be filled in with expected result
-        }
+        "output": {"result": None},  # to be filled in with expected result
     },
     {
         "function": "ModelField",
         "input": {
             "args": [r.tolist(), theta.tolist(), phi.tolist()],
-            "kwargs": {"IntModel": "jrm09", "ExtModel": "Con2020", "CartIn": False, "CartOut": False}
+            "kwargs": {
+                "IntModel": "jrm09",
+                "ExtModel": "Con2020",
+                "CartIn": False,
+                "CartOut": False,
+            },
         },
-        "output": {
-            "result": None  # to be filled in with expected result
-        }
+        "output": {"result": None},  # to be filled in with expected result
     },
     {
         "function": "ModelField",
         "input": {
             "args": [r.tolist(), theta.tolist(), phi.tolist()],
-            "kwargs": {"IntModel": "jrm09", "ExtModel": "Con2020", "CartIn": False, "CartOut": True}
+            "kwargs": {
+                "IntModel": "jrm09",
+                "ExtModel": "Con2020",
+                "CartIn": False,
+                "CartOut": True,
+            },
         },
-        "output": {
-            "result": None  # to be filled in with expected result
-        }
+        "output": {"result": None},  # to be filled in with expected result
     },
     {
         "function": "ModelField",
         "input": {
             "args": [r.tolist(), theta.tolist(), phi.tolist()],
-            "kwargs": {"IntModel": "vip4", "ExtModel": "Con2020", "CartIn": False, "CartOut": False}
+            "kwargs": {
+                "IntModel": "vip4",
+                "ExtModel": "Con2020",
+                "CartIn": False,
+                "CartOut": False,
+            },
         },
-        "output": {
-            "result": None  # to be filled in with expected result
-        }
+        "output": {"result": None},  # to be filled in with expected result
     },
     {
         "function": "ModelField",
         "input": {
             "args": [r.tolist(), theta.tolist(), phi.tolist()],
-            "kwargs": {"IntModel": "vip4", "ExtModel": "Con2020", "CartIn": False, "CartOut": True}
+            "kwargs": {
+                "IntModel": "vip4",
+                "ExtModel": "Con2020",
+                "CartIn": False,
+                "CartOut": True,
+            },
         },
-        "output": {
-            "result": None  # to be filled in with expected result
-        }
+        "output": {"result": None},  # to be filled in with expected result
     },
     {
         "function": "ModelField",
         "input": {
             "args": [r.tolist(), theta.tolist(), phi.tolist()],
-            "kwargs": {"IntModel": "jrm09", "ExtModel": "none", "CartIn": False, "CartOut": False}
+            "kwargs": {
+                "IntModel": "jrm09",
+                "ExtModel": "none",
+                "CartIn": False,
+                "CartOut": False,
+            },
         },
-        "output": {
-            "result": None  # to be filled in with expected result
-        }
+        "output": {"result": None},  # to be filled in with expected result
     },
     {
         "function": "ModelField",
         "input": {
             "args": [r.tolist(), theta.tolist(), phi.tolist()],
-            "kwargs": {"IntModel": "jrm09", "ExtModel": "none", "CartIn": False, "CartOut": True}
+            "kwargs": {
+                "IntModel": "jrm09",
+                "ExtModel": "none",
+                "CartIn": False,
+                "CartOut": True,
+            },
         },
-        "output": {
-            "result": None  # to be filled in with expected result
-        }
+        "output": {"result": None},  # to be filled in with expected result
     },
     {
         "function": "ModelField",
         "input": {
             "args": [r.tolist(), theta.tolist(), phi.tolist()],
-            "kwargs": {"IntModel": "vip4", "ExtModel": "none", "CartIn": False, "CartOut": False}
+            "kwargs": {
+                "IntModel": "vip4",
+                "ExtModel": "none",
+                "CartIn": False,
+                "CartOut": False,
+            },
         },
-        "output": {
-            "result": None  # to be filled in with expected result
-        }
+        "output": {"result": None},  # to be filled in with expected result
     },
     {
         "function": "ModelField",
         "input": {
             "args": [r.tolist(), theta.tolist(), phi.tolist()],
-            "kwargs": {"IntModel": "vip4", "ExtModel": "none", "CartIn": False, "CartOut": True}
+            "kwargs": {
+                "IntModel": "vip4",
+                "ExtModel": "none",
+                "CartIn": False,
+                "CartOut": True,
+            },
         },
-        "output": {
-            "result": None  # to be filled in with expected result
-        }
-    }
+        "output": {"result": None},  # to be filled in with expected result
+    },
 ]
 
 
@@ -193,7 +240,11 @@ def save_modelfield_data(filename, overwrite=False):
         kwargs = test_case["input"]["kwargs"]
 
         bx, by, bz = get_model_field(*args, **kwargs)
-        test_case["output"]["result"] = [bx.tolist(), by.tolist(), bz.tolist()]  # convert to list for JSON serialization
+        test_case["output"]["result"] = [
+            bx.tolist(),
+            by.tolist(),
+            bz.tolist(),
+        ]  # convert to list for JSON serialization
 
     with open(filename, "w") as f:
         json.dump(test_input_data, f, indent=2)

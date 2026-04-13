@@ -1,6 +1,5 @@
 import JupiterMag as jm
 
-
 # Default configs are computed lazily to avoid mutating global C++
 # configuration state when this module is imported.
 _default_internal_cfgs = {}
@@ -49,7 +48,15 @@ def get_model_field(x, y, z, IntModel="jrm09", ExtModel="con2020", CartIn=True, 
         jm.Internal.Config(**IntModel_cfg)
         jm.Con2020.Config(**_get_default_con2020_cfg())
 
-        return jm.ModelField(x, y, z, IntModel=IntModel, ExtModel=ExtModel, CartIn=CartIn, CartOut=CartOut)
+        return jm.ModelField(
+            x,
+            y,
+            z,
+            IntModel=IntModel,
+            ExtModel=ExtModel,
+            CartIn=CartIn,
+            CartOut=CartOut,
+        )
     finally:
         jm.Internal.Config(**current_internal_cfg)
         jm.Con2020.Config(**current_con2020_cfg)
@@ -61,7 +68,7 @@ def get_internal_field(p0, p1, p2, model, CartIn=True, CartOut=True, MaxDeg=None
         "Model": model,
         "CartesianIn": CartIn,
         "CartesianOut": CartOut,
-        "Degree": MaxDeg if MaxDeg is not None else 0  # 0 will be treated as default by the C function
+        "Degree": (MaxDeg if MaxDeg is not None else 0),  # 0 will be treated as default by the C function
     }
     current_internal_cfg = jm.Internal.Config()
     try:
@@ -80,6 +87,7 @@ def get_con2020_field(p0, p1, p2, cfg):
     finally:
         jm.Con2020.Config(**current_con2020_cfg)
 
+
 def get_trace_footprints(x, y, z, internal_model, external_model, con2020_cfg):
 
     current_internal_cfg = jm.Internal.Config()
@@ -96,7 +104,7 @@ def get_trace_footprints(x, y, z, internal_model, external_model, con2020_cfg):
         fp_arrays = {
             "ionosphere": T.ionosphere,
             "surface": T.surface,
-            "equator": T.equator
+            "equator": T.equator,
         }
 
         out = {}

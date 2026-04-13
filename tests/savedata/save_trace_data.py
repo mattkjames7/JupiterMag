@@ -1,13 +1,11 @@
 import numpy as np
-import JupiterMag as jm
 import json
 import sys
 import os
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(CURRENT_DIR, ".."))
-from common import get_trace_footprints
-
+from common import get_trace_footprints  # noqa: E402
 
 internal_models = ["jrm09", "vip4"]
 external_models = ["Con2020", "none"]  # TODO: make model names case-insensitive
@@ -31,11 +29,13 @@ def generate_inputs():
             else:
                 eq_types = equation_types
             for eq_type in eq_types:
-                configs.append({
-                    "IntModel": int_model,
-                    "ExtModel": ext_model,
-                    "equation_type": eq_type
-                })
+                configs.append(
+                    {
+                        "IntModel": int_model,
+                        "ExtModel": ext_model,
+                        "equation_type": eq_type,
+                    }
+                )
 
     test_input_data = []
     for cfg in configs:
@@ -45,16 +45,23 @@ def generate_inputs():
             if cfg["equation_type"] == "integral" and r[i] > 2.0:
                 continue
 
-            test_input_data.append({
-                "function": "TraceFootprints",
-                "input": {
-                    "args": [x[i], y[i], z[i], cfg["IntModel"], cfg["ExtModel"], {"equation_type": cfg["equation_type"]}],
-                    "kwargs": {}
-                },
-                "output": {
-                    "result": None  # to be filled in with expected result
+            test_input_data.append(
+                {
+                    "function": "TraceFootprints",
+                    "input": {
+                        "args": [
+                            x[i],
+                            y[i],
+                            z[i],
+                            cfg["IntModel"],
+                            cfg["ExtModel"],
+                            {"equation_type": cfg["equation_type"]},
+                        ],
+                        "kwargs": {},
+                    },
+                    "output": {"result": None},  # to be filled in with expected result
                 }
-            })
+            )
 
     return test_input_data
 
@@ -71,13 +78,16 @@ def save_trace_data(filename, overwrite=False):
     for test_case in test_input_data:
 
         # calculate r
-        r = float(np.sqrt(test_case["input"]["args"][0]**2 + test_case["input"]["args"][1]**2 + test_case["input"]["args"][2]**2))
+        r = float(np.sqrt(test_case["input"]["args"][0] ** 2 + test_case["input"]["args"][1] ** 2 + test_case["input"]["args"][2] ** 2))
         r_str = f"{r:5.1f}"
 
         # get equation_type
         eq_type = test_case["input"]["args"][5]["equation_type"]
 
-        print(f"\rProcessing config {test_input_data.index(test_case)+1}/{len(test_input_data)} r={r_str} equation_type={eq_type:<8}", end="")
+        print(
+            f"\rProcessing config {test_input_data.index(test_case)+1}/{len(test_input_data)} r={r_str} equation_type={eq_type:<8}",
+            end="",
+        )
         args = test_case["input"]["args"]
         kwargs = test_case["input"]["kwargs"]
         result = get_trace_footprints(*args, **kwargs)

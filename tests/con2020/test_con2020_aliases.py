@@ -2,7 +2,6 @@ import JupiterMag as jm
 import numpy as np
 import pytest
 
-
 LONGNAME_ALIASES = {
     "mu_i_div2__current_parameter_nT": "mu_i",
     "i_rho__radial_current_MA": "i_rho",

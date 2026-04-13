@@ -2,7 +2,6 @@ import JupiterMag as jm
 import numpy as np
 import numpy.testing as npt
 
-
 FIELD_POSITIONS = (
     np.array([0.0, 5.0, 10.0, 20.0]),
     np.array([5.0, 0.0, 0.0, 0.0]),
@@ -20,7 +19,12 @@ def test_internal_field_maxdeg_override_does_not_modify_stored_config():
         for i in range(3):
             npt.assert_allclose(expected_default[i], expected_explicit[i], rtol=1e-10, atol=1e-10)
 
-        assert not np.allclose(np.column_stack(expected_default), np.column_stack(reduced), rtol=1e-12, atol=1e-12)
+        assert not np.allclose(
+            np.column_stack(expected_default),
+            np.column_stack(reduced),
+            rtol=1e-12,
+            atol=1e-12,
+        )
 
         cfg_after = jm.Internal.Config()
         assert int(cfg_after["Degree"]) == int(stored_cfg["Degree"])
