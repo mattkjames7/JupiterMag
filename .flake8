@@ -8,7 +8,7 @@ exclude =
     build,
     dist,
     JupiterMag.egg-info,
-    JupiterMag/__data/libjupitermag/lib
+    JupiterMag/__data/libjupitermag
 per-file-ignores =
     */__init__.py: F401
     JupiterMag/Con2020/Field.py: F401,E712
