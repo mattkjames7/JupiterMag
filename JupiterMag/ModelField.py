@@ -41,6 +41,13 @@ def ModelField(x, y, z, IntModel="jrm09", ExtModel="con2020", CartIn=True, CartO
     x = np.atleast_1d(x).astype(np.float64)
     y = np.atleast_1d(y).astype(np.float64)
     z = np.atleast_1d(z).astype(np.float64)
+
+    # Ensure all inputs are shape-compatible and contiguous before passing
+    # pointers and length to the C layer.
+    x, y, z = np.broadcast_arrays(x, y, z)
+    x = np.ascontiguousarray(x, dtype=np.float64).ravel()
+    y = np.ascontiguousarray(y, dtype=np.float64).ravel()
+    z = np.ascontiguousarray(z, dtype=np.float64).ravel()
     n = np.int32(x.size)
     
     Bx = np.zeros(n,dtype=np.float64)

@@ -55,3 +55,30 @@ def test_modelfield_scalar_inputs_return_length_one_arrays():
             assert component.shape == (1,)
     finally:
         jm.Internal.Config("default", Model="jrm09")
+
+
+def test_modelfield_broadcasts_scalar_with_vector_input():
+    default_cfg = jm.Internal.Config("default", Model="jrm09")
+
+    try:
+        jm.Internal.Config(**default_cfg)
+        x = np.array([10.0, 15.0, 20.0])
+        result = jm.ModelField(x, 0.0, 1.0, IntModel="jrm09", ExtModel=None)
+
+        assert len(result) == 3
+        for component in result:
+            assert isinstance(component, np.ndarray)
+            assert component.shape == (3,)
+    finally:
+        jm.Internal.Config("default", Model="jrm09")
+
+
+def test_modelfield_raises_on_incompatible_input_shapes():
+    with pytest.raises(ValueError):
+        jm.ModelField(
+            np.array([1.0, 2.0]),
+            np.array([3.0, 4.0, 5.0]),
+            np.array([6.0, 7.0]),
+            IntModel="jrm09",
+            ExtModel=None,
+        )
