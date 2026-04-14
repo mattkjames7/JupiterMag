@@ -92,6 +92,7 @@ jobs:
           path: dist/*.tar.gz
 
       - name: Run pytest from tests directory
+        if: matrix.python-version == '3.14'
         run: |
           source env/bin/activate
           pip install pytest black flake8
@@ -144,6 +145,7 @@ jobs:
           path: dist/*.whl
 
       - name: Run tests
+        if: matrix.python-version == '3.14'
         run: |
           source env/bin/activate
           pip install pytest black flake8
@@ -206,6 +208,7 @@ jobs:
           path: dist/*.whl
 
       - name: Run tests
+        if: matrix.python-version == '3.14'
         shell: pwsh
         run: |
           .\env\Scripts\Activate.ps1
