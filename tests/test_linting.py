@@ -5,7 +5,8 @@ import sys
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-LINT_EXCLUDES = "env,.venv,venv,JupiterMag/__data/libjupitermag"
+BLACK_EXCLUDES = r"(^|/)(env|\.venv|venv|build|dist|wheelhouse)(/|$)|(^|/)JupiterMag/__data/libjupitermag(/|$)"
+FLAKE8_EXCLUDES = "env,.venv,venv,build,dist,wheelhouse,JupiterMag/__data/libjupitermag"
 
 
 def _run_check(*args):
@@ -27,8 +28,16 @@ def _run_check(*args):
 
 
 def test_black_check_repo():
-    _run_check("black", "--line-length", "160", "--extend-exclude", LINT_EXCLUDES, "--check", ".")
+    _run_check(
+        "black",
+        "--line-length",
+        "160",
+        "--extend-exclude",
+        BLACK_EXCLUDES,
+        "--check",
+        ".",
+    )
 
 
 def test_flake8_repo():
-    _run_check("flake8", "--exclude", LINT_EXCLUDES, ".")
+    _run_check("flake8", "--exclude", FLAKE8_EXCLUDES, ".")
