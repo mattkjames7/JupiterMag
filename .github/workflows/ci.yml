@@ -211,13 +211,29 @@ jobs:
           $ninjaCandidates = @(Get-Command ninja.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
           $cmakeCandidates = @(Get-Command cmake.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
 
-          $gcc = $gccCandidates | Where-Object { $_ -match 'msys64[\\/]+ucrt64[\\/]+bin' } | Select-Object -First 1
-          $gxx = $gxxCandidates | Where-Object { $_ -match 'msys64[\\/]+ucrt64[\\/]+bin' } | Select-Object -First 1
-          $ninja = $ninjaCandidates | Where-Object { $_ -match 'msys64[\\/]+ucrt64[\\/]+bin' } | Select-Object -First 1
-          $cmake = $cmakeCandidates | Where-Object { $_ -match 'msys64[\\/]+ucrt64[\\/]+bin' } | Select-Object -First 1
+          Write-Host "gcc candidates: $($gccCandidates -join '; ')"
+          Write-Host "g++ candidates: $($gxxCandidates -join '; ')"
+          Write-Host "ninja candidates: $($ninjaCandidates -join '; ')"
+          Write-Host "cmake candidates: $($cmakeCandidates -join '; ')"
+
+          $gcc = $gccCandidates | Where-Object { $_ -match '[\\/](ucrt64|mingw64)[\\/]bin[\\/]' } | Select-Object -First 1
+          if (-not $gcc) { $gcc = $gccCandidates | Where-Object { $_ -match '(msys|mingw|ucrt)' } | Select-Object -First 1 }
+          if (-not $gcc) { $gcc = $gccCandidates | Select-Object -First 1 }
+
+          $gxx = $gxxCandidates | Where-Object { $_ -match '[\\/](ucrt64|mingw64)[\\/]bin[\\/]' } | Select-Object -First 1
+          if (-not $gxx) { $gxx = $gxxCandidates | Where-Object { $_ -match '(msys|mingw|ucrt)' } | Select-Object -First 1 }
+          if (-not $gxx) { $gxx = $gxxCandidates | Select-Object -First 1 }
+
+          $ninja = $ninjaCandidates | Where-Object { $_ -match '[\\/](ucrt64|mingw64)[\\/]bin[\\/]' } | Select-Object -First 1
+          if (-not $ninja) { $ninja = $ninjaCandidates | Where-Object { $_ -match '(msys|mingw|ucrt)' } | Select-Object -First 1 }
+          if (-not $ninja) { $ninja = $ninjaCandidates | Select-Object -First 1 }
+
+          $cmake = $cmakeCandidates | Where-Object { $_ -match '[\\/](ucrt64|mingw64)[\\/]bin[\\/]' } | Select-Object -First 1
+          if (-not $cmake) { $cmake = $cmakeCandidates | Where-Object { $_ -match '(msys|mingw|ucrt)' } | Select-Object -First 1 }
+          if (-not $cmake) { $cmake = $cmakeCandidates | Select-Object -First 1 }
 
           if (-not $gcc -or -not $gxx -or -not $ninja -or -not $cmake) {
-            throw "Could not locate MSYS2 UCRT64 gcc/g++/ninja/cmake in PATH"
+            throw "Could not locate gcc/g++/ninja/cmake in PATH"
           }
 
           $toolBin = Split-Path -Parent $gcc
