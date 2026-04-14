@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 from setuptools.command.build_py import build_py
 from setuptools.dist import Distribution
 import subprocess
@@ -6,7 +6,12 @@ import os
 import platform
 import shutil
 from pathlib import Path
-from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+
+try:
+    # Setuptools now provides bdist_wheel directly.
+    from setuptools.command.bdist_wheel import bdist_wheel as _bdist_wheel
+except ImportError:
+    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 
 class bdist_wheel(_bdist_wheel):
@@ -31,10 +36,22 @@ class CustomBuild(build_py):
     def target_build(self):
         root = Path(__file__).resolve().parent
         lib_root = root / "JupiterMag" / "__data" / "libjupitermag"
+        cmake_lists = lib_root / "CMakeLists.txt"
+
+        if cmake_lists.is_file():
+            self._build_with_cmake(lib_root)
+        else:
+            self._build_with_make(lib_root)
+
+        # Fail fast if the native library was not produced.
+        expected_lib = self._main_library_path(lib_root)
+        if not expected_lib.is_file():
+            raise RuntimeError(f"Native library was not built at {expected_lib}")
+
+    def _build_with_cmake(self, lib_root: Path):
         build_cmd = self.get_finalized_command("build")
         build_dir = Path(build_cmd.build_temp) / "libjupitermag-cmake"
         build_dir.mkdir(parents=True, exist_ok=True)
-        expected_lib = self._main_library_path(lib_root)
 
         cmake_configure = [
             "cmake",
@@ -73,9 +90,12 @@ class CustomBuild(build_py):
                 dll_in_lib.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(dll_in_bin, dll_in_lib)
 
-        # Fail fast if the native library was not produced.
-        if not expected_lib.is_file():
-            raise RuntimeError(f"Native library was not built at {expected_lib}")
+    def _build_with_make(self, lib_root: Path):
+        if platform.system() == "Windows":
+            subprocess.check_call(["make", "-C", str(lib_root), "windows"], stderr=subprocess.STDOUT)
+            return
+
+        subprocess.check_call(["make", "-C", str(lib_root), "all"], stderr=subprocess.STDOUT)
 
     def _main_library_path(self, lib_root: Path) -> Path:
         ext = {
@@ -106,67 +126,7 @@ class CustomBuild(build_py):
             shutil.copy2(src, dst)
 
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
-
-
-def getversion():
-    """
-    read the version string from __init__
-
-    """
-    # get the init file path
-    thispath = os.path.abspath(os.path.dirname(__file__)) + "/"
-    initfile = thispath + "JupiterMag/__init__.py"
-
-    # read the file in
-    f = open(initfile, "r", encoding="utf-8")
-    lines = f.readlines()
-    f.close()
-
-    # search for the version
-    version = "unknown"
-    for line in lines:
-        if "__version__" in line:
-            s = line.split("=")
-            version = s[-1].strip().strip('"').strip("'")
-            break
-    return version
-
-
-version = getversion()
-
 setup(
-    name="JupiterMag",
-    version=version,
-    author="Matthew Knight James",
-    author_email="mattkjames7@gmail.com",
-    description="Some magnetic field models for Jupiter",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    url="https://github.com/mattkjames7/JupiterMag",
-    packages=find_packages(),
-    package_data={
-        "JupiterMag": [
-            "__data/libjupitermag/lib/*.so",
-            "__data/libjupitermag/lib/*.dylib",
-            "__data/libjupitermag/lib/*.dll",
-        ]
-    },
     cmdclass={"build_py": CustomBuild, "bdist_wheel": bdist_wheel},
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: GNU General Public License (GPL)",
-        "Operating System :: POSIX",
-    ],
-    install_requires=[
-        "numpy",
-        "matplotlib",
-        "DateTimeTools",
-        "RecarrayTools",
-        "PyFileIO",
-        "scipy",
-    ],
-    include_package_data=False,
     distclass=BinaryDistribution,
 )

@@ -1,3 +1,50 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "JupiterMag"
+description = "Some magnetic field models for Jupiter"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+authors = [
+	{ name = "Matthew Knight James", email = "mattkjames7@gmail.com" },
+]
+classifiers = [
+	"Programming Language :: Python :: 3",
+	"Operating System :: POSIX",
+	"Operating System :: Microsoft :: Windows",
+	"Operating System :: MacOS",
+]
+dependencies = [
+	"numpy",
+	"matplotlib",
+	"DateTimeTools",
+	"RecarrayTools",
+	"PyFileIO",
+	"scipy",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/mattkjames7/JupiterMag"
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.dynamic]
+version = { attr = "JupiterMag.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["JupiterMag", "JupiterMag.*"]
+
+[tool.setuptools.package-data]
+JupiterMag = [
+	"__data/libjupitermag/lib/*.so",
+	"__data/libjupitermag/lib/*.dylib",
+	"__data/libjupitermag/lib/*.dll",
+]
+
 [tool.black]
 line-length = 160
 extend-exclude = '''
