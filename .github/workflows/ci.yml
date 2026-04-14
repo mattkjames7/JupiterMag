@@ -104,7 +104,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        macos-version: ["macos-14", "macos-14-intel", "macos-15", "macos-15-intel", "macos-26", "macos-26-intel"]
+        macos-version: ["macos-15", "macos-15-intel"]
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
