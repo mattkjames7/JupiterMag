@@ -1,10 +1,30 @@
-import numpy as np
 import os
-import subprocess
 import ctypes
 import platform
 import fnmatch
-from . import Globals
+
+_LIB_EXTENSIONS = {"Linux": "so", "Windows": "dll", "Darwin": "dylib"}
+
+
+def _lib_extension():
+    ext = _LIB_EXTENSIONS.get(platform.system())
+    if ext is None:
+        raise RuntimeError(f"The Operating System ({platform.system():s}) is not supported")
+    return ext
+
+
+def _lib_filename():
+    return f"libjupitermag.{_lib_extension()}"
+
+
+def _candidate_lib_paths():
+    root = os.path.join(os.path.dirname(__file__), "__data", "libjupitermag")
+    name = _lib_filename()
+    return [
+        os.path.join(root, "lib", name),
+        os.path.join(root, "lib64", name),
+        os.path.join(root, "bin", name),
+    ]
 
 
 def _LibPath():
@@ -17,21 +37,7 @@ def _LibPath():
             path to the library file.
 
     """
-    return os.path.dirname(__file__) + "/__data/libjupitermag/lib/"
-
-
-def _LibPaths():
-    """
-    Return candidate directories containing the native library.
-
-    Returns
-    =======
-    paths : list
-            Candidate directories.
-
-    """
-    root = os.path.dirname(__file__) + "/__data/libjupitermag/"
-    return [root + "lib/", root + "lib64/", root + "bin/"]
+    return os.path.join(os.path.dirname(__file__), "__data", "libjupitermag", "lib") + "/"
 
 
 def _LibName(WithPath=False):
@@ -49,47 +55,8 @@ def _LibName(WithPath=False):
             Library name.
 
     """
-    path = _LibPath() if WithPath else ""
-
-    osname = platform.uname().system
-    libexts = {"Linux": "so", "Windows": "dll", "Darwin": "dylib"}
-
-    ext = libexts[osname]
-
-    if ext is None:
-        raise Exception("The Operating System ({:s}) is not supported".format(osname))
-
-    return path + "libjupitermag." + ext
-
-
-def _LibNameCandidates(WithPath=False):
-    """
-    Return one or more candidate library names.
-
-    Inputs
-    ======
-    WithPath : bool
-            If True then full paths to candidate libraries are returned.
-
-    Returns
-    =======
-    out : list
-            Candidate library names or full paths.
-
-    """
-    osname = platform.uname().system
-    libexts = {"Linux": "so", "Windows": "dll", "Darwin": "dylib"}
-
-    ext = libexts[osname]
-
-    if ext is None:
-        raise Exception("The Operating System ({:s}) is not supported".format(osname))
-
-    name = "libjupitermag." + ext
-    if not WithPath:
-        return [name]
-
-    return [p + name for p in _LibPaths()]
+    name = _lib_filename()
+    return os.path.join(_LibPath(), name) if WithPath else name
 
 
 def _LibExists():
@@ -101,36 +68,18 @@ def _LibExists():
     exists : bool
             True if the file exists
     """
-    for name in _LibNameCandidates(True):
-        if os.path.isfile(name):
-            return True
-    return False
+    return any(os.path.isfile(path) for path in _candidate_lib_paths())
 
 
-def getWindowsSearchPaths():
-    """Scan the directories within PATH and look for std C++ libs"""
-    paths = os.getenv("PATH")
-    paths = paths.split(";")
-
+def _add_windows_search_paths():
+    """Scan PATH entries and add directories containing libstdc++ DLLs."""
     pattern = "libstdc++*.dll"
-
-    out = []
-    for p in paths:
-        if os.path.isdir(p):
-            files = os.listdir(p)
-            mch = any(fnmatch.fnmatch(f, pattern) for f in files)
-            if mch:
-                out.append(p)
-
-    return out
-
-
-def addWindowsSearchPaths():
-
-    paths = getWindowsSearchPaths()
-    for p in paths:
-        if os.path.isdir(p):
-            os.add_dll_directory(p)
+    for entry in os.getenv("PATH", "").split(";"):
+        if not os.path.isdir(entry):
+            continue
+        files = os.listdir(entry)
+        if any(fnmatch.fnmatch(name, pattern) for name in files):
+            os.add_dll_directory(entry)
 
 
 def _GetLib():
@@ -142,34 +91,30 @@ def _GetLib():
     lib : ctypes.CDLL
             C++ library containing the field model code
     """
-    fnames = _LibNameCandidates(True)
-    fname = None
-    for n in fnames:
-        if os.path.isfile(n):
-            fname = n
-            break
-    if fname is None:
-        fname = _LibName(True)
+    candidates = _candidate_lib_paths()
+    fname = next((path for path in candidates if os.path.isfile(path)), _LibName(True))
 
     try:
         print("Importing Library")
         if platform.system() == "Windows":
-            addWindowsSearchPaths()
+            _add_windows_search_paths()
             lib = ctypes.CDLL(fname)
         elif platform.system() == "Darwin":
             cwd = os.getcwd()
             loaded = False
-            for path in _LibPaths():
-                if not os.path.isdir(path):
+            for path in candidates:
+                lib_dir = os.path.dirname(path)
+                if not os.path.isdir(lib_dir):
                     continue
                 try:
-                    os.chdir(path)
+                    os.chdir(lib_dir)
                     lib = ctypes.CDLL(_LibName(False))
                     loaded = True
                     break
                 except Exception:
                     continue
-            os.chdir(cwd)
+                finally:
+                    os.chdir(cwd)
             if not loaded:
                 raise OSError("Unable to load native JupiterMag library")
         else:
