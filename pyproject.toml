@@ -52,5 +52,4 @@ JupiterMag = [
 [tool.black]
 line-length = 160
 extend-exclude = '''
-^/JupiterMag/__data/libjupitermag/lib/
-'''
+(^|/)JupiterMag/__data/libjupitermag/lib/|(^|/)(env|\.venv|venv)/'''
