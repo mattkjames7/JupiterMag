@@ -9,7 +9,6 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-latest
-    if: false
     strategy:
       fail-fast: false
       matrix:
@@ -98,11 +97,10 @@ jobs:
           source env/bin/activate
           pip install pytest black flake8
           cd tests
-          pytest -q  -k "not trace and not con2020_data"
+          pytest -q
 
   build-macos:
     runs-on: ${{ matrix.macos-version }}
-    if: false
     strategy:
       fail-fast: false
       matrix:
@@ -165,7 +163,7 @@ jobs:
           fi
           pip install pytest black flake8
           cd tests
-          pytest -q  -k "not trace and not con2020_data"
+          pytest -q
 
   build-windows:
     runs-on: windows-latest
@@ -278,4 +276,4 @@ jobs:
           .\env\Scripts\Activate.ps1
           Set-Location tests
           pip install pytest black flake8
-          pytest -q -k "not trace and not con2020_data"
+          pytest -q
