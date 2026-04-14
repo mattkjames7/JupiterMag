@@ -20,6 +20,20 @@ def _LibPath():
     return os.path.dirname(__file__) + "/__data/libjupitermag/lib/"
 
 
+def _LibPaths():
+    """
+    Return candidate directories containing the native library.
+
+    Returns
+    =======
+    paths : list
+            Candidate directories.
+
+    """
+    root = os.path.dirname(__file__) + "/__data/libjupitermag/"
+    return [root + "lib/", root + "lib64/", root + "bin/"]
+
+
 def _LibName(WithPath=False):
     """
     Return the name of the library.
@@ -35,10 +49,7 @@ def _LibName(WithPath=False):
             Library name.
 
     """
-    if WithPath:
-        path = _LibPath()
-    else:
-        path = ""
+    path = _LibPath() if WithPath else ""
 
     osname = platform.uname().system
     libexts = {"Linux": "so", "Windows": "dll", "Darwin": "dylib"}
@@ -51,6 +62,36 @@ def _LibName(WithPath=False):
     return path + "libjupitermag." + ext
 
 
+def _LibNameCandidates(WithPath=False):
+    """
+    Return one or more candidate library names.
+
+    Inputs
+    ======
+    WithPath : bool
+            If True then full paths to candidate libraries are returned.
+
+    Returns
+    =======
+    out : list
+            Candidate library names or full paths.
+
+    """
+    osname = platform.uname().system
+    libexts = {"Linux": "so", "Windows": "dll", "Darwin": "dylib"}
+
+    ext = libexts[osname]
+
+    if ext is None:
+        raise Exception("The Operating System ({:s}) is not supported".format(osname))
+
+    name = "libjupitermag." + ext
+    if not WithPath:
+        return [name]
+
+    return [p + name for p in _LibPaths()]
+
+
 def _LibExists():
     """
     Check if the library file exists.
@@ -60,7 +101,10 @@ def _LibExists():
     exists : bool
             True if the file exists
     """
-    return os.path.isfile(_LibName(True))
+    for name in _LibNameCandidates(True):
+        if os.path.isfile(name):
+            return True
+    return False
 
 
 def getWindowsSearchPaths():
@@ -98,7 +142,14 @@ def _GetLib():
     lib : ctypes.CDLL
             C++ library containing the field model code
     """
-    fname = _LibName(True)
+    fnames = _LibNameCandidates(True)
+    fname = None
+    for n in fnames:
+        if os.path.isfile(n):
+            fname = n
+            break
+    if fname is None:
+        fname = _LibName(True)
 
     try:
         print("Importing Library")
@@ -107,9 +158,20 @@ def _GetLib():
             lib = ctypes.CDLL(fname)
         elif platform.system() == "Darwin":
             cwd = os.getcwd()
-            os.chdir(Globals.ModulePath + "__data/libjupitermag/lib/")
-            lib = ctypes.CDLL(_LibName(False))
+            loaded = False
+            for path in _LibPaths():
+                if not os.path.isdir(path):
+                    continue
+                try:
+                    os.chdir(path)
+                    lib = ctypes.CDLL(_LibName(False))
+                    loaded = True
+                    break
+                except Exception:
+                    continue
             os.chdir(cwd)
+            if not loaded:
+                raise OSError("Unable to load native JupiterMag library")
         else:
             lib = ctypes.CDLL(fname)
         print("done")

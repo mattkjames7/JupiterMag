@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py
 from setuptools.dist import Distribution
 import subprocess
@@ -6,12 +6,7 @@ import os
 import platform
 import shutil
 from pathlib import Path
-
-try:
-    # Setuptools now provides bdist_wheel directly.
-    from setuptools.command.bdist_wheel import bdist_wheel as _bdist_wheel
-except ImportError:
-    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 
 class bdist_wheel(_bdist_wheel):
@@ -36,22 +31,10 @@ class CustomBuild(build_py):
     def target_build(self):
         root = Path(__file__).resolve().parent
         lib_root = root / "JupiterMag" / "__data" / "libjupitermag"
-        cmake_lists = lib_root / "CMakeLists.txt"
-
-        if cmake_lists.is_file():
-            self._build_with_cmake(lib_root)
-        else:
-            self._build_with_make(lib_root)
-
-        # Fail fast if the native library was not produced.
-        expected_lib = self._main_library_path(lib_root)
-        if not expected_lib.is_file():
-            raise RuntimeError(f"Native library was not built at {expected_lib}")
-
-    def _build_with_cmake(self, lib_root: Path):
         build_cmd = self.get_finalized_command("build")
         build_dir = Path(build_cmd.build_temp) / "libjupitermag-cmake"
         build_dir.mkdir(parents=True, exist_ok=True)
+        expected_lib = self._find_main_library(lib_root)
 
         cmake_configure = [
             "cmake",
@@ -90,14 +73,16 @@ class CustomBuild(build_py):
                 dll_in_lib.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(dll_in_bin, dll_in_lib)
 
-    def _build_with_make(self, lib_root: Path):
-        if platform.system() == "Windows":
-            subprocess.check_call(["make", "-C", str(lib_root), "windows"], stderr=subprocess.STDOUT)
-            return
+        # Normalize Linux manylinux installs that may use lib64/ so Python loader
+        # and package_data can continue reading from lib/.
+        self._ensure_main_library_in_lib(lib_root)
+        expected_lib = self._find_main_library(lib_root)
 
-        subprocess.check_call(["make", "-C", str(lib_root), "all"], stderr=subprocess.STDOUT)
+        # Fail fast if the native library was not produced.
+        if not expected_lib.is_file():
+            raise RuntimeError(f"Native library was not built at {expected_lib}")
 
-    def _main_library_path(self, lib_root: Path) -> Path:
+    def _main_library_candidates(self, lib_root: Path):
         ext = {
             "Windows": "dll",
             "Linux": "so",
@@ -105,28 +90,115 @@ class CustomBuild(build_py):
         }.get(platform.system())
         if ext is None:
             raise RuntimeError(f"Unsupported OS: {platform.system()}")
-        return lib_root / "lib" / f"libjupitermag.{ext}"
+
+        name = f"libjupitermag.{ext}"
+        return [
+            lib_root / "lib" / name,
+            lib_root / "lib64" / name,
+            lib_root / "bin" / name,
+        ]
+
+    def _find_main_library(self, lib_root: Path) -> Path:
+        candidates = self._main_library_candidates(lib_root)
+        for path in candidates:
+            if path.is_file():
+                return path
+        return candidates[0]
+
+    def _ensure_main_library_in_lib(self, lib_root: Path):
+        lib_path = lib_root / "lib"
+        preferred = self._main_library_candidates(lib_root)[0]
+        if preferred.is_file():
+            return
+
+        found = self._find_main_library(lib_root)
+        if found.is_file() and found.parent != lib_path:
+            lib_path.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(found, preferred)
 
     def copy_native_artifacts(self):
         """Copy generated native artifacts into build_lib for wheel packaging."""
         exts = {".dll", ".so", ".dylib"}
         root = Path(__file__).resolve().parent
         data_root = root / "JupiterMag" / "__data" / "libjupitermag"
-        src_root = data_root / "lib"
-        if not src_root.is_dir():
-            return
-
         dst_root = Path(self.build_lib) / "JupiterMag" / "__data" / "libjupitermag" / "lib"
-        for src in src_root.rglob("*"):
-            if not src.is_file() or src.suffix.lower() not in exts:
+        for src_root in (data_root / "lib", data_root / "lib64", data_root / "bin"):
+            if not src_root.is_dir():
                 continue
-            rel = src.relative_to(src_root)
-            dst = dst_root / rel
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(src, dst)
+            for src in src_root.rglob("*"):
+                if not src.is_file() or src.suffix.lower() not in exts:
+                    continue
+                rel = src.relative_to(src_root)
+                dst = dst_root / rel
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, dst)
 
+
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
+
+def getversion():
+    """
+    read the version string from __init__
+
+    """
+    # get the init file path
+    thispath = os.path.abspath(os.path.dirname(__file__)) + "/"
+    initfile = thispath + "JupiterMag/__init__.py"
+
+    # read the file in
+    f = open(initfile, "r", encoding="utf-8")
+    lines = f.readlines()
+    f.close()
+
+    # search for the version
+    version = "unknown"
+    for line in lines:
+        if "__version__" in line:
+            s = line.split("=")
+            version = s[-1].strip().strip('"').strip("'")
+            break
+    return version
+
+
+version = getversion()
 
 setup(
+    name="JupiterMag",
+    version=version,
+    author="Matthew Knight James",
+    author_email="mattkjames7@gmail.com",
+    description="Some magnetic field models for Jupiter",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/mattkjames7/JupiterMag",
+    packages=find_packages(),
+    package_data={
+        "JupiterMag": [
+            "__data/libjupitermag/lib/*.so",
+            "__data/libjupitermag/lib64/*.so",
+            "__data/libjupitermag/lib/*.dylib",
+            "__data/libjupitermag/lib64/*.dylib",
+            "__data/libjupitermag/lib/*.dll",
+            "__data/libjupitermag/lib64/*.dll",
+            "__data/libjupitermag/bin/*.dll",
+        ]
+    },
     cmdclass={"build_py": CustomBuild, "bdist_wheel": bdist_wheel},
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: GNU General Public License (GPL)",
+        "Operating System :: POSIX",
+    ],
+    install_requires=[
+        "numpy",
+        "matplotlib",
+        "DateTimeTools",
+        "RecarrayTools",
+        "PyFileIO",
+        "scipy",
+    ],
+    include_package_data=False,
     distclass=BinaryDistribution,
 )

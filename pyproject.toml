@@ -41,8 +41,12 @@ include = ["JupiterMag", "JupiterMag.*"]
 [tool.setuptools.package-data]
 JupiterMag = [
 	"__data/libjupitermag/lib/*.so",
+	"__data/libjupitermag/lib64/*.so",
 	"__data/libjupitermag/lib/*.dylib",
+	"__data/libjupitermag/lib64/*.dylib",
 	"__data/libjupitermag/lib/*.dll",
+	"__data/libjupitermag/lib64/*.dll",
+	"__data/libjupitermag/bin/*.dll",
 ]
 
 [tool.black]
