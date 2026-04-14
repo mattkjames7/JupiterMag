@@ -1,13 +1,18 @@
 name: CI
 
 on:
+  workflow_dispatch:
+  workflow_call:
   pull_request:
     branches: [main]
-  workflow_dispatch:
 
 jobs:
-  test-linux:
+  build-linux:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - name: Checkout repository
@@ -18,34 +23,88 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
 
-      - name: Install system dependencies
+      - name: Select manylinux Python tag
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake g++ ninja-build
+          case "${{ matrix.python-version }}" in
+            "3.10") echo "MANYLINUX_PYTAG=cp310-cp310" >> "$GITHUB_ENV" ;;
+            "3.11") echo "MANYLINUX_PYTAG=cp311-cp311" >> "$GITHUB_ENV" ;;
+            "3.12") echo "MANYLINUX_PYTAG=cp312-cp312" >> "$GITHUB_ENV" ;;
+            "3.13") echo "MANYLINUX_PYTAG=cp313-cp313" >> "$GITHUB_ENV" ;;
+            "3.14") echo "MANYLINUX_PYTAG=cp314-cp314" >> "$GITHUB_ENV" ;;
+            *)
+              echo "Unsupported python-version: ${{ matrix.python-version }}"
+              exit 1
+              ;;
+          esac
 
-      - name: Build source distribution
+      - name: Build and repair wheel in manylinux container
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install build
-          python -m build --sdist
+          rm -rf dist wheelhouse
+          mkdir -p dist wheelhouse
+          docker run --rm \
+            -e PYTAG="${MANYLINUX_PYTAG}" \
+            -v "${{ github.workspace }}:/io" \
+            -w /io \
+            quay.io/pypa/manylinux_2_34:latest \
+            /bin/bash -lc '
+              set -euo pipefail
+              if ! command -v cmake >/dev/null 2>&1; then
+                dnf install -y cmake gcc gcc-c++ make ninja-build
+              fi
+              "/opt/python/${PYTAG}/bin/python" -m pip install --upgrade pip setuptools wheel build auditwheel
+              "/opt/python/${PYTAG}/bin/python" -m build --wheel -o dist
+              auditwheel repair dist/*.whl -w wheelhouse
+            '
 
-      - name: Create venv and install package
+      - name: Install wheel
         run: |
-          python -m venv .venv
-          . .venv/bin/activate
-          python -m pip install --upgrade pip
-          python -m pip install pytest black flake8 dist/*.tar.gz
+          python3 -m venv env
+          source env/bin/activate
+          python -m pip install --upgrade wheelhouse/*.whl
+
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: wheels-linux-py${{ matrix.python-version }}
+          path: wheelhouse/*.whl
+
+      - name: Build sdist (Linux 3.14)
+        if: matrix.python-version == '3.14'
+        run: |
+          docker run --rm \
+            -e PYTAG="${MANYLINUX_PYTAG}" \
+            -v "${{ github.workspace }}:/io" \
+            -w /io \
+            quay.io/pypa/manylinux_2_34:latest \
+            /bin/bash -lc '
+              set -euo pipefail
+              "/opt/python/${PYTAG}/bin/python" -m pip install --upgrade pip setuptools wheel build
+              "/opt/python/${PYTAG}/bin/python" -m build --sdist -o dist
+            '
+
+      - name: Upload sdist artifact (Linux 3.14)
+        if: matrix.python-version == '3.14'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sdist-linux-py${{ matrix.python-version }}
+          path: dist/*.tar.gz
 
       - name: Run pytest from tests directory
         run: |
-          . .venv/bin/activate
+          source env/bin/activate
+          pip install pytest black flake8
           cd tests
           pytest -q
 
-  test-macos:
-    runs-on: macos-latest
+  build-macos:
+    runs-on: ${{ matrix.macos-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        macos-version: ["macos-14", "macos-14-intel", "macos-15", "macos-15-intel", "macos-26", "macos-26-intel"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - name: Checkout repository
@@ -56,34 +115,47 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
 
-      - name: Install system dependencies
+      - name: Install build tools
         run: |
           brew update
-          brew install libtool
+          brew install gcc cmake ninja libtool
+          python3 -m venv env
+          source env/bin/activate
+          python -m pip install --upgrade pip setuptools wheel build
 
-      - name: Build source distribution
+      - name: Build wheel
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install build
-          python -m build --sdist
+          source env/bin/activate
+          rm -rf dist
+          mkdir -p dist
+          python -m build --wheel -o dist || python setup.py bdist_wheel -d dist
 
-      - name: Create venv and install package
+      - name: Install wheel
         run: |
-          python -m venv .venv
-          . .venv/bin/activate
-          python -m pip install --upgrade pip
-          python -m pip install pytest black flake8 dist/*.tar.gz
+          source env/bin/activate
+          python -m pip install --upgrade dist/*.whl
 
-      - name: Run pytest from tests directory
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: wheels-${{ matrix.macos-version }}-py${{ matrix.python-version }}
+          path: dist/*.whl
+
+      - name: Run tests
         run: |
-          . .venv/bin/activate
+          source env/bin/activate
+          pip install pytest black flake8
           cd tests
           pytest -q
 
-  test-windows:
+  build-windows:
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - name: Checkout repository
@@ -94,7 +166,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
 
       - name: Set up MSYS2 toolchain
         uses: msys2/setup-msys2@cafece8e6baf9247cf9b1bf95097b0b983cc558d # v2.31.0
@@ -104,26 +176,39 @@ jobs:
           update: true
           install: >-
             mingw-w64-ucrt-x86_64-gcc
-            make
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
 
-      - name: Build source distribution
+      - name: Create venv
         shell: pwsh
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install build
-          python -m build --sdist
+          python -m venv env
 
-      - name: Create venv and install package
+      - name: Build wheel
         shell: pwsh
         run: |
-          python -m venv .venv
-          .\.venv\Scripts\Activate.ps1
-          python -m pip install --upgrade pip
-          python -m pip install pytest black flake8 (Get-ChildItem dist\*.tar.gz | Select-Object -First 1).FullName
+          .\env\Scripts\Activate.ps1
+          pip install --upgrade build wheel
+          python -m build --wheel -o dist || python setup.py bdist_wheel
 
-      - name: Run pytest from tests directory
+      - name: Install wheel
         shell: pwsh
         run: |
-          .\.venv\Scripts\Activate.ps1
+          .\env\Scripts\Activate.ps1
+          $wheel = Get-ChildItem -Path dist -Filter *.whl | Select-Object -First 1
+          if (-not $wheel) { throw "No wheel found in dist/" }
+          python -m pip install --upgrade $wheel.FullName
+
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: wheels-windows-py${{ matrix.python-version }}
+          path: dist/*.whl
+
+      - name: Run tests
+        shell: pwsh
+        run: |
+          .\env\Scripts\Activate.ps1
           Set-Location tests
+          pip install pytest black flake8
           pytest -q
