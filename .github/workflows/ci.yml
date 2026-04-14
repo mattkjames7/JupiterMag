@@ -130,7 +130,7 @@ jobs:
           source env/bin/activate
           rm -rf dist
           mkdir -p dist
-          python -m build --wheel -o dist || python setup.py bdist_wheel -d dist
+          python -m build --wheel -o dist
 
       - name: Install wheel
         run: |
@@ -189,7 +189,7 @@ jobs:
         run: |
           .\env\Scripts\Activate.ps1
           pip install --upgrade build wheel
-          python -m build --wheel -o dist || python setup.py bdist_wheel
+          python -m build --wheel -o dist
 
       - name: Install wheel
         shell: pwsh

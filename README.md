@@ -81,12 +81,15 @@ cd JupiterMag
 #update the submodule
 git submodule update --init --recursive
 
+#install the build frontend
+python3 -m pip install --upgrade build
+
 #build the source distribution file
-python3 setup.py sdist
+python3 -m build --sdist
 #the output of the previous command should give some indication of 
 #the current version number. If it's not obvious then do
 # $ls dist/ to see what the latest version is
-pip3 install dist/JupiterMag-1.2.0.tar.gz --user
+pip3 install dist/jupitermag-1.2.0.tar.gz --user
 ```
 
 I recommend installing `gcc` >= 9.3 (that's what this is tested with, earlier versions may not support the required features of C++).
