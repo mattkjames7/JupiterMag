@@ -129,11 +129,12 @@ jobs:
       - name: Build wheel
         run: |
           source env/bin/activate
-          export JUPITERMAG_MACOS_ARCH="$(uname -m)"
+          export CMAKE_OSX_ARCHITECTURES="$(uname -m)"
+          export CMAKE_OSX_DEPLOYMENT_TARGET="11.0"
           export MACOSX_DEPLOYMENT_TARGET="11.0"
           rm -rf dist
           mkdir -p dist
-          python -m build --wheel -o dist || python setup.py bdist_wheel -d dist
+          python -m build --wheel -o dist
           ls -1 dist
           if ls dist/*universal2*.whl >/dev/null 2>&1; then
             echo "Unexpected universal2 wheel produced"
@@ -203,7 +204,7 @@ jobs:
         run: |
           .\env\Scripts\Activate.ps1
           pip install --upgrade build wheel
-          python -m build --wheel -o dist || python setup.py bdist_wheel
+          python -m build --wheel -o dist
 
       - name: Install wheel
         shell: pwsh
