@@ -206,17 +206,39 @@ jobs:
         run: |
           .\env\Scripts\Activate.ps1
           pip install --upgrade build wheel
-          $gcc = (Get-Command gcc.exe -ErrorAction Stop).Source
-          $gxx = (Get-Command g++.exe -ErrorAction Stop).Source
-          $ninja = (Get-Command ninja.exe -ErrorAction Stop).Source
-          $cmake = (Get-Command cmake.exe -ErrorAction Stop).Source
+          $gccCandidates = @(Get-Command gcc.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
+          $gxxCandidates = @(Get-Command g++.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
+          $ninjaCandidates = @(Get-Command ninja.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
+          $cmakeCandidates = @(Get-Command cmake.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
+
+          $gcc = $gccCandidates | Where-Object { $_ -match 'msys64[\\/]+ucrt64[\\/]+bin' } | Select-Object -First 1
+          $gxx = $gxxCandidates | Where-Object { $_ -match 'msys64[\\/]+ucrt64[\\/]+bin' } | Select-Object -First 1
+          $ninja = $ninjaCandidates | Where-Object { $_ -match 'msys64[\\/]+ucrt64[\\/]+bin' } | Select-Object -First 1
+          $cmake = $cmakeCandidates | Where-Object { $_ -match 'msys64[\\/]+ucrt64[\\/]+bin' } | Select-Object -First 1
+
+          if (-not $gcc -or -not $gxx -or -not $ninja -or -not $cmake) {
+            throw "Could not locate MSYS2 UCRT64 gcc/g++/ninja/cmake in PATH"
+          }
+
+          $toolBin = Split-Path -Parent $gcc
+          $env:PATH = "$toolBin;$env:PATH"
+
+          $gccForCmake = $gcc -replace '\\', '/'
+          $gxxForCmake = $gxx -replace '\\', '/'
+
           $env:CMAKE_GENERATOR = "Ninja"
           $env:CC = $gcc
           $env:CXX = $gxx
-          $env:CMAKE_ARGS = "-DCMAKE_C_COMPILER:FILEPATH=$gcc -DCMAKE_CXX_COMPILER:FILEPATH=$gxx -DCMAKE_MAKE_PROGRAM:FILEPATH=$ninja"
+          $env:CMAKE_ARGS = "-DCMAKE_C_COMPILER:FILEPATH=$gccForCmake -DCMAKE_CXX_COMPILER:FILEPATH=$gxxForCmake"
+
+          Write-Host "Using gcc: $gcc"
+          Write-Host "Using g++: $gxx"
+          Write-Host "Using ninja: $ninja"
+          Write-Host "Using cmake: $cmake"
           & $gcc --version
           & $gxx --version
           & $cmake --version
+          & $ninja --version
           python -m build --wheel -o dist
 
       - name: Install wheel
