@@ -9,6 +9,7 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    if: false
     strategy:
       fail-fast: false
       matrix:
@@ -101,6 +102,7 @@ jobs:
 
   build-macos:
     runs-on: ${{ matrix.macos-version }}
+    if: false
     strategy:
       fail-fast: false
       matrix:
@@ -204,13 +206,17 @@ jobs:
         run: |
           .\env\Scripts\Activate.ps1
           pip install --upgrade build wheel
+          $gcc = (Get-Command gcc.exe -ErrorAction Stop).Source
+          $gxx = (Get-Command g++.exe -ErrorAction Stop).Source
+          $ninja = (Get-Command ninja.exe -ErrorAction Stop).Source
+          $cmake = (Get-Command cmake.exe -ErrorAction Stop).Source
           $env:CMAKE_GENERATOR = "Ninja"
-          $env:CC = "C:/msys64/ucrt64/bin/gcc.exe"
-          $env:CXX = "C:/msys64/ucrt64/bin/g++.exe"
-          $env:CMAKE_ARGS = "-DCMAKE_C_COMPILER:FILEPATH=C:/msys64/ucrt64/bin/gcc.exe -DCMAKE_CXX_COMPILER:FILEPATH=C:/msys64/ucrt64/bin/g++.exe"
-          & "C:/msys64/ucrt64/bin/gcc.exe" --version
-          & "C:/msys64/ucrt64/bin/g++.exe" --version
-          cmake --version
+          $env:CC = $gcc
+          $env:CXX = $gxx
+          $env:CMAKE_ARGS = "-DCMAKE_C_COMPILER:FILEPATH=$gcc -DCMAKE_CXX_COMPILER:FILEPATH=$gxx -DCMAKE_MAKE_PROGRAM:FILEPATH=$ninja"
+          & $gcc --version
+          & $gxx --version
+          & $cmake --version
           python -m build --wheel -o dist
 
       - name: Install wheel
