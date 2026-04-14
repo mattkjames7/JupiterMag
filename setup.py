@@ -5,6 +5,7 @@ import subprocess
 import os
 import platform
 import shutil
+import re
 from pathlib import Path
 from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
@@ -14,6 +15,19 @@ class bdist_wheel(_bdist_wheel):
         super().finalize_options()
         # Mark wheel as platform-specific because it contains native binaries.
         self.root_is_pure = False
+
+        if platform.system() == "Darwin":
+            arch = _get_macos_arch()
+            if arch in ("arm64", "x86_64"):
+                deployment = os.environ.get("MACOSX_DEPLOYMENT_TARGET", "").strip()
+                if deployment and "." in deployment:
+                    major, minor = deployment.split(".", 1)
+                else:
+                    major = platform.mac_ver()[0].split(".")[0] or "14"
+                    minor = "0"
+                self.plat_name = f"macosx-{major}.{minor}-{arch}"
+                # Ensure wheel uses the overridden platform tag.
+                self.plat_name_supplied = True
 
 
 class BinaryDistribution(Distribution):
@@ -46,6 +60,14 @@ class CustomBuild(build_py):
             "-DBUILD_SHARED_LIBS=ON",
             "-DLIBJUPITERMAG_BUILD_TESTS=OFF",
         ]
+
+        if platform.system() == "Darwin":
+            arch = _get_macos_arch()
+            if arch:
+                cmake_configure += [f"-DCMAKE_OSX_ARCHITECTURES={arch}"]
+            deployment = os.environ.get("MACOSX_DEPLOYMENT_TARGET", "").strip()
+            if deployment:
+                cmake_configure += [f"-DCMAKE_OSX_DEPLOYMENT_TARGET={deployment}"]
 
         # Prefer Ninja when available, unless caller has explicitly selected
         # a CMake generator.
@@ -160,6 +182,27 @@ def getversion():
             version = s[-1].strip().strip('"').strip("'")
             break
     return version
+
+
+def _get_macos_arch():
+    """Return a single target macOS architecture when one is explicitly set."""
+    arch = os.environ.get("JUPITERMAG_MACOS_ARCH", "").strip()
+    if arch:
+        return arch
+
+    cmake_arch = os.environ.get("CMAKE_OSX_ARCHITECTURES", "").strip()
+    if cmake_arch:
+        parts = [p.strip() for p in cmake_arch.split(";") if p.strip()]
+        if len(parts) == 1:
+            return parts[0]
+
+    archflags = os.environ.get("ARCHFLAGS", "")
+    matches = re.findall(r"-arch\s+([A-Za-z0-9_]+)", archflags)
+    unique = sorted(set(matches))
+    if len(unique) == 1:
+        return unique[0]
+
+    return None
 
 
 version = getversion()
