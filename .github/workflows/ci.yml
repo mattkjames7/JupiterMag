@@ -121,7 +121,7 @@ jobs:
       - name: Install build tools
         run: |
           brew update
-          brew install gcc cmake ninja libtool
+          brew install libtool
           python3 -m venv env
           source env/bin/activate
           python -m pip install --upgrade pip setuptools wheel build
