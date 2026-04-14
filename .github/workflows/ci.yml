@@ -204,6 +204,13 @@ jobs:
         run: |
           .\env\Scripts\Activate.ps1
           pip install --upgrade build wheel
+          $env:CMAKE_GENERATOR = "Ninja"
+          $env:CC = "C:/msys64/ucrt64/bin/gcc.exe"
+          $env:CXX = "C:/msys64/ucrt64/bin/g++.exe"
+          $env:CMAKE_ARGS = "-DCMAKE_C_COMPILER:FILEPATH=C:/msys64/ucrt64/bin/gcc.exe -DCMAKE_CXX_COMPILER:FILEPATH=C:/msys64/ucrt64/bin/g++.exe"
+          & "C:/msys64/ucrt64/bin/gcc.exe" --version
+          & "C:/msys64/ucrt64/bin/g++.exe" --version
+          cmake --version
           python -m build --wheel -o dist
 
       - name: Install wheel

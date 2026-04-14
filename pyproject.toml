@@ -43,5 +43,5 @@ CMAKE_INSTALL_INCLUDEDIR = "JupiterMag/__data/libjupitermag/include"
 [tool.black]
 line-length = 160
 extend-exclude = '''
-(^|/)JupiterMag/__data/libjupitermag/lib/|(^|/)(env|\.venv|venv)/
+(^|/)JupiterMag/__data/libjupitermag/lib/|(^|/)(env|\.venv|venv|build|dist|wheelhouse)/
 '''
