@@ -64,6 +64,12 @@ jobs:
           source env/bin/activate
           python -m pip install --upgrade wheelhouse/*.whl
 
+      - name: Smoke test import (non-3.14)
+        if: matrix.python-version != '3.14'
+        run: |
+          source env/bin/activate
+          python -c "import JupiterMag; print(JupiterMag.__version__)"
+
       - name: Upload wheel artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -145,6 +151,12 @@ jobs:
         run: |
           source env/bin/activate
           python -m pip install --upgrade dist/*.whl
+
+      - name: Smoke test import (non-3.14)
+        if: matrix.python-version != '3.14'
+        run: |
+          source env/bin/activate
+          python -c "import JupiterMag; print(JupiterMag.__version__)"
 
       - name: Upload wheel artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -262,6 +274,13 @@ jobs:
           $wheel = Get-ChildItem -Path dist -Filter *.whl | Select-Object -First 1
           if (-not $wheel) { throw "No wheel found in dist/" }
           python -m pip install --upgrade $wheel.FullName
+
+      - name: Smoke test import (non-3.14)
+        if: matrix.python-version != '3.14'
+        shell: pwsh
+        run: |
+          .\env\Scripts\Activate.ps1
+          python -c "import JupiterMag; print(JupiterMag.__version__)"
 
       - name: Upload wheel artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
