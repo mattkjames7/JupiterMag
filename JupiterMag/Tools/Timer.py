@@ -34,7 +34,7 @@ def Timer():
 
 def TimeN(n):
     """
-    time how long a model takes to calcualte vectors
+    time how long a model takes to calculate vectors
 
     """
     ntest = 5

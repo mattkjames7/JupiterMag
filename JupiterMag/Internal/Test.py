@@ -24,7 +24,7 @@ def Test(Model="JRM09", R=0.85, MaxDeg=None, Comp="r", scale=[-60.0, 60.0], leve
         import matplotlib.colors as colors
         from mpl_toolkits.axes_grid1 import make_axes_locatable
     except:
-        raise SystemError('This function requires "matplotlib" to be instaled')
+        raise SystemError('This function requires "matplotlib" to be installed')
 
     # get the coordinates to calculate the model at
     lat = np.linspace(-90, 90, 181)
