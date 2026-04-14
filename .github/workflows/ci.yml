@@ -155,6 +155,11 @@ jobs:
         if: matrix.python-version == '3.14'
         run: |
           source env/bin/activate
+          if [[ "$(uname -m)" == "x86_64" ]]; then
+            # DateTimeTools may resolve to an arm64 wheel on Intel runners.
+            # Rebuild from source to guarantee a native x86_64 libdatetime.dylib.
+            python -m pip install --force-reinstall --no-binary DateTimeTools DateTimeTools
+          fi
           pip install pytest black flake8
           cd tests
           pytest -q  -k "not trace and not con2020_data"
