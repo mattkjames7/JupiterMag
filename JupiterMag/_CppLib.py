@@ -4,6 +4,7 @@ import platform
 import fnmatch
 
 _LIB_EXTENSIONS = {"Linux": "so", "Windows": "dll", "Darwin": "dylib"}
+_WINDOWS_DLL_DIR_HANDLES = {}
 
 
 def _lib_extension():
@@ -77,9 +78,13 @@ def _add_windows_search_paths():
     for entry in os.getenv("PATH", "").split(";"):
         if not os.path.isdir(entry):
             continue
-        files = os.listdir(entry)
+        try:
+            files = os.listdir(entry)
+        except OSError:
+            continue
         if any(fnmatch.fnmatch(name, pattern) for name in files):
-            os.add_dll_directory(entry)
+            if entry not in _WINDOWS_DLL_DIR_HANDLES:
+                _WINDOWS_DLL_DIR_HANDLES[entry] = os.add_dll_directory(entry)
 
 
 def _GetLib():
