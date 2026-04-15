@@ -45,17 +45,41 @@ all of which would be installed automatically if using `pip`.
 
 During installation, the C++ library which this module uses will be compiled.
 
+If you are installing from a prebuilt wheel, you usually do not need a local C/C++ toolchain.
+If you are installing from source (sdist or local checkout), you will need the build tools below.
+
 ### 1.1 Linux
 
-JupiterMag was built and tested primarily using Linux Mint 20.3 (based on Ubuntu 20.04/Debian). To rebuild the code, ensure that `g++`, `make` and `ld` are installed.
+JupiterMag was built and tested primarily using Linux.
+For source builds, install:
+
+- `gcc`/`g++`
+- `cmake`
+- `ninja` (recommended)
+- Python build frontend: `python -m pip install build`
 
 ### 1.2 Windows
 
-This has been tested on Windows 10 (64-bit), other versions may also work. Requires `g++` and `ld` to work (these can be provided by TDM-GCC). This may or may not work with other compilers installed.
+This has been tested on Windows (64-bit).
+For source builds, use an MSYS2 MinGW/UCRT toolchain, e.g. install:
+
+- `mingw-w64-ucrt-x86_64-gcc`
+- `mingw-w64-ucrt-x86_64-cmake`
+- `mingw-w64-ucrt-x86_64-ninja`
+- Python build frontend: `python -m pip install build`
+
+MSVC/Visual Studio compilers are not currently the preferred build path for this project.
 
 ### 1.3 MacOS
 
-This module has been tested on MacOS 11 Big Sur. It requires `g++`, `make` and `libtool` to recompile (provided by Xcode).
+This module has been tested on macOS 11+.
+For source builds, install:
+
+- Xcode Command Line Tools (for `clang`/`clang++`)
+- `cmake`
+- `ninja` (recommended)
+- `libtool`
+- Python build frontend: `python -m pip install build`
 
 ## 2 Installation
 
@@ -68,10 +92,14 @@ pip3 install JupiterMag --user
 Download the latest release (on the right -> if you're viewing this on GitHub), then from within the directory where it was saved:
 
 ```bash
-pip3 install JupiterMag-1.2.0.tar.gz --user
+#preferred: binary wheel (no local C++ build required)
+pip3 install jupitermag-<version>-<python>-<abi>-<platform>.whl --user
+
+#source distribution (builds native code locally)
+pip3 install jupitermag-<version>.tar.gz --user
 ```
 
-Or using this repo (replace "1.2.0" with the current version number):
+Or build from this repo using the `pyproject.toml` build backend (replace `<version>` with the current version number):
 
 ```bash
 #pull this repo
@@ -82,11 +110,21 @@ cd JupiterMag
 git submodule update --init --recursive
 
 #build the source distribution file
-python3 setup.py sdist
+python3 -m pip install --upgrade build
+python3 -m build --sdist
+
+#build a binary wheel
+python3 -m build --wheel
+
 #the output of the previous command should give some indication of 
 #the current version number. If it's not obvious then do
 # $ls dist/ to see what the latest version is
-pip3 install dist/JupiterMag-1.2.0.tar.gz --user
+
+#install from wheel (preferred)
+pip3 install dist/jupitermag-<version>-<python>-<abi>-<platform>.whl --user
+
+#or install from source distribution
+pip3 install dist/jupitermag-<version>.tar.gz --user
 ```
 
 I recommend installing `gcc` >= 9.3 (that's what this is tested with, earlier versions may not support the required features of C++).

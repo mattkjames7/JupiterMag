@@ -1,3 +1,4 @@
 import numpy as np
 import os
-ModulePath = os.path.dirname(__file__) + '/'
+
+ModulePath = os.path.dirname(__file__) + "/"

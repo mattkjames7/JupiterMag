@@ -1,0 +1,47 @@
+[build-system]
+requires = ["scikit-build-core>=0.11"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "JupiterMag"
+version = "1.5.0"
+description = "Some magnetic field models for Jupiter"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+authors = [
+	{ name = "Matthew Knight James", email = "mattkjames7@gmail.com" },
+]
+classifiers = [
+	"Programming Language :: Python :: 3",
+	"Operating System :: POSIX",
+	"Operating System :: Microsoft :: Windows",
+	"Operating System :: MacOS",
+]
+dependencies = [
+	"numpy",
+	"matplotlib",
+	"DateTimeTools",
+	"RecarrayTools",
+	"PyFileIO",
+	"scipy",
+]
+
+[project.urls]
+Homepage = "https://github.com/mattkjames7/JupiterMag"
+
+[tool.scikit-build]
+cmake.source-dir = "JupiterMag/__data/libjupitermag"
+wheel.packages = ["JupiterMag"]
+
+[tool.scikit-build.cmake.define]
+BUILD_SHARED_LIBS = "ON"
+LIBJUPITERMAG_BUILD_TESTS = "OFF"
+CMAKE_INSTALL_LIBDIR = "JupiterMag/__data/libjupitermag/lib"
+CMAKE_INSTALL_BINDIR = "JupiterMag/__data/libjupitermag/lib"
+CMAKE_INSTALL_INCLUDEDIR = "JupiterMag/__data/libjupitermag/include"
+
+[tool.black]
+line-length = 160
+extend-exclude = '''
+(^|/)JupiterMag/__data/libjupitermag/lib/|(^|/)(env|\.venv|venv|build|dist|wheelhouse)/
+'''

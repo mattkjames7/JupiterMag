@@ -10,7 +10,6 @@ CURRENT_DIR = Path(__file__).resolve().parent
 sys.path.append(str(CURRENT_DIR.parent))
 from common import get_internal_field  # noqa: E402
 
-
 DATA_FILE = Path(__file__).resolve().parents[1] / "data" / "internal_field_data.json"
 
 
@@ -24,12 +23,7 @@ TEST_CASES = _load_test_data()
 
 def _case_id(case):
     kwargs = case["input"]["kwargs"]
-    return (
-        f"model={kwargs['model']}-"
-        f"Cin={kwargs['CartIn']}-"
-        f"Cout={kwargs['CartOut']}-"
-        f"Deg={kwargs['MaxDeg']}"
-    )
+    return f"model={kwargs['model']}-" f"Cin={kwargs['CartIn']}-" f"Cout={kwargs['CartOut']}-" f"Deg={kwargs['MaxDeg']}"
 
 
 @pytest.mark.parametrize("case", TEST_CASES, ids=_case_id)

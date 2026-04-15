@@ -5,13 +5,12 @@ import sys
 import JupiterMag as jm
 import numpy as np
 
-
 CURRENT_DIR = Path(__file__).resolve().parent
 COMMON_DIR = CURRENT_DIR.parent
 if str(COMMON_DIR) not in sys.path:
     sys.path.append(str(COMMON_DIR))
 
-import common
+import common  # noqa: E402
 
 
 def test_common_import_does_not_mutate_global_configs():

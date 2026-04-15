@@ -1,0 +1,30 @@
+[flake8]
+max-line-length = 160
+extend-ignore = E203, W503
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    build,
+    dist,
+    JupiterMag.egg-info,
+    JupiterMag/__data/libjupitermag
+per-file-ignores =
+    */__init__.py: F401
+    JupiterMag/Con2020/Field.py: F401,E712
+    JupiterMag/Con2020/Test.py: F841
+    JupiterMag/Con2020/_CFunctions.py: F401
+    JupiterMag/Con2020/_ReadTestData.py: F401
+    JupiterMag/Globals.py: F401
+    JupiterMag/Internal/Test.py: E722,E714,E741,W605
+    JupiterMag/Internal/_CFunctions.py: F401
+    JupiterMag/Internal/_ReadTestPos.py: F401
+    JupiterMag/Tools/GetLegendHandLab.py: F401,E722
+    JupiterMag/Tools/Python.py: F401,F841
+    JupiterMag/Tools/TestPigtail.py: F401
+    JupiterMag/Tools/TestTrace.py: F401
+    JupiterMag/Tools/Timer.py: E741
+    JupiterMag/TraceField.py: F401,F841,E714,W605
+    JupiterMag/_CFunctions.py: F401
+    JupiterMag/_CppLib.py: F401
+    JupiterMag/__data/libjupitermag/generateheader.py: F401,E741,E101,W191

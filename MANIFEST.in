@@ -1,1 +1,4 @@
 recursive-include JupiterMag/__data *
+prune JupiterMag/__data/libjupitermag/build
+global-exclude __pycache__
+global-exclude *.py[cod]

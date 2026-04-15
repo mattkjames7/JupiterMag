@@ -7,7 +7,6 @@ import pytest
 
 import JupiterMag as jm
 
-
 DATA_FILE = Path(__file__).resolve().parents[1] / "data" / "coordconv_data.json"
 
 

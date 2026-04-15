@@ -10,7 +10,6 @@ CURRENT_DIR = Path(__file__).resolve().parent
 sys.path.append(str(CURRENT_DIR.parent))
 from common import get_trace_footprints  # noqa: E402
 
-
 DATA_FILE = Path(__file__).resolve().parents[1] / "data" / "trace_data.json"
 
 

@@ -3,7 +3,8 @@ import os
 from .. import Globals
 import PyFileIO as pf
 
+
 def _ReadTestPos():
-	
-	fname = Globals.ModulePath+"__data/testpos.dat"
-	return pf.ReadASCIIData(fname)
+
+    fname = Globals.ModulePath + "__data/testpos.dat"
+    return pf.ReadASCIIData(fname)

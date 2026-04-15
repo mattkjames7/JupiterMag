@@ -6,10 +6,10 @@ import numpy.testing as npt
 import pytest
 
 import sys
+
 CURRENT_DIR = Path(__file__).resolve().parent
 sys.path.append(str(CURRENT_DIR.parent))
-from common import get_model_field
-
+from common import get_model_field  # noqa: E402
 
 DATA_FILE = Path(__file__).resolve().parents[1] / "data" / "modelfield_data.json"
 
