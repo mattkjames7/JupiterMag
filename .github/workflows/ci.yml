@@ -2,17 +2,202 @@ name: CI
 
 on:
   workflow_dispatch:
+    inputs:
+      target:
+        description: OS and architecture target
+        required: false
+        type: choice
+        default: all
+        options:
+          - all
+          - linux-x64
+          - linux-arm64
+          - macos-arm64
+          - macos-x64
+          - windows-x64
+          - windows-arm64
+      python_version:
+        description: Python version
+        required: false
+        type: choice
+        default: all
+        options:
+          - all
+          - "3.10"
+          - "3.11"
+          - "3.12"
+          - "3.13"
+          - "3.14"
   workflow_call:
+    inputs:
+      target:
+        description: OS and architecture target (all, linux-x64, linux-arm64, macos-arm64, macos-x64, windows-x64, windows-arm64)
+        required: false
+        type: string
+        default: all
+      python_version:
+        description: Python version (all, 3.10, 3.11, 3.12, 3.13, 3.14)
+        required: false
+        type: string
+        default: all
   pull_request:
     branches: [main]
 
 jobs:
-  build-linux:
+  setup:
     runs-on: ubuntu-latest
+    outputs:
+      run_linux: ${{ steps.resolve.outputs.run_linux }}
+      run_macos: ${{ steps.resolve.outputs.run_macos }}
+      run_windows: ${{ steps.resolve.outputs.run_windows }}
+      linux_matrix: ${{ steps.resolve.outputs.linux_matrix }}
+      macos_matrix: ${{ steps.resolve.outputs.macos_matrix }}
+      windows_matrix: ${{ steps.resolve.outputs.windows_matrix }}
+    steps:
+      - name: Resolve selected targets and matrix values
+        id: resolve
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          TARGET_INPUT: ${{ inputs.target || 'all' }}
+          PYTHON_INPUT: ${{ inputs.python_version || 'all' }}
+        run: |
+          set -euo pipefail
+
+          target="$TARGET_INPUT"
+          python_version="$PYTHON_INPUT"
+
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            target="all"
+            python_version="all"
+          fi
+
+          case "$python_version" in
+            all)
+              py_versions=("3.10" "3.11" "3.12" "3.13" "3.14")
+              ;;
+            3.10|3.11|3.12|3.13|3.14)
+              py_versions=("$python_version")
+              ;;
+            *)
+              echo "Unsupported python_version: $python_version"
+              exit 1
+              ;;
+          esac
+
+          python_json='['
+          first=true
+          for py in "${py_versions[@]}"; do
+            if [[ "$first" == true ]]; then
+              first=false
+            else
+              python_json+=','
+            fi
+            python_json+="\"$py\""
+          done
+          python_json+=']'
+
+          run_linux=false
+          run_macos=false
+          run_windows=false
+          linux_targets=()
+          macos_versions='[]'
+          windows_targets=()
+
+          case "$target" in
+            all)
+              run_linux=true
+              run_macos=true
+              run_windows=true
+              linux_targets+=("ubuntu-latest|x64")
+              macos_versions='["macos-15","macos-15-intel"]'
+              windows_targets+=("windows-latest|x64")
+              ;;
+            linux-x64)
+              run_linux=true
+              linux_targets+=("ubuntu-latest|x64")
+              ;;
+            linux-arm64)
+              run_linux=true
+              linux_targets+=("ubuntu-24.04-arm|arm64")
+              ;;
+            macos-arm64)
+              run_macos=true
+              macos_versions='["macos-15"]'
+              ;;
+            macos-x64)
+              run_macos=true
+              macos_versions='["macos-15-intel"]'
+              ;;
+            windows-x64)
+              run_windows=true
+              windows_targets+=("windows-latest|x64")
+              ;;
+            windows-arm64)
+              run_windows=true
+              windows_targets+=("windows-11-arm|arm64")
+              ;;
+            *)
+              echo "Unsupported target: $target"
+              exit 1
+              ;;
+          esac
+
+          build_include_matrix() {
+            local -n target_ref=$1
+            local matrix='{"include":['
+            local first_item=true
+
+            for target_item in "${target_ref[@]}"; do
+              local runs_on="${target_item%%|*}"
+              local arch="${target_item##*|}"
+              for py in "${py_versions[@]}"; do
+                if [[ "$first_item" == true ]]; then
+                  first_item=false
+                else
+                  matrix+=','
+                fi
+                matrix+="{\"runs-on\":\"$runs_on\",\"arch\":\"$arch\",\"python-version\":\"$py\"}"
+              done
+            done
+
+            matrix+=']}'
+            echo "$matrix"
+          }
+
+          if [[ "$run_linux" == "true" ]]; then
+            linux_matrix="$(build_include_matrix linux_targets)"
+          else
+            linux_matrix='{"include":[]}'
+          fi
+
+          if [[ "$run_macos" == "true" ]]; then
+            macos_matrix="{\"macos-version\":$macos_versions,\"python-version\":$python_json}"
+          else
+            macos_matrix='{"macos-version":[],"python-version":[]}'
+          fi
+
+          if [[ "$run_windows" == "true" ]]; then
+            windows_matrix="$(build_include_matrix windows_targets)"
+          else
+            windows_matrix='{"include":[]}'
+          fi
+
+          {
+            echo "run_linux=$run_linux"
+            echo "run_macos=$run_macos"
+            echo "run_windows=$run_windows"
+            echo "linux_matrix=$linux_matrix"
+            echo "macos_matrix=$macos_matrix"
+            echo "windows_matrix=$windows_matrix"
+          } >> "$GITHUB_OUTPUT"
+
+  build-linux:
+    needs: setup
+    if: ${{ needs.setup.outputs.run_linux == 'true' }}
+    runs-on: ${{ matrix.runs-on }}
     strategy:
       fail-fast: false
-      matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+      matrix: ${{ fromJson(needs.setup.outputs.linux_matrix) }}
 
     steps:
       - name: Checkout repository
@@ -43,11 +228,18 @@ jobs:
         run: |
           rm -rf dist wheelhouse
           mkdir -p dist wheelhouse
+
+          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+            MANYLINUX_IMAGE="quay.io/pypa/manylinux_2_34_aarch64:latest"
+          else
+            MANYLINUX_IMAGE="quay.io/pypa/manylinux_2_34:latest"
+          fi
+
           docker run --rm \
             -e PYTAG="${MANYLINUX_PYTAG}" \
             -v "${{ github.workspace }}:/io" \
             -w /io \
-            quay.io/pypa/manylinux_2_34:latest \
+            "$MANYLINUX_IMAGE" \
             /bin/bash -lc '
               set -euo pipefail
               if ! command -v cmake >/dev/null 2>&1; then
@@ -73,7 +265,7 @@ jobs:
       - name: Upload wheel artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: wheels-linux-py${{ matrix.python-version }}
+          name: wheels-linux-${{ matrix.arch }}-py${{ matrix.python-version }}
           path: wheelhouse/*.whl
 
       - name: Build sdist (Linux 3.14)
@@ -94,7 +286,7 @@ jobs:
         if: matrix.python-version == '3.14'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: sdist-linux-py${{ matrix.python-version }}
+          name: sdist-linux-${{ matrix.arch }}-py${{ matrix.python-version }}
           path: dist/*.tar.gz
 
       - name: Run pytest from tests directory
@@ -106,12 +298,12 @@ jobs:
           pytest -q
 
   build-macos:
+    needs: setup
+    if: ${{ needs.setup.outputs.run_macos == 'true' }}
     runs-on: ${{ matrix.macos-version }}
     strategy:
       fail-fast: false
-      matrix:
-        macos-version: ["macos-15", "macos-15-intel"]
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+      matrix: ${{ fromJson(needs.setup.outputs.macos_matrix) }}
 
     steps:
       - name: Checkout repository
@@ -178,11 +370,12 @@ jobs:
           pytest -q
 
   build-windows:
-    runs-on: windows-latest
+    needs: setup
+    if: ${{ needs.setup.outputs.run_windows == 'true' }}
+    runs-on: ${{ matrix.runs-on }}
     strategy:
       fail-fast: false
-      matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+      matrix: ${{ fromJson(needs.setup.outputs.windows_matrix) }}
 
     steps:
       - name: Checkout repository
@@ -196,6 +389,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Set up MSYS2 toolchain
+        if: matrix.arch == 'x64'
         uses: msys2/setup-msys2@cafece8e6baf9247cf9b1bf95097b0b983cc558d # v2.31.0
         with:
           msystem: UCRT64
@@ -216,6 +410,17 @@ jobs:
         run: |
           .\env\Scripts\Activate.ps1
           pip install --upgrade build wheel
+
+          if ("${{ matrix.arch }}" -eq "arm64") {
+            # Use the default ARM64 MSVC toolchain on Windows ARM runners.
+            Remove-Item Env:CMAKE_GENERATOR -ErrorAction SilentlyContinue
+            Remove-Item Env:CC -ErrorAction SilentlyContinue
+            Remove-Item Env:CXX -ErrorAction SilentlyContinue
+            Remove-Item Env:CMAKE_ARGS -ErrorAction SilentlyContinue
+            python -m build --wheel -o dist
+            exit 0
+          }
+
           $gccCandidates = @(Get-Command gcc.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
           $gxxCandidates = @(Get-Command g++.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
           $ninjaCandidates = @(Get-Command ninja.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
@@ -285,7 +490,7 @@ jobs:
       - name: Upload wheel artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: wheels-windows-py${{ matrix.python-version }}
+          name: wheels-windows-${{ matrix.arch }}-py${{ matrix.python-version }}
           path: dist/*.whl
 
       - name: Run tests
