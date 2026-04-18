@@ -389,16 +389,15 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Set up MSYS2 toolchain
-        if: matrix.arch == 'x64'
         uses: msys2/setup-msys2@cafece8e6baf9247cf9b1bf95097b0b983cc558d # v2.31.0
         with:
-          msystem: UCRT64
+          msystem: ${{ matrix.arch == 'arm64' && 'CLANGARM64' || 'UCRT64' }}
           path-type: inherit
           update: true
-          install: >-
-            mingw-w64-ucrt-x86_64-gcc
-            mingw-w64-ucrt-x86_64-cmake
-            mingw-w64-ucrt-x86_64-ninja
+          pacboy: >-
+            toolchain:p
+            cmake:p
+            ninja:p
 
       - name: Create venv
         shell: pwsh
@@ -412,62 +411,70 @@ jobs:
           pip install --upgrade build wheel
 
           if ("${{ matrix.arch }}" -eq "arm64") {
-            # Use the default ARM64 MSVC toolchain on Windows ARM runners.
-            Remove-Item Env:CMAKE_GENERATOR -ErrorAction SilentlyContinue
-            Remove-Item Env:CC -ErrorAction SilentlyContinue
-            Remove-Item Env:CXX -ErrorAction SilentlyContinue
-            Remove-Item Env:CMAKE_ARGS -ErrorAction SilentlyContinue
-            python -m build --wheel -o dist
-            exit 0
+            $ccCandidates = @(Get-Command clang.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
+            $cxxCandidates = @(Get-Command clang++.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
+            $toolPattern = '[\\/](clangarm64|clang64)[\\/]bin[\\/]'
+          } else {
+            $ccCandidates = @(Get-Command gcc.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
+            $cxxCandidates = @(Get-Command g++.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
+            $toolPattern = '[\\/](ucrt64|mingw64)[\\/]bin[\\/]'
           }
 
-          $gccCandidates = @(Get-Command gcc.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
-          $gxxCandidates = @(Get-Command g++.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
           $ninjaCandidates = @(Get-Command ninja.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
           $cmakeCandidates = @(Get-Command cmake.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
 
-          Write-Host "gcc candidates: $($gccCandidates -join '; ')"
-          Write-Host "g++ candidates: $($gxxCandidates -join '; ')"
+          if ("${{ matrix.arch }}" -eq "arm64") {
+            Write-Host "clang candidates: $($ccCandidates -join '; ')"
+            Write-Host "clang++ candidates: $($cxxCandidates -join '; ')"
+          } else {
+            Write-Host "gcc candidates: $($ccCandidates -join '; ')"
+            Write-Host "g++ candidates: $($cxxCandidates -join '; ')"
+          }
           Write-Host "ninja candidates: $($ninjaCandidates -join '; ')"
           Write-Host "cmake candidates: $($cmakeCandidates -join '; ')"
 
-          $gcc = $gccCandidates | Where-Object { $_ -match '[\\/](ucrt64|mingw64)[\\/]bin[\\/]' } | Select-Object -First 1
-          if (-not $gcc) { $gcc = $gccCandidates | Where-Object { $_ -match '(msys|mingw|ucrt)' } | Select-Object -First 1 }
-          if (-not $gcc) { $gcc = $gccCandidates | Select-Object -First 1 }
+          $cc = $ccCandidates | Where-Object { $_ -match $toolPattern } | Select-Object -First 1
+          if (-not $cc) { $cc = $ccCandidates | Where-Object { $_ -match '(msys|mingw|ucrt|clang)' } | Select-Object -First 1 }
+          if (-not $cc) { $cc = $ccCandidates | Select-Object -First 1 }
 
-          $gxx = $gxxCandidates | Where-Object { $_ -match '[\\/](ucrt64|mingw64)[\\/]bin[\\/]' } | Select-Object -First 1
-          if (-not $gxx) { $gxx = $gxxCandidates | Where-Object { $_ -match '(msys|mingw|ucrt)' } | Select-Object -First 1 }
-          if (-not $gxx) { $gxx = $gxxCandidates | Select-Object -First 1 }
+          $cxx = $cxxCandidates | Where-Object { $_ -match $toolPattern } | Select-Object -First 1
+          if (-not $cxx) { $cxx = $cxxCandidates | Where-Object { $_ -match '(msys|mingw|ucrt|clang)' } | Select-Object -First 1 }
+          if (-not $cxx) { $cxx = $cxxCandidates | Select-Object -First 1 }
 
-          $ninja = $ninjaCandidates | Where-Object { $_ -match '[\\/](ucrt64|mingw64)[\\/]bin[\\/]' } | Select-Object -First 1
-          if (-not $ninja) { $ninja = $ninjaCandidates | Where-Object { $_ -match '(msys|mingw|ucrt)' } | Select-Object -First 1 }
+          $ninja = $ninjaCandidates | Where-Object { $_ -match $toolPattern } | Select-Object -First 1
+          if (-not $ninja) { $ninja = $ninjaCandidates | Where-Object { $_ -match '(msys|mingw|ucrt|clang)' } | Select-Object -First 1 }
           if (-not $ninja) { $ninja = $ninjaCandidates | Select-Object -First 1 }
 
-          $cmake = $cmakeCandidates | Where-Object { $_ -match '[\\/](ucrt64|mingw64)[\\/]bin[\\/]' } | Select-Object -First 1
-          if (-not $cmake) { $cmake = $cmakeCandidates | Where-Object { $_ -match '(msys|mingw|ucrt)' } | Select-Object -First 1 }
+          $cmake = $cmakeCandidates | Where-Object { $_ -match $toolPattern } | Select-Object -First 1
+          if (-not $cmake) { $cmake = $cmakeCandidates | Where-Object { $_ -match '(msys|mingw|ucrt|clang)' } | Select-Object -First 1 }
           if (-not $cmake) { $cmake = $cmakeCandidates | Select-Object -First 1 }
 
-          if (-not $gcc -or -not $gxx -or -not $ninja -or -not $cmake) {
-            throw "Could not locate gcc/g++/ninja/cmake in PATH"
+          if (-not $cc -or -not $cxx -or -not $ninja -or -not $cmake) {
+            throw "Could not locate compiler/ninja/cmake in PATH"
           }
 
-          $toolBin = Split-Path -Parent $gcc
+          $toolBin = Split-Path -Parent $cc
           $env:PATH = "$toolBin;$env:PATH"
 
-          $gccForCmake = $gcc -replace '\\', '/'
-          $gxxForCmake = $gxx -replace '\\', '/'
+          $ccForCmake = $cc -replace '\\', '/'
+          $cxxForCmake = $cxx -replace '\\', '/'
 
           $env:CMAKE_GENERATOR = "Ninja"
-          $env:CC = $gcc
-          $env:CXX = $gxx
-          $env:CMAKE_ARGS = "-DCMAKE_C_COMPILER:FILEPATH=$gccForCmake -DCMAKE_CXX_COMPILER:FILEPATH=$gxxForCmake"
+          $env:CC = $cc
+          $env:CXX = $cxx
+          $env:CMAKE_ARGS = "-DCMAKE_C_COMPILER:FILEPATH=$ccForCmake -DCMAKE_CXX_COMPILER:FILEPATH=$cxxForCmake"
 
-          Write-Host "Using gcc: $gcc"
-          Write-Host "Using g++: $gxx"
+          if ("${{ matrix.arch }}" -eq "arm64") {
+            Write-Host "Using clang: $cc"
+            Write-Host "Using clang++: $cxx"
+          } else {
+            Write-Host "Using gcc: $cc"
+            Write-Host "Using g++: $cxx"
+          }
           Write-Host "Using ninja: $ninja"
           Write-Host "Using cmake: $cmake"
-          & $gcc --version
-          & $gxx --version
+          & $cc --version
+          & $cxx --version
           & $cmake --version
           & $ninja --version
           python -m build --wheel -o dist
