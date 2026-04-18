@@ -409,7 +409,8 @@ jobs:
         shell: pwsh
         run: |
           .\env\Scripts\Activate.ps1
-          pip install --upgrade build wheel
+          $pythonExe = Join-Path $env:VIRTUAL_ENV "Scripts\python.exe"
+          & $pythonExe -m pip install --upgrade build wheel
 
           $msys2Root = "${{ steps.msys2.outputs.msys2-location }}"
           if ("${{ matrix.arch }}" -eq "arm64") {
@@ -452,7 +453,7 @@ jobs:
           & $cxx --version
           & $cmake --version
           & $ninja --version
-          python -m build --wheel -o dist
+          & $pythonExe -m build --wheel -o dist
 
       - name: Install wheel
         shell: pwsh
