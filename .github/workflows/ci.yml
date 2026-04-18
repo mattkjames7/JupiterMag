@@ -389,6 +389,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Set up MSYS2 toolchain
+        id: msys2
         uses: msys2/setup-msys2@cafece8e6baf9247cf9b1bf95097b0b983cc558d # v2.31.0
         with:
           msystem: ${{ matrix.arch == 'arm64' && 'CLANGARM64' || 'UCRT64' }}
@@ -410,59 +411,33 @@ jobs:
           .\env\Scripts\Activate.ps1
           pip install --upgrade build wheel
 
+          $msys2Root = "${{ steps.msys2.outputs.msys2-location }}"
           if ("${{ matrix.arch }}" -eq "arm64") {
-            $ccCandidates = @(Get-Command clang.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
-            $cxxCandidates = @(Get-Command clang++.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
-            $toolPattern = '[\\/](clangarm64|clang64)[\\/]bin[\\/]'
+            $toolPrefix = "clangarm64"
+            $ccName = "clang.exe"
+            $cxxName = "clang++.exe"
           } else {
-            $ccCandidates = @(Get-Command gcc.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
-            $cxxCandidates = @(Get-Command g++.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
-            $toolPattern = '[\\/](ucrt64|mingw64)[\\/]bin[\\/]'
+            $toolPrefix = "ucrt64"
+            $ccName = "gcc.exe"
+            $cxxName = "g++.exe"
           }
 
-          $ninjaCandidates = @(Get-Command ninja.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
-          $cmakeCandidates = @(Get-Command cmake.exe -All -ErrorAction Stop | Select-Object -ExpandProperty Source)
+          $toolBin = Join-Path $msys2Root "$toolPrefix\bin"
+          $cc = Join-Path $toolBin $ccName
+          $cxx = Join-Path $toolBin $cxxName
+          $ninja = Join-Path $toolBin "ninja.exe"
+          $cmake = Join-Path $toolBin "cmake.exe"
 
-          if ("${{ matrix.arch }}" -eq "arm64") {
-            Write-Host "clang candidates: $($ccCandidates -join '; ')"
-            Write-Host "clang++ candidates: $($cxxCandidates -join '; ')"
-          } else {
-            Write-Host "gcc candidates: $($ccCandidates -join '; ')"
-            Write-Host "g++ candidates: $($cxxCandidates -join '; ')"
-          }
-          Write-Host "ninja candidates: $($ninjaCandidates -join '; ')"
-          Write-Host "cmake candidates: $($cmakeCandidates -join '; ')"
-
-          $cc = $ccCandidates | Where-Object { $_ -match $toolPattern } | Select-Object -First 1
-          if (-not $cc) { $cc = $ccCandidates | Where-Object { $_ -match '(msys|mingw|ucrt|clang)' } | Select-Object -First 1 }
-          if (-not $cc) { $cc = $ccCandidates | Select-Object -First 1 }
-
-          $cxx = $cxxCandidates | Where-Object { $_ -match $toolPattern } | Select-Object -First 1
-          if (-not $cxx) { $cxx = $cxxCandidates | Where-Object { $_ -match '(msys|mingw|ucrt|clang)' } | Select-Object -First 1 }
-          if (-not $cxx) { $cxx = $cxxCandidates | Select-Object -First 1 }
-
-          $ninja = $ninjaCandidates | Where-Object { $_ -match $toolPattern } | Select-Object -First 1
-          if (-not $ninja) { $ninja = $ninjaCandidates | Where-Object { $_ -match '(msys|mingw|ucrt|clang)' } | Select-Object -First 1 }
-          if (-not $ninja) { $ninja = $ninjaCandidates | Select-Object -First 1 }
-
-          $cmake = $cmakeCandidates | Where-Object { $_ -match $toolPattern } | Select-Object -First 1
-          if (-not $cmake) { $cmake = $cmakeCandidates | Where-Object { $_ -match '(msys|mingw|ucrt|clang)' } | Select-Object -First 1 }
-          if (-not $cmake) { $cmake = $cmakeCandidates | Select-Object -First 1 }
-
-          if (-not $cc -or -not $cxx -or -not $ninja -or -not $cmake) {
-            throw "Could not locate compiler/ninja/cmake in PATH"
+          if (-not (Test-Path $cc) -or -not (Test-Path $cxx) -or -not (Test-Path $ninja) -or -not (Test-Path $cmake)) {
+            throw "Could not locate compiler/ninja/cmake in MSYS2: $toolBin"
           }
 
-          $toolBin = Split-Path -Parent $cc
           $env:PATH = "$toolBin;$env:PATH"
-
-          $ccForCmake = $cc -replace '\\', '/'
-          $cxxForCmake = $cxx -replace '\\', '/'
 
           $env:CMAKE_GENERATOR = "Ninja"
           $env:CC = $cc
           $env:CXX = $cxx
-          $env:CMAKE_ARGS = "-DCMAKE_C_COMPILER:FILEPATH=$ccForCmake -DCMAKE_CXX_COMPILER:FILEPATH=$cxxForCmake"
+          Remove-Item Env:CMAKE_ARGS -ErrorAction SilentlyContinue
 
           if ("${{ matrix.arch }}" -eq "arm64") {
             Write-Host "Using clang: $cc"
