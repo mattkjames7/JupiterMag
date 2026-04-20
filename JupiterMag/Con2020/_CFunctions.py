@@ -34,7 +34,7 @@ _CCon2020Field.argtypes = [
 ]  # Bx/Br output scalar
 
 # con2020 get parameters
-_CGetCon2020Params = libjupitermag.GetCon2020Params
+_CGetCon2020Params = libjupitermag.JupiterMagGetCon2020Params
 _CGetCon2020Params.restype = None
 _CGetCon2020Params.argtypes = [
     c_double_ptr,  # mui
@@ -62,7 +62,7 @@ _CGetCon2020Params.argtypes = [
     c_double_ptr,
 ]  # dthetaoc
 # con2020 set parameters
-_CSetCon2020Params = libjupitermag.SetCon2020Params
+_CSetCon2020Params = libjupitermag.JupiterMagSetCon2020Params
 _CSetCon2020Params.restype = None
 _CSetCon2020Params.argtypes = [
     c_double,  # mui

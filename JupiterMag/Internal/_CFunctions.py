@@ -38,11 +38,11 @@ _CInternalFieldDeg.argtypes = [
 
 
 # set internal config
-_CSetInternalCFG = libjupitermag.SetInternalCFG
+_CSetInternalCFG = libjupitermag.JupiterMagSetInternalCFG
 _CSetInternalCFG.restype = None
 _CSetInternalCFG.argtypes = [c_char_p, c_bool, c_bool, c_int]
 
 # get internal config
-_CGetInternalCFG = libjupitermag.GetInternalCFG
+_CGetInternalCFG = libjupitermag.JupiterMagGetInternalCFG
 _CGetInternalCFG.restype = None
 _CGetInternalCFG.argtypes = [c_char_p, c_bool_ptr, c_bool_ptr, c_int_ptr]
