@@ -388,18 +388,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Set up MSYS2 toolchain
-        id: msys2
-        uses: msys2/setup-msys2@cafece8e6baf9247cf9b1bf95097b0b983cc558d # v2.31.0
-        with:
-          msystem: ${{ matrix.arch == 'arm64' && 'CLANGARM64' || 'UCRT64' }}
-          path-type: inherit
-          update: true
-          pacboy: >-
-            toolchain:p
-            cmake:p
-            ninja:p
-
       - name: Create venv
         shell: pwsh
         run: |
@@ -412,47 +400,45 @@ jobs:
           $pythonExe = Join-Path $env:VIRTUAL_ENV "Scripts\python.exe"
           & $pythonExe -m pip install --upgrade build wheel
 
-          $msys2Root = "${{ steps.msys2.outputs.msys2-location }}"
-          if ("${{ matrix.arch }}" -eq "arm64") {
-            $toolPrefix = "clangarm64"
-            $ccName = "clang.exe"
-            $cxxName = "clang++.exe"
-          } else {
-            $toolPrefix = "ucrt64"
-            $ccName = "gcc.exe"
-            $cxxName = "g++.exe"
+          $targetArch = if ("${{ matrix.arch }}" -eq "arm64") { "arm64" } else { "x64" }
+          $hostArch = $targetArch
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
+          if (-not (Test-Path $vswhere)) {
+            throw "vswhere.exe not found at $vswhere"
           }
 
-          $toolBin = Join-Path $msys2Root "$toolPrefix\bin"
-          $cc = Join-Path $toolBin $ccName
-          $cxx = Join-Path $toolBin $cxxName
-          $ninja = Join-Path $toolBin "ninja.exe"
-          $cmake = Join-Path $toolBin "cmake.exe"
-
-          if (-not (Test-Path $cc) -or -not (Test-Path $cxx) -or -not (Test-Path $ninja) -or -not (Test-Path $cmake)) {
-            throw "Could not locate compiler/ninja/cmake in MSYS2: $toolBin"
+          $vsInstallPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vsInstallPath) {
+            throw "Could not locate a Visual Studio installation with C++ tools"
           }
 
-          $env:PATH = "$toolBin;$env:PATH"
+          $vsDevCmd = Join-Path $vsInstallPath "Common7\Tools\VsDevCmd.bat"
+          if (-not (Test-Path $vsDevCmd)) {
+            throw "VsDevCmd.bat not found at $vsDevCmd"
+          }
 
-          $env:CMAKE_GENERATOR = "Ninja"
-          $env:CC = $cc
-          $env:CXX = $cxx
+          # Import Visual Studio developer environment vars into this PowerShell step.
+          $envDump = & cmd.exe /s /c "`"$vsDevCmd`" -no_logo -host_arch=$hostArch -arch=$targetArch && set"
+          foreach ($line in $envDump) {
+            if ($line -match '^(.*?)=(.*)$') {
+              Set-Item -Path ("Env:" + $matches[1]) -Value $matches[2]
+            }
+          }
+
+          $clCmd = Get-Command cl.exe -ErrorAction SilentlyContinue
+          $cmakeCmd = Get-Command cmake.exe -ErrorAction SilentlyContinue
+          if (-not $clCmd -or -not $cmakeCmd) {
+            throw "MSVC or CMake not available in PATH after loading VsDevCmd"
+          }
+
+          $env:CMAKE_GENERATOR = "Visual Studio 17 2022"
+          $env:CMAKE_GENERATOR_PLATFORM = $targetArch
           Remove-Item Env:CMAKE_ARGS -ErrorAction SilentlyContinue
 
-          if ("${{ matrix.arch }}" -eq "arm64") {
-            Write-Host "Using clang: $cc"
-            Write-Host "Using clang++: $cxx"
-          } else {
-            Write-Host "Using gcc: $cc"
-            Write-Host "Using g++: $cxx"
-          }
-          Write-Host "Using ninja: $ninja"
-          Write-Host "Using cmake: $cmake"
-          & $cc --version
-          & $cxx --version
-          & $cmake --version
-          & $ninja --version
+          Write-Host "Using cl: $($clCmd.Source)"
+          Write-Host "Using cmake: $($cmakeCmd.Source)"
+          & cmd.exe /c "cl"
+          & $cmakeCmd.Source --version
           & $pythonExe -m build --wheel -o dist
 
       - name: Install wheel
