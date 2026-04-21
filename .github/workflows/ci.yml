@@ -273,7 +273,9 @@ jobs:
         if: matrix.python-version != '3.14'
         run: |
           source env/bin/activate
+          cd tests
           python -c "import JupiterMag; print(JupiterMag.__version__)"
+          if [ $? -ne 0 ]; then exit 1; fi
 
       - name: Upload wheel artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -361,7 +363,9 @@ jobs:
         if: matrix.python-version != '3.14'
         run: |
           source env/bin/activate
+          cd tests
           python -c "import JupiterMag; print(JupiterMag.__version__)"
+          if [ $? -ne 0 ]; then exit 1; fi
 
       - name: Upload wheel artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -467,7 +471,9 @@ jobs:
         shell: pwsh
         run: |
           .\env\Scripts\Activate.ps1
+          cd tests
           python -c "import JupiterMag; print(JupiterMag.__version__)"
+          if ($LASTEXITCODE -ne 0) { exit 1 }
 
       - name: Upload wheel artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
