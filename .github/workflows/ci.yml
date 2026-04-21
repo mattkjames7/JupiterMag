@@ -103,6 +103,17 @@ jobs:
           macos_versions='[]'
           windows_targets=()
 
+           # If target is windows-arm64, filter out 3.10 from py_versions
+            if [[ "$target" == "windows-arm64" ]]; then
+              filtered_py_versions=()
+              for py in "${py_versions[@]}"; do
+                if [[ "$py" != "3.10" ]]; then
+                  filtered_py_versions+=("$py")
+                fi
+              done
+              py_versions=("${filtered_py_versions[@]}")
+            fi
+
           case "$target" in
             all)
               run_linux=true
@@ -132,10 +143,10 @@ jobs:
               run_windows=true
               windows_targets+=("windows-latest|x64")
               ;;
-            windows-arm64)
-              run_windows=true
-              windows_targets+=("windows-11-arm|arm64")
-              ;;
+              windows-arm64)
+                run_windows=true
+                windows_targets+=("windows-11-arm|arm64")
+                ;;
             *)
               echo "Unsupported target: $target"
               exit 1
