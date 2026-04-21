@@ -103,16 +103,6 @@ jobs:
           macos_versions='[]'
           windows_targets=()
 
-          # If target is windows-arm64, filter out 3.10 from py_versions
-          if [[ "$target" == "windows-arm64" ]]; then
-            filtered_py_versions=()
-            for py in "${py_versions[@]}"; do
-              if [[ "$py" != "3.10" ]]; then
-                filtered_py_versions+=("$py")
-              fi
-            done
-            py_versions=("${filtered_py_versions[@]}")
-          fi
 
           case "$target" in
             all)
@@ -154,6 +144,7 @@ jobs:
               ;;
           esac
 
+
           build_include_matrix() {
             local -n target_ref=$1
             local matrix='{"include":['
@@ -162,7 +153,17 @@ jobs:
             for target_item in "${target_ref[@]}"; do
               local runs_on="${target_item%%|*}"
               local arch="${target_item##*|}"
-              for py in "${py_versions[@]}"; do
+              local py_list=("${py_versions[@]}")
+              # Special case: skip 3.10 for windows-11-arm|arm64
+              if [[ "$runs_on" == "windows-11-arm" && "$arch" == "arm64" ]]; then
+                py_list=()
+                for py in "${py_versions[@]}"; do
+                  if [[ "$py" != "3.10" ]]; then
+                    py_list+=("$py")
+                  fi
+                done
+              fi
+              for py in "${py_list[@]}"; do
                 if [[ "$first_item" == true ]]; then
                   first_item=false
                 else
