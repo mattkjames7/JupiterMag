@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "JupiterMag"
-version = "1.5.0"
+version = "1.5.1"
 description = "Some magnetic field models for Jupiter"
 readme = "README.md"
 license = "GPL-3.0-or-later"
@@ -20,7 +20,7 @@ classifiers = [
 dependencies = [
 	"numpy",
 	"matplotlib",
-	"DateTimeTools",
+	"DateTimeTools>=1.3.3",
 	"RecarrayTools",
 	"PyFileIO",
 	"scipy",
